@@ -4,8 +4,6 @@
 
 ;;;;;; CONFIGURATION - EDIT THESE
 
-(defvar *email* "") ;; no need to edit these - if you forget to,
-(defvar *password* "") ;; the program will ask you to log in.
 (defvar *furcadia-path* "C:\\Furcadia\\") ;; remember double-slashes here
 
 (defvar *cookie-jar* (make-instance 'cookie-jar))
@@ -15,8 +13,27 @@
   '("colr" "desc" "digo" "wing" "port" "tag" "adesc" "awhsp" "aresp"
     "doresp" "adigo" "awing" "atime" "amaxtime" "acolr" "aport" "uid"))
 
-(defun input-login-data ()
-  (format t "Email:    ")
-  (setf *email* (read-line))
-  (format t "Password: ")
-  (setf *password* (read-line)))
+(defvar *config* nil)
+(defvar *config-path* "~/.furcadia-launcher/config.lisp")
+
+(defvar *sample-config*
+  '(:master-password nil
+    :accounts (("foo@bar.com" "FooBar1234")
+               ("frob@mem.org" "Frobnicate!@#4"))
+    ))
+
+(defun load-config-file ()
+  (ensure-directories-exist *config-path*)
+  (with-open-file (s *config-path*
+                     :direction :input
+                     :if-does-not-exist :create)
+    (read s nil nil)))
+
+(defun save-config-file (&optional (config *config*))
+  (ensure-directories-exist *config-path*)
+  (with-open-file (s *config-path*
+                     :direction :output
+                     :if-does-not-exist :create
+                     :if-exists :overwrite)
+    (print config s)
+    (terpri s)))

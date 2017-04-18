@@ -41,6 +41,12 @@
     (step-3a)
     t))
 
+(defun input-login-data ()
+  (format t "Email:    ")
+  (setf *email* (read-line))
+  (format t "Password: ")
+  (setf *password* (read-line)))
+
 (defun echo (string &optional (stream *standard-output*))
   (format stream "~A~%" string))
 
