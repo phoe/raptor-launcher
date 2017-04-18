@@ -133,7 +133,21 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; REQUESTS
+;;;; DONE
+
+(defun extract-secret (response)
+  (let* ((start (search "<input type=\"hidden\" name=\"return\"" response))
+         (cut-response (subseq response (1+ start)))
+         (start (search "<input" cut-response)))
+    (subseq cut-response (+ start 27) (+ start 27 32))))
+
+(defun extract-account (&optional (page (get-fured-page)))
+  (let* ((begin (search "account.JSON=" page))
+         (end (search (string #\Newline) page :start2 begin))
+         (subseq (subseq page (+ begin 13) (1- end)))
+         (json (decode-json (make-string-input-stream subseq))))
+    (setf *secret-fured* (cdr (assoc :session json)))
+    json))
 
 (defun get-login-page ()
   (http-request "https://cms.furcadia.com/login"
@@ -153,8 +167,14 @@
   (http-request "https://cms.furcadia.com/fured/"
                 :method :get
                 :cookie-jar *cookie-jar*
-                :user-agent :firefox
                 :redirect nil))
+
+(defun login ()
+  (when (string= *email* "")
+    (input-login-data))
+  (setf (cookie-jar-cookies *cookie-jar*) nil
+        *secret* (extract-secret (get-login-page)))
+  (post-login *secret*))
 
 (defun load-character (name)
   (check-type name string)
@@ -162,6 +182,16 @@
                 :method :post
                 :parameters `(("name" . ,name))
                 :cookie-jar *cookie-jar*))
+
+(defun list-characters (&optional (account (extract-account)))
+  (mapcar (lambda (x) (cdr (assoc :shortname x)))
+          (cdr (assoc :characters account))))
+
+(defun get-all-characters ()
+  (mapcar #'get-character (list-characters)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; REQUESTS
 
 (defun post-character (character)
   (let ((headers (construct-save-request character)))
@@ -172,8 +202,13 @@
                   :accept "application/json, text/javascript, */*; q=0.01"
                   :parameters headers
                   :cookie-jar *cookie-jar*)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; DATA
+
+(defvar *save-char-keywords*
+  '("colr" "desc" "digo" "wing" "port" "tag" "adesc" "awhsp" "aresp"
+    "doresp" "adigo" "awing" "atime" "amaxtime" "acolr" "aport" "uid"))
 
 (defun construct-save-keyword (character keyword)
   (let ((data (or (cdr (assoc keyword character :test #'string-equal)) "")))
@@ -186,40 +221,9 @@
                (cons "tokenCostume" "-1")
                (cons *secret-fured* "1"))))
 
-(defun login ()
-  (when (string= *email* "")
-    (input-login-data))
-  (setf (cookie-jar-cookies *cookie-jar*) nil
-        *secret* (extract-secret (get-login-page)))
-  (post-login *secret*))
-
 (defun get-login-link (character &optional (html (post-character character)))
   (let ((string (make-string-input-stream html)))
     (cdr (assoc :login--url (decode-json string)))))
-
-(defun extract-secret (response)
-  (let* ((start (search "<input type=\"hidden\" name=\"return\"" response))
-         (cut-response (subseq response (1+ start)))
-         (start (search "<input" cut-response)))
-    (subseq cut-response (+ start 27) (+ start 27 32))))
-
-(defun extract-account (&optional (page (get-fured-page)))
-  (let* ((begin (search "account.JSON=" page))
-         (end (search (string #\Newline) page :start2 begin))
-         (subseq (subseq page (+ begin 13) (1- end)))
-         (json (decode-json (make-string-input-stream subseq))))
-    (setf *secret-fured* (cdr (assoc :session json)))
-    json))
-
-(defun get-character (character)
-  (decode-json (make-string-input-stream (load-character character))))
-
-(defun list-characters (&optional (account (extract-account)))
-  (mapcar (lambda (x) (cdr (assoc :shortname x)))
-          (cdr (assoc :characters account))))
-
-(defun get-all-characters ()
-  (mapcar #'get-character (list-characters)))
 
 (defun construct-furcadia-command (link)
   (let ((command (list (cat *furcadia-path* "Furcadia.exe")

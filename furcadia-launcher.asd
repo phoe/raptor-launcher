@@ -6,10 +6,12 @@
   :license "BSD 2-clause"
   :depends-on (:ironclad
                :drakma
-               :cl-json)
+               :cl-json
+               :lparallel)
   :serial t
   :components ((:file "package")
                (:file "util")
+               (:file "backend-login")
                (:file "backend")
                (:file "config")
                (:file "ui")))
