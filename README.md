@@ -11,7 +11,13 @@ A variant launcher for Furcadia written in Common Lisp and (in the future) Commo
 ## Mockup
 Don't get too excited - it's just a mockup so far, but that's how I imagine the main screen of the launcher to be modeled.
 
-![Mockup](mockup.png)
+![Mockup](img/mockup.png)
+
+## Requirements
+  * Ironclad
+  * Drakma
+  * CL-JSON
+  * ASDF 3.2.1
 
 ## Current technique
 

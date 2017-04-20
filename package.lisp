@@ -3,5 +3,4 @@
 (defpackage #:furcadia-launcher
   (:use #:cl
         #:drakma
-        #:json
-        #:lparallel))
+        #:json))
