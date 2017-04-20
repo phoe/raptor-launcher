@@ -190,25 +190,16 @@
 (defun get-all-characters ()
   (mapcar #'get-character (list-characters)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; REQUESTS
 
 (defun post-character (character)
   (let ((headers (construct-save-request character)))
     (http-request "https://cms.furcadia.com/fured/saveCharacter.php"
                   :method :post
-                  :additional-headers '(("Origin" . "https://cms.furcadia.com")
-                                        ("X-Requested-With" . "XMLHttpRequest"))
+                  ;; :additional-headers '(("Origin" . "https://cms.furcadia.com")
+                  ;;                       ("X-Requested-With" . "XMLHttpRequest"))
                   :accept "application/json, text/javascript, */*; q=0.01"
                   :parameters headers
                   :cookie-jar *cookie-jar*)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; DATA
-
-(defvar *save-char-keywords*
-  '("colr" "desc" "digo" "wing" "port" "tag" "adesc" "awhsp" "aresp"
-    "doresp" "adigo" "awing" "atime" "amaxtime" "acolr" "aport" "uid"))
 
 (defun construct-save-keyword (character keyword)
   (let ((data (or (cdr (assoc keyword character :test #'string-equal)) "")))
@@ -221,9 +212,8 @@
                (cons "tokenCostume" "-1")
                (cons *secret-fured* "1"))))
 
-(defun get-login-link (character &optional (html (post-character character)))
-  (let ((string (make-string-input-stream html)))
-    (cdr (assoc :login--url (decode-json string)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; DATA
 
 (defun construct-furcadia-command (link)
   (let ((command (list (cat *furcadia-path* "Furcadia.exe")
