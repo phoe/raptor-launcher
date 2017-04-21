@@ -2,13 +2,20 @@
 
 (in-package :furcadia-launcher)
 
-(defvar *state* nil
+(defvar *state* (make-hash-table)
   "The current running state of the program.")
 
 (defvar *state-lock* (make-lock "Furcadia Launcher state")
   "The lock for the current running state of the program.")
 
-(defun config-cookie (config email)
-  "Returns the cookie jar for a given email."
-  (let ((cookie-jars (assoc :cookie-jars config :test #'string=)))
-    (assoc email cookie-jars :test #'string=)))
+(defun state-cookie (state state-lock email)
+  "Returns the cookie jar for a given email in the provided state."
+  (with-lock-held (state-lock)
+    (let ((cookie-jars (gethash :cookie-jars state)))
+      (assoc-value cookie-jars email :test #'string=))))
+
+(defun (setf state-cookie) (new-value state state-lock email)
+  "Sets the cookie jar for a given email in the provided state."
+  (with-lock-held (state-lock)
+    (symbol-macrolet ((cookie-jars (gethash :cookie-jars state)))
+      (setf (assoc-value cookie-jars email :test #'string=) new-value))))

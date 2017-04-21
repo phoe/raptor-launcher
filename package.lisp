@@ -2,7 +2,7 @@
 
 (defpackage #:furcadia-launcher
   (:use #:cl
+        #:alexandria
         #:drakma
         #:json
-        #:bordeaux-threads
-        #:lparallel))
+        #:bordeaux-threads))

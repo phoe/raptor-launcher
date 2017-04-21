@@ -8,6 +8,9 @@ A variant launcher for Furcadia written in Common Lisp and (in the future) Commo
   * Ability to mix characters from different mail accounts on a single list.
   * Ability to automatically refresh characters to prevent them from expiration.
 
+## TODO
+  * Add logging everywhere
+
 ## Mockup
 Don't get too excited - it's just a mockup so far, but that's how I imagine the main screen of the launcher to be modeled.
 
@@ -20,7 +23,6 @@ Don't get too excited - it's just a mockup so far, but that's how I imagine the 
   * ASDF 3.2.1
 
 ## Current technique
-
   1. **Login into Furcadia CMS.**
      1. GET the login page.
      2. Extract the authentication secret from HTML.
