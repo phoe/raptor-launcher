@@ -7,8 +7,7 @@
   "Address of the main FurEd page.")
 
 (defun http-get-fured-page (cookie-jar)
-  "Loads the FurEd page, using the provided cookie jar.
-Cookies from login are required to load the page."
+  "Loads the FurEd page, using the provided cookie jar with login cookies."
   (http-request *http-fured-page*
                 :cookie-jar cookie-jar))
 

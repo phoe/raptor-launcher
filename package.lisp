@@ -3,4 +3,6 @@
 (defpackage #:furcadia-launcher
   (:use #:cl
         #:drakma
-        #:json))
+        #:json
+        #:bordeaux-threads
+        #:lparallel))
