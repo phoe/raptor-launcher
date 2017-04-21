@@ -24,12 +24,16 @@
   "https://cms.furcadia.com/index.php?option=com_sphinx&task=user.login"
   "Address of the POST login page.")
 
+(defun http-post-login-parameters (email password login-secret)
+  "Formats the email, password and login secret in a way suitable for Drakma."
+  `(("username" . ,email)
+    ("password" . ,password)
+    (,login-secret . "1")))
+
 (defun http-post-login (email password login-secret cookie-jar)
   "Makes a login POST request, using the provided email, password, login secret
 and cookie jar. The cookie jar is modified to hold the login cookies."
-  (let* ((parameters `(("username" . ,email)
-                       ("password" . ,password)
-                       (,login-secret . "1")))
+  (let* ((parameters (http-post-login-parameters email password login-secret))
          (page (http-request *http-login-post*
                              :method :post
                              :parameters parameters
