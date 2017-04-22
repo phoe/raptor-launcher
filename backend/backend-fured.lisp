@@ -18,7 +18,7 @@
          (subseq (subseq fured-page (+ begin 13) (1- end)))
          (json (decode-json (make-string-input-stream subseq))))
     (assert (assoc :main json))
-    (note :info "Logged into FurEd for ~A."
+    (note :info "Extracted account information for ~A."
           (cdr (assoc :email json)))
     json))
 
@@ -29,11 +29,15 @@
 (defun http-load-character (name cookie-jar)
   "Loads the character JSON with the provided shortname, using the provided
 cookie jar."
-  (let* ((data (http-request *http-load-character*
-                             :method :post
-                             :parameters `(("name" . ,name))
-                             :cookie-jar cookie-jar))
-         (stream (make-string-input-stream data))
+  (http-request *http-load-character*
+                :method :post
+                :parameters `(("name" . ,name))
+                :cookie-jar cookie-jar))
+
+(defun decode-character (load-character-page)
+  "Decodes and returns the character JSON using the provided load character HTTP
+request."
+  (let* ((stream (make-string-input-stream load-character-page))
          (json (decode-json stream)))
     (assert (assoc :name json))
     (note :info "Loaded character ~A." (cdr (assoc :name json)))
@@ -44,7 +48,7 @@ cookie jar."
   (mapcar (lambda (x) (cdr (assoc :shortname x)))
           (cdr (assoc :characters account-json))))
 
-;; Commented out - I will provide a parallel version in worker-fured.lisp TODO
+;; Commented out - I will provide a parallel version in worker-fured.lisp
 ;;
 ;; (defun get-all-characters (account-json cookie-jar)
 ;;   "Sequentially loads all character JSONs associated to the provided account
@@ -96,12 +100,11 @@ FurEd secret. Returns the client login JSON."
                                :cookie-jar cookie-jar))
          (json (decode-json (make-string-input-stream result))))
     (assert (string= (cdr (assoc :state json)) "success"))
-    (note :info "Saved character ~A in the Furcadia database."
-          (cdr (assoc :name character-json)))
+    (note :info "Saved character ~A." (cdr (assoc :name character-json)))
     json))
 
 (defun extract-login-link (save-character-json)
   "Extracts the client login link from the provided client login JSON."
-  (let* ((result (cdr (assoc :login--url save-character-json))))
+  (let* ((result (cdr (assoc :login--url (decode-json save-character-json)))))
     (assert (stringp result))
     result))

@@ -19,3 +19,13 @@
   (with-lock-held (state-lock)
     (symbol-macrolet ((cookie-jars (gethash :cookie-jars state)))
       (setf (assoc-value cookie-jars email :test #'string=) new-value))))
+
+(defun state-cookies (state state-lock)
+  "Returns an alist of all emails and cookie jars in the provided state."
+  (with-lock-held (state-lock)
+    (gethash :cookie-jars state)))
+
+(defun (setf state-cookies) (new-value state state-lock)
+  "Sets the alist of all emails and cookie jars in the provided state."
+  (with-lock-held (state-lock)
+    (setf (gethash :cookie-jars state) new-value)))
