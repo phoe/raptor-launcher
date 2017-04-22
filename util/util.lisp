@@ -29,3 +29,8 @@ sleeping for SLEEP-INTERVAL seconds every N elements."
         collect (funcall function elt)
         when (zerop (mod (1+ i) n))
           do (sleep sleep-interval)))
+
+(defun fformat (stream format-string &rest format-args)
+  "Acts like FORMAT, except it calls FORCE-OUTPUT on STREAM afterwards."
+  (apply #'format stream format-string format-args)
+  (force-output stream))

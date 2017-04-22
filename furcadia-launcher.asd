@@ -8,7 +8,8 @@
                :ironclad
                :drakma
                :cl-json
-               :bordeaux-threads)
+               :bordeaux-threads
+               :lparallel)
   :serial t
   :components ((:file "package")
                (:file "util/util")

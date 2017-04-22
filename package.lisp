@@ -5,4 +5,5 @@
         #:alexandria
         #:drakma
         #:json
-        #:bordeaux-threads))
+        #:bordeaux-threads
+        #:lparallel.queue))

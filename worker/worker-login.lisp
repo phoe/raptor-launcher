@@ -9,16 +9,15 @@ password."
   (make-thread (curry #'do-login email password)
                :name (cat "Login worker for " email)))
 
-(defun make-thread-alist (config)
-  "Provided a config, returns an alist, whose CARs are emails and CDRs are
-worker threads executing the login for the particular email. This function
+(defun make-thread-alist (accounts)
+  "Provided a list of accounts, returns an alist, whose CARs are emails and CDRs
+are worker threads executing the login for the particular email. This function
 additionally sleeps for INTERVAL seconds every N requests in order to prevent
 DDoS protection on the server from triggering."
   (flet ((construct (account)
            (destructuring-bind (email password) account
              (cons (first account) (make-login-thread email password)))))
-    (let ((accounts (getf config :accounts)))
-      (mapcar-sleep-every #'construct accounts))))
+    (mapcar-sleep-every #'construct accounts)))
 
 (defun finalize-thread-alist (alist)
   "Provided an alist, in which CDRs are threads, blocks and waits for each
@@ -40,8 +39,7 @@ value of the thread's function."
 keys are the logins and values are the respective cookie jars. This list is
 suitable for a call to SETF of (GETHASH :COOKIE-JARS STATE) of any given state
 of the launcher."
-  (let* ((alist (make-thread-alist config))
+  (let* ((accounts (getf config :accounts))
+         (alist (make-thread-alist accounts))
          (values (finalize-thread-alist alist)))
-    (dolist (value values)
-      (assert (typep (cdr value) 'cookie-jar)))
     values))
