@@ -13,6 +13,7 @@
   :serial t
   :components ((:file "package")
                (:file "util/util")
+               (:file "logger/logger")
                (:file "worker/worker-login")
                (:file "backend/backend-login")
                (:file "backend/backend-fured")

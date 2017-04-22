@@ -18,6 +18,8 @@
          (subseq (subseq fured-page (+ begin 13) (1- end)))
          (json (decode-json (make-string-input-stream subseq))))
     (assert (assoc :main json))
+    (note :info "Logged into FurEd for ~A."
+          (cdr (assoc :email json)))
     json))
 
 (defvar *http-load-character*
@@ -34,6 +36,7 @@ cookie jar."
          (stream (make-string-input-stream data))
          (json (decode-json stream)))
     (assert (assoc :name json))
+    (note :info "Loaded character ~A." (cdr (assoc :name json)))
     json))
 
 (defun list-characters (account-json)
@@ -41,11 +44,16 @@ cookie jar."
   (mapcar (lambda (x) (cdr (assoc :shortname x)))
           (cdr (assoc :characters account-json))))
 
-(defun get-all-characters (account-json cookie-jar)
-  "Loads all character JSONs associated to the provided account JSON,
-using the provided cookie jar."
-  (mapcar (lambda (x) (http-load-character x cookie-jar))
-          (list-characters account-json)))
+;; Commented out - I will provide a parallel version in worker-fured.lisp TODO
+;;
+;; (defun get-all-characters (account-json cookie-jar)
+;;   "Sequentially loads all character JSONs associated to the provided account
+;; JSON, using the provided cookie jar."
+;;   (let ((result (mapcar (lambda (x) (http-load-character x cookie-jar))
+;;                         (list-characters account-json))))
+;;     (note :info "Retrieved all characters from account ~A."
+;;           (cdr (assoc :email account-json)))
+;;     result))
 
 (defun extract-fured-page-secret (account-json)
   "Extracts the FurEd secret from the account JSON."
@@ -61,7 +69,8 @@ using the provided cookie jar."
 (defun construct-save-keyword (character-json keyword)
   "Constructs a single key-value pair of the JSON to be saved for the provided
 character JSON and keyword."
-  (let ((data (or (cdr (assoc keyword character-json :test #'string-equal)) "")))
+  (let ((data (or (cdr (assoc keyword character-json :test #'string-equal))
+                  "")))
     (cons keyword (princ-to-string data))))
 
 (defun construct-save-request (character-json fured-secret)
@@ -80,15 +89,19 @@ FurEd secret."
 (defun http-save-character (character-json cookie-jar fured-secret)
   "Saves the provided character JSON, using the provided cookie jar and
 FurEd secret. Returns the client login JSON."
-  (let ((headers (construct-save-request character-json fured-secret)))
-    (http-request *http-save-character*
-                  :method :post
-                  :parameters headers
-                  :cookie-jar cookie-jar)))
+  (let* ((headers (construct-save-request character-json fured-secret))
+         (result (http-request *http-save-character*
+                               :method :post
+                               :parameters headers
+                               :cookie-jar cookie-jar))
+         (json (decode-json (make-string-input-stream result))))
+    (assert (string= (cdr (assoc :state json)) "success"))
+    (note :info "Saved character ~A in the Furcadia database."
+          (cdr (assoc :name character-json)))
+    json))
 
 (defun extract-login-link (save-character-json)
   "Extracts the client login link from the provided client login JSON."
-  (let* ((string (make-string-input-stream save-character-json))
-         (result (cdr (assoc :login--url (decode-json string)))))
+  (let* ((result (cdr (assoc :login--url save-character-json))))
     (assert (stringp result))
     result))

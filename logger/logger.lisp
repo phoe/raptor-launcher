@@ -1,4 +1,5 @@
 ;;;; logger.lisp
+;;;; Adapted from phoe/gateway
 
 (in-package :furcadia-launcher)
 
@@ -7,24 +8,29 @@
    (%name :accessor name)
    (%stream :accessor stream-of)
    (%queue :accessor queue
-           :initform (make-queue))))
+           :initform (make-queue)))
+  (:documentation "The logger class, borrowed from Gateway and adapted."))
 
 (defmethod initialize-instance :after ((logger logger) &key)
-  (let ((name "Launcher - Logger")
+  (let ((name "Furcadia Launcher logger")
         (setter (lambda () (setf (stream-of logger) *standard-output*))))
     (join-thread (make-thread setter))
     (setf (name logger) name
           (thread logger)
-          (make-thread (curry #'%logger-loop logger) :name name))))
+          (make-thread (curry #'logger-loop logger) :name name))))
 
-(defun %logger-loop (logger)
+(defun logger-loop (logger)
   (let ((*print-right-margin* most-positive-fixnum))
-    (apply #'fformat (stream-of logger) (pop-queue (queue logger)))
-    (fresh-line)))
+    (loop
+      (apply #'fformat (stream-of logger) (cdr (pop-queue (queue logger))))
+      (fresh-line))))
 
-(defun %note (args)
+(defun note (type &rest args)
+  (%note type args))
+
+(defun %note (type args)
   (when (and (boundp '*logger*) *logger* (alivep *logger*))
-    (push-queue args (queue *logger*))))
+    (push-queue (cons type args) (queue *logger*))))
 
 (defmethod alivep ((logger logger))
   (thread-alive-p (thread logger)))
@@ -34,4 +40,5 @@
     (destroy-thread (thread logger)))
   (values))
 
-(setf *logger* (make-instance 'logger))
+(defvar *logger* (make-instance 'logger)
+  "The current logger.")

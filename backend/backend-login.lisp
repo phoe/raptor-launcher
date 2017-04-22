@@ -1,4 +1,4 @@
-;;;; backend-new.lisp
+;;;; backend-login.lisp
 
 (in-package :furcadia-launcher)
 
@@ -39,11 +39,13 @@ and cookie jar. The cookie jar is modified to hold the login cookies."
                              :parameters parameters
                              :cookie-jar cookie-jar)))
     (assert (search "Logout" page))
+    (note :info "Successfully logged in as ~A." email)
     page))
 
 (defun do-login (email password)
   "Performs a full login with the provided email and password, returning the
 cookie jar with associated login cookies."
+  (note :info "Attempting to log as ~A." email)
   (let* ((cookie-jar (make-instance 'cookie-jar))
          (login-page (http-get-login-page cookie-jar))
          (login-secret (extract-login-page-secret login-page)))
