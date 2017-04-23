@@ -10,12 +10,15 @@
     :accounts (("foo@bar.com" "FooBar1234")
                ("frob@mem.org" "Frobnicate!@#4"))))
 
-(defun load-config-file ()
+(defun load-config-file (&optional replace-config-var)
   (ensure-directories-exist *config-path*)
   (with-open-file (s *config-path*
                      :direction :input
                      :if-does-not-exist :create)
-    (read s nil nil)))
+    (let ((file (read s nil nil)))
+      (when replace-config-var
+        (setf *config* file))
+      file)))
 
 (defun save-config-file (&optional (config *config*))
   (ensure-directories-exist *config-path*)

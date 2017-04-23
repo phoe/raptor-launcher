@@ -29,3 +29,28 @@
   "Sets the alist of all emails and cookie jars in the provided state."
   (with-lock-held (state-lock)
     (setf (gethash :cookie-jars state) new-value)))
+
+(defun state-account (state state-lock email)
+  "Returns the account for a given email in the provided state."
+  (with-lock-held (state-lock)
+    (let ((accounts (gethash :accounts state)))
+      (find email accounts :test #'string=
+                           :key (rcurry #'assoc-value :email)))))
+
+(defun (setf state-account) (new-value state state-lock email)
+  "Sets the account for a given email in the provided state."
+  (with-lock-held (state-lock)
+    (let ((accounts (remove email (gethash :accounts state)
+                            :test #'string=
+                            :key (rcurry #'assoc-value :email))))
+      (setf (gethash :accounts state) (cons new-value accounts)))))
+
+(defun state-accounts (state state-lock)
+  "Returns all accounts in the provided state."
+  (with-lock-held (state-lock)
+    (gethash :accounts state)))
+
+(defun (setf state-accounts) (new-value state state-lock)
+  "Sets all accounts in the provided state."
+  (with-lock-held (state-lock)
+    (setf (gethash :accounts state) new-value)))

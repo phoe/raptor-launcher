@@ -21,7 +21,7 @@ a-f, false otherwise."
           unless (member char chars) return nil
             finally (return t))))
 
-(defun mapcar-sleep-every (function list &optional (n 5) (sleep-interval 1))
+(defun sleepcar (function list &optional (n 5) (sleep-interval 1))
   "Collects the element of funcalling FUNCTION on successive elements of LIST,
 sleeping for SLEEP-INTERVAL seconds every N elements."
   (loop for elt in list

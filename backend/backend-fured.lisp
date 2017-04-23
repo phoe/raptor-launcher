@@ -26,13 +26,15 @@
   "https://cms.furcadia.com/fured/loadCharacter.php"
   "Address of the loadCharacter FurEd page.")
 
-(defun http-load-character (name cookie-jar)
+(defun http-load-character (sname cookie-jar)
   "Loads the character JSON with the provided shortname, using the provided
 cookie jar."
-  (http-request *http-load-character*
-                :method :post
-                :parameters `(("name" . ,name))
-                :cookie-jar cookie-jar))
+  (let ((page (http-request *http-load-character*
+                            :method :post
+                            :parameters `(("name" . ,sname))
+                            :cookie-jar cookie-jar)))
+    (note :info "Loaded character ~A." sname)
+    page))
 
 (defun decode-character (load-character-page)
   "Decodes and returns the character JSON using the provided load character HTTP
@@ -40,7 +42,7 @@ request."
   (let* ((stream (make-string-input-stream load-character-page))
          (json (decode-json stream)))
     (assert (assoc :name json))
-    (note :info "Loaded character ~A." (cdr (assoc :name json)))
+    (note :info "Parsed character ~A." (cdr (assoc :snam json)))
     json))
 
 (defun list-characters (account-json)
@@ -105,6 +107,6 @@ FurEd secret. Returns the client login JSON."
 
 (defun extract-login-link (save-character-json)
   "Extracts the client login link from the provided client login JSON."
-  (let* ((result (cdr (assoc :login--url (decode-json save-character-json)))))
+  (let* ((result (cdr (assoc :login--url save-character-json))))
     (assert (stringp result))
     result))
