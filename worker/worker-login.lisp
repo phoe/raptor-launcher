@@ -104,3 +104,11 @@ login link for the character with the respective shortname."
          (cookie-jar (state-cookie state state-lock email))
          (result (http-save-character character cookie-jar fured-secret)))
     (extract-login-link result)))
+
+(defun furcadia (sname &optional
+                         (config *config*) (state *state*)
+                         (state-lock *state-lock*))
+  "Launches Furcadia for the character with the given shortname."
+  (let ((login-link (character-login-link sname config state state-lock))
+        (furcadia-path (getf *config* :furcadia-path)))
+    (launch-furcadia furcadia-path login-link)))

@@ -27,4 +27,5 @@
                      :if-does-not-exist :create
                      :if-exists :overwrite)
     (print config s)
-    (terpri s)))
+    (terpri s)
+    t))
