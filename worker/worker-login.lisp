@@ -42,18 +42,24 @@ value of the thread's function."
            (setf (cdr cons) (join-thread (cdr cons)))))
     (mapc #'finalize-cdr alist)))
 
-(defun login-all (config)
+(defun login-all (&optional (config *config*))
   ;; TODO add key unlogged-only
   "Logs in all accounts in the given config in parallel and returns an alist, in
 which the keys are the logins and values are the respective cookie jars.
-This list is suitable for a call to SETF of (GETHASH :COOKIE-JARS STATE) of any
-given state of the launcher."
+This list is suitable for a call to (SETF STATE-COOKIES) of of any given state
+of the launcher."
   (let* ((accounts (getf config :accounts))
          (alist (sleepcar (curry #'apply #'make-login-cons) accounts))
          (values (finalize-thread-alist alist)))
     values))
 
-(defun fetch-all-accounts (state state-lock)
+(defmacro login-allf (&optional (config '*config*) (state '*state*)
+                        (state-lock '*state-lock*))
+  "Modify macro for LOGIN-ALL that automatically calls SETF STATE-COOKIES on the
+provided STATE."
+  `(setf (state-cookies ,state ,state-lock) (login-all ,config)))
+
+(defun fetch-all-accounts (&optional (state *state*) (state-lock *state-lock*))
   "Provided a state and a state lock, returns a list of decoded account JSONs."
   (let* ((cookie-alist (state-cookies state state-lock))
          (fured-alist (sleepcar #'make-fured-cons cookie-alist))
@@ -62,6 +68,13 @@ given state of the launcher."
     (dolist (account accounts)
       (assert (assoc :email account)))
     accounts))
+
+(defmacro fetch-all-accountsf (&optional (state '*state*)
+                                 (state-lock '*state-lock*))
+  "Modify macro for FETCH-ALL-ACCOUNTS that automatically sets SETF
+STATE-ACCOUNTS on the provided STATE."
+  `(setf (state-accounts ,state ,state-lock)
+         (fetch-all-accounts ,state ,state-lock)))
 
 (defun make-email-shortname-alist (account)
   "Provided an account, returns an alist whose CARs are the email bound to that
@@ -78,17 +91,27 @@ cookie jars, returns an alist of shortnames and cookie jars."
                  (assoc-value email-cookie-alist (car x) :test #'string=))))
     (mapcar #'construct email-shortname-alist)))
 
-(defun fetch-all-characters (accounts state state-lock)
-  "Provided a list of decoded account JSONs, a state and a state-lock, fetches
-all characters on the provided accounts in parallel and returns an alist, in
-which CARs are the character shortnames and CDRs are the decoded character
-JSONs."
-  (let* ((email-shortnames (mapcan #'make-email-shortname-alist accounts))
+(defun fetch-all-characters (&optional (state *state*)
+                               (state-lock *state-lock*))
+  "Provided a list of decoded account JSONs, a state and a state-lock, accesses
+the accounts stored in the state, fetches all characters on the provided
+accounts in parallel and returns an alist, in which CARs are the character
+shortnames and CDRs are the decoded character JSONs."
+  (let* ((accounts (state-accounts state state-lock))
+         (email-shortnames (mapcan #'make-email-shortname-alist accounts))
          (email-cookies (state-cookies state state-lock))
          (shortname-cookies (shortnames-cookies email-shortnames email-cookies))
          (alist (sleepcar #'make-load-character-cons shortname-cookies))
-         (values (finalize-thread-alist alist)))
-    values))
+         (character-list (finalize-thread-alist alist)))
+    character-list))
+
+(defmacro fetch-all-charactersf (&optional (config '*config*)(state '*state*)
+                                   (state-lock '*state-lock*))
+  "Modify macro for FETCH-ALL-CHARACTERS which automatically calls
+SETF (GETF CONFIG :CHARACTERS) on the provided config."
+  ;; TODO write SETF CONFIG-CHARACTERS
+  `(setf (getf ,config :characters)
+         (fetch-all-characters ,state ,state-lock)))
 
 (defun character-login-link (sname config state state-lock)
   "Provided a shortname, a config, a state and a state lock, returns a furc://
