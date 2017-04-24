@@ -105,7 +105,7 @@ shortnames and CDRs are the decoded character JSONs."
          (character-list (finalize-thread-alist alist)))
     character-list))
 
-(defmacro fetch-all-charactersf (&optional (config '*config*)(state '*state*)
+(defmacro fetch-all-charactersf (&optional (config '*config*) (state '*state*)
                                    (state-lock '*state-lock*))
   "Modify macro for FETCH-ALL-CHARACTERS which automatically calls
 SETF (GETF CONFIG :CHARACTERS) on the provided config."
@@ -135,3 +135,28 @@ login link for the character with the respective shortname."
   (let ((login-link (character-login-link sname config state state-lock))
         (furcadia-path (getf *config* :furcadia-path)))
     (launch-furcadia furcadia-path login-link)))
+
+(defun initialize ()
+  "A high-level function for initializing the launcher."
+  (note :info "Loading configuration file.")
+  (setf *config* (load-config-file))
+  (cond ((null (getf *config* :accounts))
+         (note :error "Account credentials are not set in config."))
+        ((null (getf *config* :furcadia-path))
+         (note :error "Furcadia path is not set in config."))
+        (t
+         (note :info "All clear - beginning initialization.")
+         (login-allf)
+         (note :info "All ~D accounts logged in successfully."
+               (length (state-cookies *state* *state-lock*)))
+         (fetch-all-accountsf)
+         (note :info "Data for all ~D accounts fetched successfully."
+               (length (state-cookies *state* *state-lock*)))
+         (fetch-all-charactersf)
+         (note :info "All ~D characters fetched successfully."
+               (length (getf *config* :characters)))
+         (save-config-file)
+         (note :info "Config file saved.")
+         (note :info "Initialization complete.
+Type (furcadia \"shortname\") in the REPL to launch Furcadia.")
+         t)))

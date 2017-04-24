@@ -30,7 +30,8 @@
 
 (defun %note (type args)
   (when (and (boundp '*logger*) *logger* (alivep *logger*))
-    (push-queue (cons type args) (queue *logger*))))
+    (push-queue (cons type args) (queue *logger*))
+    nil))
 
 (defmethod alivep ((logger logger))
   (thread-alive-p (thread logger)))
