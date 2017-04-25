@@ -22,8 +22,10 @@
 (defun logger-loop (logger)
   (let ((*print-right-margin* most-positive-fixnum))
     (loop
-      (apply #'fformat (stream-of logger) (cdr (pop-queue (queue logger))))
-      (fresh-line))))
+      (destructuring-bind (type . args) (pop-queue (queue logger))
+        (format (stream-of logger) "[~5A] " type)
+        (apply #'fformat (stream-of logger) args)
+        (fresh-line)))))
 
 (defun note (type &rest args)
   (%note type args))

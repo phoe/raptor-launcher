@@ -9,7 +9,10 @@
                :drakma
                :cl-json
                :bordeaux-threads
-               :lparallel)
+               :lparallel
+               :qtools
+               :qtcore
+               :qtgui)
   :serial t
   :components ((:file "package")
                (:file "util/util")
@@ -19,6 +22,7 @@
                (:file "backend/backend-login")
                (:file "backend/backend-fured")
                (:file "backend/backend-furcadia")
+               (:file "worker/worker-general")
                (:file "worker/worker-login")
                (:file "worker/worker-fured")
                (:file "worker/worker-furcadia")

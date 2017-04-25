@@ -38,9 +38,12 @@ and cookie jar. The cookie jar is modified to hold the login cookies."
                              :method :post
                              :parameters parameters
                              :cookie-jar cookie-jar)))
-    (assert (search "Logout" page))
-    (note :info "Successfully logged in as ~A." email)
-    page))
+    (cond ((search "Logout" page)
+           (note :info "Successfully logged in as ~A." email)
+           page)
+          (t
+           (note :error "Authentication failure for ~A." email)
+           nil))))
 
 (defun do-login (email password)
   "Performs a full login with the provided email and password, returning the
@@ -49,5 +52,5 @@ cookie jar with associated login cookies."
   (let* ((cookie-jar (make-instance 'cookie-jar))
          (login-page (http-get-login-page cookie-jar))
          (login-secret (extract-login-page-secret login-page)))
-    (http-post-login email password login-secret cookie-jar)
-    cookie-jar))
+    (when (http-post-login email password login-secret cookie-jar)
+      cookie-jar)))

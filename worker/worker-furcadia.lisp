@@ -6,9 +6,11 @@
                          (config *config*) (state *state*)
                          (state-lock *state-lock*))
   "Launches Furcadia for the character with the given shortname."
-  (let ((login-link (character-login-link sname config state state-lock))
-        (furcadia-path (getf *config* :furcadia-path)))
-    (launch-furcadia furcadia-path login-link)))
+  (let* ((login-link (character-login-link sname config state state-lock))
+         (furcadia-path (getf *config* :furcadia-path))
+         (process (launch-furcadia furcadia-path login-link)))
+    (note :info "Furcadia launched for character ~A." sname)
+    process))
 
 (defun initialize ()
   "A high-level function for initializing the launcher."

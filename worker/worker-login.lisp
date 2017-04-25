@@ -28,7 +28,6 @@ character JSON for the provided shortname and cookie jar."
                              :name (cat "Load-char worker for " sname)))))
 
 (defun login-all (&optional (config *config*))
-  ;; TODO add key unlogged-only
   "Logs in all accounts in the given config in parallel and returns an alist, in
 which the keys are the logins and values are the respective cookie jars.
 This list is suitable for a call to (SETF STATE-COOKIES) of of any given state
