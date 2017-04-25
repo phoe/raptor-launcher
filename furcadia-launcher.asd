@@ -3,7 +3,7 @@
 (asdf:defsystem #:furcadia-launcher
   :description "A launcher for Furcadia"
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
-  :license "BSD 2-clause"
+  :license "GPLv3"
   :depends-on (:alexandria
                :ironclad
                :drakma
@@ -14,10 +14,12 @@
   :components ((:file "package")
                (:file "util/util")
                (:file "logger/logger")
-               (:file "worker/worker-login")
+               (:file "db/config")
+               (:file "db/state")
                (:file "backend/backend-login")
                (:file "backend/backend-fured")
                (:file "backend/backend-furcadia")
-               (:file "db/config")
-               (:file "db/state")
+               (:file "worker/worker-login")
+               (:file "worker/worker-fured")
+               (:file "worker/worker-furcadia")
                ))

@@ -102,7 +102,7 @@ FurEd secret. Returns the client login JSON."
                                :cookie-jar cookie-jar))
          (json (decode-json (make-string-input-stream result))))
     (assert (string= (cdr (assoc :state json)) "success"))
-    (note :info "Saved character ~A." (cdr (assoc :name character-json)))
+    (note :info "Saved character ~A." (cdr (assoc :snam character-json)))
     json))
 
 (defun extract-login-link (save-character-json)
