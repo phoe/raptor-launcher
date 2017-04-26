@@ -82,7 +82,7 @@
           (q+:fixed-size window) (values 200 400))))
 
 (defun build-main ()
-  (furcadia-laucher::initialize)
+  (furcadia-launcher::initialize)
   (main))
 
 ;; (:accounts (("foo@bar.baz" "thisispassword")
