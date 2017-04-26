@@ -4,8 +4,9 @@
 (in-readtable :qtools)
 
 (defun logger-build-hook ()
-  (kill furcadia-launcher::*logger*)
-  (loop until (not (alivep furcadia-launcher::*logger*)) do (sleep 1)))
+  (furcadia-launcher::kill furcadia-launcher::*logger*)
+  (loop until (not (furcadia-launcher::alivep furcadia-launcher::*logger*))
+        do (sleep 1)))
 
 (defun logger-boot-hook ()
   (setf furcadia-launcher::*logger* (make-instance 'logger)))
