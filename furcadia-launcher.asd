@@ -28,4 +28,9 @@
                (:file "worker/worker-furcadia")
                (:file "algorithm/algorithm")
                (:file "gui/gui")
-               ))
+               )
+  :defsystem-depends-on (:qtools)
+  :build-operation "qt-program-op"
+  :build-pathname "launcher"
+  :entry-point "furcadia-launcher-gui:build-main"
+  )

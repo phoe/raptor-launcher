@@ -11,4 +11,4 @@
 (defpackage #:furcadia-launcher-gui
   (:use #:cl+qt
         #:furcadia-launcher)
-  (:export #:main))
+  (:export #:build-main))
