@@ -26,4 +26,5 @@
                (:file "worker/worker-login")
                (:file "worker/worker-fured")
                (:file "worker/worker-furcadia")
+               (:file "gui/gui")
                ))
