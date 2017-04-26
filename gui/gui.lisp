@@ -3,6 +3,17 @@
 (in-package :furcadia-launcher-gui)
 (in-readtable :qtools)
 
+(defun logger-build-hook ()
+  (kill *logger*)
+  (loop until (not (alivep *logger*)) do (sleep 1)))
+
+(defun logger-boot-hook ()
+  (setf *logger* (make-instance 'logger)))
+
+(pushnew 'logger-build-hook qtools:*build-hooks*)
+
+(pushnew 'logger-boot-hook qtools:*boot-hooks*)
+
 (defvar *current-selection* nil)
 
 (define-widget main-window (QMainWindow) ())
@@ -70,6 +81,9 @@
     (setf (q+:window-title window) "Launcher"
           (q+:fixed-size window) (values 200 400))))
 
+(defun build-main ()
+  (furcadia-laucher::initialize)
+  (main))
 
 ;; (:accounts (("foo@bar.baz" "thisispassword")
 ;;             ("foo@bar.baz" "thisispassword")

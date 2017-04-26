@@ -43,5 +43,5 @@
     (destroy-thread (thread logger)))
   (values))
 
-(defvar *logger* (make-instance 'logger)
+(defvar *logger* nil
   "The current logger.")
