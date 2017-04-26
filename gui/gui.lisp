@@ -3,6 +3,8 @@
 (in-package :furcadia-launcher-gui)
 (in-readtable :qtools)
 
+;;;;;;; build stuff
+
 (defun logger-build-hook ()
   (furcadia-launcher::kill furcadia-launcher::*logger*)
   (loop until (not (furcadia-launcher::alivep furcadia-launcher::*logger*))
@@ -15,6 +17,13 @@
 (pushnew 'logger-build-hook qtools:*build-hooks*)
 
 (pushnew 'logger-boot-hook qtools:*boot-hooks*)
+
+(define-user-libs ( #p"~/my-libs/" #p"/some/custom/path")
+  (cffi-lib-name)
+  (#p\"some_lib.so\"))
+
+
+;;;; gui
 
 (defvar *current-selection* nil)
 
@@ -87,8 +96,17 @@
   (furcadia-launcher::initialize)
   (main))
 
-;; (:accounts (("foo@bar.baz" "thisispassword")
+;; (:ACCOUNTS (("foo@bar.baz" "thisispassword")
 ;;             ("foo@bar.baz" "thisispassword")
 ;;             ("foo@bar.baz" "thisispassword")
 ;;             ("foo@bar.baz" "thisispassword"))
 ;;  :FURCADIA-PATH "C:\\Program Files (x86)\\Furcadia\\")
+
+;; '(:DEBUG #.(progn
+;;              (setf *debugger-hook*
+;;                    (lambda (c x)
+;;                      (declare (ignore c x))
+;;                      (sb-debug:print-backtrace :count most-positive-fixnum)))
+;;              t)
+;;   :ACCOUNTS (("kfjhsdf@qkefjhsdfsd.com" "sdfdfs"))
+;;   :FURCADIA-PATH "C:\\Program Files (x86)\\Furcadia\\")
