@@ -9,7 +9,8 @@
         do (sleep 1)))
 
 (defun logger-boot-hook ()
-  (setf furcadia-launcher::*logger* (make-instance 'logger)))
+  (setf furcadia-launcher::*logger*
+        (make-instance 'furcadia-launcher::logger)))
 
 (pushnew 'logger-build-hook qtools:*build-hooks*)
 
