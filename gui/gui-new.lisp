@@ -11,10 +11,7 @@
   (setf (q+:minimum-size image) (values 150 420)
         (q+:maximum-size image) (values 150 420)))
 
-(define-subwidget (launcher character-list) (q+:make-qtablewidget)
-  ;; (setf (q+:minimum-width character-list) 320
-  ;;       (q+:maximum-width character-list) 320)
-  )
+(define-subwidget (launcher character-list) (q+:make-qtablewidget))
 
 (define-subwidget (launcher description-preview) (q+:make-qtextedit))
 
