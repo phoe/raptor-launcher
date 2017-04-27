@@ -10,5 +10,6 @@
 
 (defpackage #:furcadia-launcher-gui
   (:use #:cl+qt
+        #:alexandria
         #:furcadia-launcher)
   (:export #:build-main))

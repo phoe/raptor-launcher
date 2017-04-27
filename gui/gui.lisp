@@ -18,11 +18,6 @@
 
 (pushnew 'logger-boot-hook qtools:*boot-hooks*)
 
-(define-user-libs ( #p"~/my-libs/" #p"/some/custom/path")
-  (cffi-lib-name)
-  (#p\"some_lib.so\"))
-
-
 ;;;; gui
 
 (defvar *current-selection* nil)

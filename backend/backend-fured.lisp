@@ -33,7 +33,6 @@ cookie jar."
                             :method :post
                             :parameters `(("name" . ,sname))
                             :cookie-jar cookie-jar)))
-    (note :info "Loaded character ~A." sname)
     page))
 
 (defun decode-character (load-character-page)
@@ -42,7 +41,7 @@ request."
   (let* ((stream (make-string-input-stream load-character-page))
          (json (decode-json stream)))
     (assert (assoc :name json))
-    (note :info "Parsed character ~A." (cdr (assoc :snam json)))
+    (note :info "Loaded and parsed character ~A." (cdr (assoc :snam json)))
     json))
 
 (defun list-characters (account-json)
