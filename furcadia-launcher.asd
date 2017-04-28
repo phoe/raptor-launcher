@@ -11,6 +11,7 @@
                :bordeaux-threads
                :lparallel
                :qtools
+               :qtools-evaluator
                :qtcore
                :qtgui)
   :serial t
@@ -28,6 +29,7 @@
                (:file "worker/worker-furcadia")
                (:file "algorithm/algorithm")
                (:file "gui/gui")
+               (:file "gui/gui-new")
                )
   :defsystem-depends-on (:qtools)
   :build-operation "qt-program-op"
