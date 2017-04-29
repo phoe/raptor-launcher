@@ -6,6 +6,8 @@
         #:drakma
         #:json
         #:bordeaux-threads
+        #:fare-csv
+        #:split-sequence
         #:lparallel.queue))
 
 (defpackage #:furcadia-launcher-gui

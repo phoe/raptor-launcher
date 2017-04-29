@@ -13,16 +13,22 @@
                :qtools
                :qtools-evaluator
                :qtcore
+               :fare-csv
+               :split-sequence
+               :esrap
+               :parser.common-rules
                :qtgui)
   :serial t
   :components ((:file "package")
                (:file "util/util")
+               (:file "util/date-parser")
                (:file "logger/logger")
                (:file "db/config")
                (:file "db/state")
                (:file "backend/backend-login")
                (:file "backend/backend-fured")
                (:file "backend/backend-furcadia")
+               (:file "news/news")
                (:file "worker/worker-general")
                (:file "worker/worker-login")
                (:file "worker/worker-fured")
