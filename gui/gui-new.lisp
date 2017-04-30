@@ -43,135 +43,117 @@
         (q+:size-policy image) (values (q+:qsizepolicy.expanding)
                                        (q+:qsizepolicy.expanding))))
 
-;;;; CENTERS
+;;;; CENTER
 
-(defun generate-news-text (heading datestring news-type contents read-more-link)
-  (format nil "<h4>~A</h4>~%<h5>~A - ~A</h5>
-<p>~A</p>~%<a href=\"~A\">Read more.</a>"
-          heading datestring news-type contents read-more-link))
-(defun make-news-widget (news-line)
-  (destructuring-bind (date-fixnum filename datestring news-type
-                       heading contents read-more-link image-link) news-line
-    (declare (ignore date-fixnum))
-    (furcadia-launcher::download-news-image image-link)
-    (let* ((widget (q+:make-qwidget))
-           (layout (q+:make-qhboxlayout))
-           (pathname (furcadia-launcher::news-image-filename-pathname filename))
-           (pixmap (q+:make-qpixmap (princ-to-string (truename pathname))))
-           (image (q+:make-qlabel))
-           (text (q+:make-qlabel)))
-      (setf (q+:layout widget) layout
-            (q+:pixmap image) pixmap
-            (q+:minimum-size image) (values 84 100)
-            (q+:word-wrap text) t
-            (q+:text-interaction-flags text)
-            (q+:qt.text-browser-interaction)
-            (q+:open-external-links text) t
-            (q+:text text) (generate-news-text heading datestring news-type
-                                               contents read-more-link))
-      (q+:add-widget layout image)
-      (q+:add-widget layout text)
-      widget)))
-(define-subwidget (launcher news-contents) (q+:make-qvboxlayout)
-  (setf (q+:contents-margins news-contents) (values 0 0 0 0))
-  (let* (;; TODO make GET-NEWS asynchronous instead of blocking
-         (news (furcadia-launcher::get-news))
-         (widgets (mapcar #'make-news-widget news)))
-    (mapc (curry #'q+:add-widget news-contents) widgets)))
-(define-subwidget (launcher news-contents-widget) (q+:make-qwidget)
-  (setf (q+:layout news-contents-widget) news-contents))
-(define-subwidget (launcher news-scroll) (q+:make-qscrollarea)
-  (setf (q+:widget news-scroll) news-contents-widget
-        (q+:widget-resizable news-scroll) t
-        (q+:frame-shape news-scroll) (q+:qframe.no-frame)))
-(define-subwidget (launcher news-layout) (q+:make-qhboxlayout)
-  (setf (q+:contents-margins news-layout) (values 0 0 0 0))
-  (q+:add-widget news-layout news-scroll))
-(define-subwidget (launcher news-box) (q+:make-qwidget)
-  (setf (q+:layout news-box) news-layout))
+(progn ;;news-box
+  (defun generate-news-text (heading datestring news-type contents read-more-link)
+    (concatenate 'string
+                 (format nil "<h4>~A</h4>~%<h5>~A - ~A</h5><p>~A</p>"
+                         heading datestring news-type contents)
+                 (if (string= "" read-more-link) ""
+                     (format nil "<a href=\"~A\">Read more.</a>"
+                             read-more-link))))
+  (defun make-news-widget (news-line)
+    (destructuring-bind (date-fixnum filename datestring news-type
+                         heading contents read-more-link image-link) news-line
+      (declare (ignore date-fixnum))
+      (furcadia-launcher::download-news-image image-link)
+      (let* ((widget (q+:make-qwidget))
+             (layout (q+:make-qhboxlayout))
+             (pathname (furcadia-launcher::news-image-filename-pathname filename))
+             (pixmap (q+:make-qpixmap (princ-to-string (truename pathname))))
+             (image (q+:make-qlabel))
+             (text (q+:make-qlabel)))
+        (setf (q+:layout widget) layout
+              (q+:pixmap image) pixmap
+              (q+:minimum-size image) (values 84 100)
+              (q+:word-wrap text) t
+              (q+:text-interaction-flags text)
+              (q+:qt.text-browser-interaction)
+              (q+:open-external-links text) t
+              (q+:text text) (generate-news-text heading datestring news-type
+                                                 contents read-more-link))
+        (q+:add-widget layout image)
+        (q+:add-widget layout text)
+        widget)))
+  (define-subwidget (launcher news-contents) (q+:make-qvboxlayout)
+    (setf (q+:contents-margins news-contents) (values 0 0 0 0))
+    (let* (;; TODO make GET-NEWS asynchronous instead of blocking
+           (news (furcadia-launcher::get-news))
+           (widgets (mapcar #'make-news-widget news)))
+      (mapc (curry #'q+:add-widget news-contents) widgets)))
+  (define-subwidget (launcher news-contents-widget) (q+:make-qwidget)
+    (setf (q+:layout news-contents-widget) news-contents))
+  (define-subwidget (launcher news-scroll) (q+:make-qscrollarea)
+    (setf (q+:widget news-scroll) news-contents-widget
+          (q+:widget-resizable news-scroll) t
+          (q+:frame-shape news-scroll) (q+:qframe.no-frame)))
+  (define-subwidget (launcher news-layout) (q+:make-qhboxlayout)
+    (setf (q+:contents-margins news-layout) (values 0 0 0 0))
+    (q+:add-widget news-layout news-scroll))
+  (define-subwidget (launcher news-box) (q+:make-qwidget)
+    (setf (q+:layout news-box) news-layout)))
 
-(define-subwidget (launcher config-furcadia-path) (q+:make-qlineedit))
-(define-subwidget (launcher config-add-account)
-    (q+:make-qpushbutton "Add"))
-(define-subwidget (launcher config-delete-account)
-    (q+:make-qpushbutton "Delete"))
-(define-subwidget (launcher config-accounts-layout) (q+:make-qvboxlayout))
-(define-subwidget (launcher config-accounts-widget) (q+:make-qwidget)
-  (setf (q+:layout config-accounts-widget) config-accounts-layout))
-(define-subwidget (launcher config-save) (q+:make-qpushbutton "Save")
-  (setf (q+:maximum-width config-save) 90
-        (q+:minimum-width config-save) 90))
-(define-subwidget (launcher config-contents) (q+:make-qgridlayout)
-  (setf (q+:contents-margins config-contents) (values 0 0 0 0)
-        (q+:alignment config-contents) (q+:qt.align-top))
-  (q+:add-widget config-contents (q+:make-qlabel "Path to Furcadia") 0 0 1 2)
-  (q+:add-widget config-contents config-furcadia-path 1 0 1 2)
-  (q+:add-widget config-contents (q+:make-qlabel "Accounts") 2 0 1 2)
-  (q+:add-widget config-contents config-add-account 3 0)
-  (q+:add-widget config-contents config-delete-account 3 1)
-  (q+:add-widget config-contents config-accounts-widget 4 0 1 2))
-(define-subwidget (launcher config-contents-widget) (q+:make-qwidget)
-  (setf (q+:layout config-contents-widget) config-contents))
-(define-subwidget (launcher config-scroll) (q+:make-qscrollarea)
-  (setf (q+:widget config-scroll) config-contents-widget
-        (q+:widget-resizable config-scroll) t
-        (q+:frame-shape config-scroll) (q+:qframe.no-frame)))
-(define-subwidget (launcher config-layout) (q+:make-qgridlayout)
-  (setf (q+:contents-margins config-layout) (values 0 0 0 0))
-  (q+:add-widget config-layout config-save 0 0)
-  (q+:add-widget config-layout config-scroll 1 0 1 2))
-(define-subwidget (launcher config-box) (q+:make-qwidget)
-  (setf (q+:layout config-box) config-layout))
-
-(defun new-account-number (widget)
-  (let ((accounts (find-children widget "QLineEdit")))
-    (1+ (/ (length accounts) 2))))
-
-(defun add-credential-input (widget)
-  (let* ((layout (q+:layout widget))
-         (n (new-account-number widget))
-         (email (q+:make-qlineedit))
-         (password (q+:make-qlineedit)))
-    (setf (q+:echo-mode password) (q+:qlineedit.password)
-          (q+:placeholder-text email) (format nil "Account ~D: email" n)
-          (q+:placeholder-text password) (format nil "Account ~D: password" n))
-    (q+:add-widget layout email)
-    (q+:add-widget layout password)))
-
-(defun remove-credential-input (widget)
-  (when (< 1 (new-account-number widget))
+(progn ;;config-box
+  (define-subwidget (launcher config-furcadia-path) (q+:make-qlineedit))
+  (define-subwidget (launcher config-add-account)
+      (q+:make-qpushbutton "Add"))
+  (define-subwidget (launcher config-delete-account)
+      (q+:make-qpushbutton "Delete"))
+  (define-subwidget (launcher config-accounts-layout) (q+:make-qvboxlayout))
+  (define-subwidget (launcher config-accounts-widget) (q+:make-qwidget)
+    (setf (q+:layout config-accounts-widget) config-accounts-layout))
+  (define-subwidget (launcher config-save) (q+:make-qpushbutton "Save")
+    (setf (q+:maximum-width config-save) 90
+          (q+:minimum-width config-save) 90))
+  (define-subwidget (launcher config-contents) (q+:make-qgridlayout)
+    (setf (q+:contents-margins config-contents) (values 0 0 0 0)
+          (q+:alignment config-contents) (q+:qt.align-top))
+    (q+:add-widget config-contents (q+:make-qlabel "Path to Furcadia") 0 0 1 2)
+    (q+:add-widget config-contents config-furcadia-path 1 0 1 2)
+    (q+:add-widget config-contents (q+:make-qlabel "Accounts") 2 0 1 2)
+    (q+:add-widget config-contents config-add-account 3 0)
+    (q+:add-widget config-contents config-delete-account 3 1)
+    (q+:add-widget config-contents config-accounts-widget 4 0 1 2))
+  (define-subwidget (launcher config-contents-widget) (q+:make-qwidget)
+    (setf (q+:layout config-contents-widget) config-contents))
+  (define-subwidget (launcher config-scroll) (q+:make-qscrollarea)
+    (setf (q+:widget config-scroll) config-contents-widget
+          (q+:widget-resizable config-scroll) t
+          (q+:frame-shape config-scroll) (q+:qframe.no-frame)))
+  (define-subwidget (launcher config-layout) (q+:make-qgridlayout)
+    (setf (q+:contents-margins config-layout) (values 0 0 0 0))
+    (q+:add-widget config-layout config-save 0 0)
+    (q+:add-widget config-layout config-scroll 1 0 1 2))
+  (define-subwidget (launcher config-box) (q+:make-qwidget)
+    (setf (q+:layout config-box) config-layout))
+  (defun new-account-number (widget)
     (let ((accounts (find-children widget "QLineEdit")))
-      (finalize (last accounts 2))
-      (finalize (last accounts 1)))))
-
-(defun get-all-credentials (widget)
-  (let ((children (find-children widget "QLineEdit")))
-    (mapcar #'q+:text children)))
-
-(define-slot (launcher add-account) ()
-  (declare (connected config-add-account (clicked)))
-  (add-credential-input config-accounts-widget))
-
-(define-slot (launcher delete-acccount) ()
-  (declare (connected config-delete-account (clicked)))
-  (remove-credential-input config-accounts-widget))
-
-
-
-;; (define-subwidget (launcher config-box-save) (q+:make-qpushbutton "Save")
-;;   (setf (q+:maximum-width config-box-save) 90
-;;         (q+:minimum-width config-box-save) 90))
-;; (define-subwidget (launcher config-box-layout) (q+:make-qgridlayout)
-;;   (setf (q+:contents-margins config-box-layout) (values 0 0 0 0))
-;;   (q+:add-widget config-box-layout config-box-save)
-;;   (q+:add-widget config-box-layout (q+:make-qlabel "Path to Furcadia"))
-;;   (q+:add-widget config-box-layout (q+:make-qlabel "Accounts")))
-;; (define-subwidget (launcher config-box-contents) (q+:make-qwidget))
-;; (define-subwidget (launcher config-box) (q+:make-qscrollarea)
-;;   (setf (q+:layout config-box) config-box-layout
-;;         (q+:widget config-box) config-box-contents
-;;         (q+:widget-resizable config-box) t
-;;         (q+:frame-shape config-box) (q+:qframe.no-frame)))
+      (1+ (/ (length accounts) 2))))
+  (defun add-credential-input (widget)
+    (let* ((layout (q+:layout widget))
+           (n (new-account-number widget))
+           (email (q+:make-qlineedit))
+           (password (q+:make-qlineedit)))
+      (setf (q+:echo-mode password) (q+:qlineedit.password)
+            (q+:placeholder-text email) (format nil "Account ~D: email" n)
+            (q+:placeholder-text password) (format nil "Account ~D: password" n))
+      (q+:add-widget layout email)
+      (q+:add-widget layout password)))
+  (defun remove-credential-input (widget)
+    (when (< 1 (new-account-number widget))
+      (let ((accounts (find-children widget "QLineEdit")))
+        (finalize (last accounts 2))
+        (finalize (last accounts 1)))))
+  (defun get-all-credentials (widget)
+    (let ((children (find-children widget "QLineEdit")))
+      (mapcar #'q+:text children)))
+  (define-slot (launcher add-account) ()
+    (declare (connected config-add-account (clicked)))
+    (add-credential-input config-accounts-widget))
+  (define-slot (launcher delete-acccount) ()
+    (declare (connected config-delete-account (clicked)))
+    (remove-credential-input config-accounts-widget)))
 
 (progn ;;chars-box
   (define-subwidget (launcher character-list) (q+:make-qtablewidget)

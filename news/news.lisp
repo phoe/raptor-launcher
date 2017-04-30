@@ -5,9 +5,10 @@
 (defvar *news-download-dir* "~/.furcadia-launcher/news/")
 
 (defun http-get-news ()
-  (flexi-streams:octets-to-string
-   (http-request "http://news.furcadia.com/current"
-                 :external-format-out :utf-8)))
+  (replace-all (flexi-streams:octets-to-string
+                (http-request "http://news.furcadia.com/current"
+                              :external-format-out :utf-8))
+               "#LF#" ""))
 
 (defun split-news (news)
   (flet ((cut-newsentry (x) (setf (car x) (subseq (car x) 10)) x)
