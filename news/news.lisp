@@ -4,11 +4,15 @@
 
 (defvar *news-download-dir* "~/.furcadia-launcher/news/")
 
-(defun http-get-news ()
-  (replace-all (flexi-streams:octets-to-string
-                (http-request "http://news.furcadia.com/current"
-                              :external-format-out :utf-8))
-               "#LF#" ""))
+(defun http-get-news-furcadia ()
+  (split-news (replace-all (flexi-streams:octets-to-string
+                            (http-request "http://news.furcadia.com/current"
+                                          :external-format-out :utf-8))
+                           "#LF#" "")))
+
+(defun http-get-news-launcher ()
+  (split-news (http-request "http://raptorlauncher.github.io/news.txt"
+                            :external-format-out :utf-8)))
 
 (defun split-news (news)
   (flet ((cut-newsentry (x) (setf (car x) (subseq (car x) 10)) x)
@@ -26,7 +30,12 @@
                         #'read-csv-line
                         #'make-string-input-stream)))
       (setf (cdr lastcons) nil)
-      (values (mapcar fn news) data))))
+      (values (mapcar fn news) (nth 7 data)))))
+
+;; (defun get-all-news ()
+;;   (multiple-value-bind (furcadia-news furcadia-date) (http-get-news-furcadia)
+;;     (multiple-value-bind (launcher-news launcher-date) (http-get-news-launcher)
+;;       )))
 
 (defun get-news ()
   (split-news (http-get-news)))
