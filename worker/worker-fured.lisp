@@ -17,7 +17,9 @@
   "Modify macro for FETCH-ALL-ACCOUNTS that automatically sets SETF
 STATE-ACCOUNTS on the provided STATE."
   `(setf (state-accounts ,state ,state-lock)
-         (fetch-all-accounts ,state ,state-lock)))
+         (fetch-all-accounts ,state ,state-lock)
+         (state-last-logins ,state ,state-lock)
+         (character-last-login-list ,state ,state-lock)))
 
 (defun make-email-shortname-alist (account)
   "Provided an account, returns an alist whose CARs are the email bound to that
@@ -60,8 +62,8 @@ SETF (GETF CONFIG :CHARACTERS) on the provided config."
                                      (state *state*) (state-lock *state-lock*))
   "Provided a shortname, a config, a state and a state lock, returns a furc://
 login link for the character with the respective shortname."
-  (let* ((character (cdr (assoc sname (getf config :characters)
-                                :test #'string=)))
+  (let* ((character (assoc-value (getf config :characters) sname
+                                 :test #'string=))
          (accounts (with-lock-held (state-lock) (gethash :accounts state)))
          (email-shortnames (mapcan #'make-email-shortname-alist accounts))
          (email (rassoc-value email-shortnames sname :test #'string=))

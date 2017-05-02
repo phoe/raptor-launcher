@@ -53,3 +53,12 @@ is replaced with replacement."
 (defun get-unix-time ()
   "Returns the current Unix timestamp."
   (- (get-universal-time) 2208988800))
+
+(defun unix-time-to-datestring (unix-time)
+  "Decodes the unix time and returns its textual form in format
+\"YYYY-MM-DD HH:MM:SS\"."
+  (let* ((universal-time (+ unix-time 2208988800))
+         (time (multiple-value-list (decode-universal-time universal-time))))
+    (format nil "~4,'0D-~2,'0D-~2,'0D ~2,'0D:~2,'0D:~2,'0D"
+            (nth 5 time) (nth 4 time) (nth 3 time)
+            (nth 2 time) (nth 1 time) (nth 0 time))))

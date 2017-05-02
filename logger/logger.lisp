@@ -3,6 +3,31 @@
 
 (in-package :furcadia-launcher)
 
+;;;; HOOKS
+
+(defparameter *log-dir* "~/.furcadia-launcher/logs/")
+(ensure-directories-exist *log-dir*)
+(defparameter *logger-filename*
+  (merge-pathnames (format nil "logger-~A.txt" (get-unix-time)) *log-dir*))
+
+(defun logger-console-hook (type &rest args)
+  (when (and (boundp '*logger*) *logger* (alivep *logger*))
+    (format (stream-of *logger*) "[~5A] " type)
+    (apply #'fformat (stream-of *logger*) args)
+    (fresh-line (stream-of *logger*))))
+
+(defun logger-file-hook (type &rest args)
+  (with-open-file (stream *logger-filename*
+                          :direction :output
+                          :if-exists :append
+                          :if-does-not-exist :create)
+    (format stream "[~A] " (get-unix-time))
+    (format stream "[~5A] " type)
+    (apply #'fformat stream args)
+    (fresh-line stream)))
+
+;;;; IMPLEMENTATION
+
 (defclass logger ()
   ((%thread :accessor thread)
    (%name :accessor name)
@@ -27,6 +52,13 @@
       (let ((data (pop-queue (queue logger))))
         (mapc (rcurry #'apply data) *logger-hooks*)))))
 
+(defparameter *logger-hooks*
+  (list 'logger-console-hook
+        'logger-file-hook))
+
+(defvar *logger* (make-instance 'logger)
+  "The current logger.")
+
 (defun note (type &rest args)
   (%note type args))
 
@@ -46,32 +78,3 @@
 (defun restart-logger ()
   (kill *logger*)
   (setf *logger* (make-instance 'logger)))
-
-(defvar *logger* (make-instance 'logger)
-  "The current logger.")
-
-;;;; HOOKS
-
-(defparameter *logger-hooks*
-  (list 'logger-console-hook
-        'logger-file-hook))
-
-(defparameter *log-dir* "~/.furcadia-launcher/logs/")
-(ensure-directories-exist *log-dir*)
-(defparameter *logger-filename*
-  (merge-pathnames (format nil "logger-~A.txt" (get-unix-time)) *log-dir*))
-
-(defun logger-console-hook (type &rest args)
-  (format (stream-of *logger*) "[~5A] " type)
-  (apply #'fformat (stream-of *logger*) args)
-  (fresh-line (stream-of *logger*)))
-
-(defun logger-file-hook (type &rest args)
-  (with-open-file (stream *logger-filename*
-                          :direction :output
-                          :if-exists :append
-                          :if-does-not-exist :create)
-    (format stream "[~A] " (get-unix-time))
-    (format stream "[~5A] " type)
-    (apply #'fformat stream args)
-    (fresh-line stream)))

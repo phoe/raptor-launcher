@@ -48,16 +48,30 @@ request."
   (mapcar (lambda (x) (cdr (assoc :shortname x)))
           (cdr (assoc :characters account-json))))
 
-;; Commented out - I will provide a parallel version in worker-fured.lisp
-;;
-;; (defun get-all-characters (account-json cookie-jar)
-;;   "Sequentially loads all character JSONs associated to the provided account
-;; JSON, using the provided cookie jar."
-;;   (let ((result (mapcar (lambda (x) (http-load-character x cookie-jar))
-;;                         (list-characters account-json))))
-;;     (note :info "Retrieved all characters from account ~A."
-;;           (cdr (assoc :email account-json)))
-;;     result))
+(defun character-last-login-list (&optional (state *state*)
+                                    (state-lock *state-lock*))
+  "Provided a state and a state lock, returns a list of characters from all
+accounts, where each element is an alist containing a character's name,
+shortname and login date Unix timestamp."
+  (let* ((accounts (with-lock-held (state-lock) (gethash :accounts state)))
+         (list (mappend (rcurry #'assoc-value :characters) accounts)))
+    (flet ((fn (x) (substitute #\Space #\| x)))
+      (loop for alist in list
+            collect (loop for (key . value) in alist
+                          when (eq key :name)
+                            collect (cons key (fn value))
+                          else collect (cons key value))))))
+
+(defun character-last-login (sname &optional (state *state*)
+                                     (state-lock *state-lock*))
+  "Provided a shortname, a state and a state lock, returns a string containing
+the last login date of the character by that shortname in that state, in the
+format \"YYYY-MM-DD HH:MM:SS\"."
+  (let* ((list (state-last-logins state state-lock))
+         (cell (find sname list :key (rcurry #'assoc-value :shortname)
+                                :test #'string=))
+         (unixtime (assoc-value cell :login-date)))
+    (unix-time-to-datestring unixtime)))
 
 (defun extract-fured-page-secret (account-json)
   "Extracts the FurEd secret from the account JSON."

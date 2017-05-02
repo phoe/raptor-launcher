@@ -48,6 +48,7 @@
   (unwind-protect
        (with-main-window (launcher 'launcher)
          (setf *launcher* launcher)
-         (setf furcadia-launcher::*config* (furcadia-launcher::load-config-file))
+         (setf furcadia-launcher::*config*
+               (furcadia-launcher::load-config-file))
          (reset-config launcher))
     (setf *launcher* nil)))

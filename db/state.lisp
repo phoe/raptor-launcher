@@ -54,3 +54,16 @@
   "Sets all accounts in the provided state."
   (with-lock-held (state-lock)
     (setf (gethash :accounts state) new-value)))
+
+(defun state-last-logins (&optional (state *state*)
+                            (state-lock *state-lock*))
+  "Returns the alist of names, shortnames and login dates of the provided
+state."
+  (with-lock-held (state-lock)
+    (gethash :last-logins state)))
+
+(defun (setf state-last-logins) (new-value state state-lock)
+  "Sets the alist of names, shortnames and login dates of the provided
+state."
+  (with-lock-held (state-lock)
+    (setf (gethash :last-logins state) new-value)))

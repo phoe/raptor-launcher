@@ -42,7 +42,8 @@
       (let ((font (q+:make-qfont)))
         (setf (q+:bold font) t
               (q+:text button-news) "News!"
-              (q+:font button-news) font)))))
+              (q+:font button-news) font))
+      (furcadia-launcher::save-config-file))))
 
 (define-launcher-button (button-config "Config")
   (launcher-hide-all)
@@ -69,8 +70,21 @@
 ;;;; BUTTONS BELOW
 
 (define-launcher-button (button-play "Play!")
-  (unless (getf furcadia-launcher::*config* :keep-running)
-    (q+:close launcher)))
+  (let* ((sname (selected-character-sname character-list))
+         (keep-running-p (getf furcadia-launcher::*config* :keep-running)))
+    (setf (q+:enabled button-play) nil)
+    (bt:make-thread (lambda ()
+                      (furcadia-launcher::furcadia sname)
+                      (when keep-running-p
+                        (signal! launcher (launch-done)))))
+    (unless keep-running-p
+      (q+:close launcher))))
+
+(define-signal (launcher launch-done) ())
+
+(define-slot (launcher enable-play-button) ()
+  (declare (connected launcher (launch-done)))
+  (setf (q+:enabled button-play) t))
 
 (define-launcher-button (button-sync "Sync!"))
 
