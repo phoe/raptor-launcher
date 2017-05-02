@@ -7,6 +7,7 @@
   :depends-on (:alexandria
                :ironclad
                :drakma
+               :uiop
                :cl-json
                :bordeaux-threads
                :lparallel
@@ -34,8 +35,16 @@
                (:file "worker/worker-fured")
                (:file "worker/worker-furcadia")
                (:file "algorithm/algorithm")
-               (:file "gui/gui")
-               (:file "gui/gui-new")
+               (:file "gui/definition")
+               (:file "gui/news")
+               (:file "gui/config")
+               (:file "gui/editor")
+               (:file "gui/debug")
+               (:file "gui/help")
+               (:file "gui/chars")
+               (:file "gui/buttons")
+               (:file "gui/image")
+               (:file "gui/layout")
                )
   :defsystem-depends-on (:qtools)
   :build-operation "qt-program-op"

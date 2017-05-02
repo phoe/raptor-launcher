@@ -4,13 +4,13 @@
 
 (defvar *news-download-dir* "~/.furcadia-launcher/news/")
 
-(defun http-get-news-furcadia ()
+(defun http-furcadia-news ()
   (split-news (replace-all (flexi-streams:octets-to-string
                             (http-request "http://news.furcadia.com/current"
                                           :external-format-out :utf-8))
                            "#LF#" "")))
 
-(defun http-get-news-launcher ()
+(defun http-launcher-news ()
   (split-news (http-request "http://raptorlauncher.github.io/news.txt"
                             :external-format-out :utf-8)))
 
@@ -32,13 +32,44 @@
       (setf (cdr lastcons) nil)
       (values (mapcar fn news) (nth 7 data)))))
 
-;; (defun get-all-news ()
-;;   (multiple-value-bind (furcadia-news furcadia-date) (http-get-news-furcadia)
-;;     (multiple-value-bind (launcher-news launcher-date) (http-get-news-launcher)
-;;       )))
+(defun get-all-news ()
+  (handler-case
+      (multiple-value-bind (furcadia-news furcadia-date) (http-furcadia-news)
+        (multiple-value-bind (launcher-news launcher-date) (http-launcher-news)
+          (note :info "All news downloaded successfully.")
+          (let ((urls-1 (mapcar (curry #'nth 7) furcadia-news))
+                (urls-2 (mapcar (curry #'nth 7) launcher-news))
+                (news (sort (nconc furcadia-news launcher-news) #'> :key #'car))
+                (updatedp (update-news-date furcadia-date launcher-date)))
+            (mapc #'download-news-image urls-1)
+            (mapc #'download-news-image urls-2)
+            (when updatedp
+              (note :info "News contain new items."))
+            (values news updatedp))))
+    (error (e)
+      (note :error "There was an error fetching news: ~A. ~
+Check your network connection." e)
+      (values nil nil))))
 
-(defun get-news ()
-  (split-news (http-get-news)))
+(defvar *fetched-news* nil)
+(defvar *fetched-updatedp* nil)
+
+(defun get-all-newsf ()
+  (multiple-value-bind (news updatedp) (get-all-news)
+    (setf *fetched-news* news
+          *fetched-updatedp* updatedp)
+    (values news updatedp)))
+
+(defun update-news-date (furcadia-date launcher-date)
+  (let* ((old-furcadia-date (getf *config* :furcadia-date))
+         (old-launcher-date (getf *config* :launcher-date))
+         (furcadia-diff (string/= furcadia-date old-furcadia-date))
+         (launcher-diff (string/= launcher-date old-launcher-date)))
+    (when furcadia-diff
+      (setf (getf *config* :furcadia-date) furcadia-date))
+    (when launcher-diff
+      (setf (getf *config* :launcher-date) launcher-date))
+    (or furcadia-diff launcher-diff)))
 
 (defun multiply-date (datestring)
   (let ((date (date-parser:parse-date datestring)))
@@ -60,6 +91,7 @@
     (probe-file filepath)))
 
 (defun download-news-image (url)
+  (ensure-directories-exist *news-download-dir*)
   (let* ((filename (url-filename url))
          (filepath (merge-pathnames filename *news-download-dir*)))
     (handler-case
