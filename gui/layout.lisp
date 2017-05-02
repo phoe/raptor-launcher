@@ -5,6 +5,8 @@
 
 ;;;; MAIN LAYOUT
 
+(defvar *version* "0.2pre")
+
 (defmacro set-launcher-layout ()
   `(mapc (curry #'apply #'q+:add-widget layout)
          `(;;; IMAGE
@@ -31,7 +33,7 @@
   `(setf (q+:enabled button-news) nil))
 
 (define-subwidget (launcher layout) (q+:make-qgridlayout)
-  (setf (q+:window-title launcher) "Raptor Launcher"
+  (setf (q+:window-title launcher) (format nil "Raptor Launcher ~A" *version*)
         (q+:fixed-size launcher) (values 600 420)
         (q+:layout central-widget) layout)
   (set-launcher-layout)
@@ -39,3 +41,13 @@
   (disable-buttons)
   (q+:show chars-box)
   (q+:set-focus character-list))
+
+(defvar *launcher* nil)
+
+(defun main ()
+  (unwind-protect
+       (with-main-window (launcher 'launcher)
+         (setf *launcher* launcher)
+         (setf furcadia-launcher::*config* (furcadia-launcher::load-config-file))
+         (reset-config launcher))
+    (setf *launcher* nil)))

@@ -6,7 +6,7 @@
 (defparameter *help-box-text*
   (format nil "<h3>I found a bug!/How can I get help?</h3>
 <ol>
-  <li><u>Do not ask the Furcadia team for help!</u><br>
+  <li> <b><u>Do not ask the Furcadia team for help!</u></b><br>
 This is a third-party launcher, written by a person outside the Furcadia team.
 The people over at Catnip Studios do not have the knowledge or resources
 to properly support it. Asking them for help will only have you redirected

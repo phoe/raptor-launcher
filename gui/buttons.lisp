@@ -3,8 +3,6 @@
 (in-package :furcadia-launcher-gui)
 (in-readtable :qtools)
 
-;;;; BUTTONS ABOVE
-
 (defmacro launcher-hide-all ()
   `(mapc #'q+:hide
          (list news-box
@@ -27,12 +25,27 @@
          (declare (connected ,button-name (clicked)))
          ,@body))))
 
+;;;; BUTTONS ABOVE
+
 (define-launcher-button (button-news "News")
-    (launcher-hide-all)
+  (launcher-hide-all)
   (q+:show news-box))
 
+(define-slot (launcher news-fetched) ()
+  (declare (connected launcher (enable-news)))
+  (let* ((news furcadia-launcher::*fetched-news*)
+         (updatedp furcadia-launcher::*fetched-updatedp*)
+         (widgets (mapcar #'make-news-widget news)))
+    (mapc (curry #'q+:add-widget news-contents) widgets)
+    (setf (q+:enabled button-news) t)
+    (when updatedp
+      (let ((font (q+:make-qfont)))
+        (setf (q+:bold font) t
+              (q+:text button-news) "News!"
+              (q+:font button-news) font)))))
+
 (define-launcher-button (button-config "Config")
-    (launcher-hide-all)
+  (launcher-hide-all)
   (q+:show config-box))
 
 (define-launcher-button (button-chars "Characters")
@@ -56,22 +69,10 @@
 ;;;; BUTTONS BELOW
 
 (define-launcher-button (button-play "Play!")
-    (setf (q+:default button-play) t))
+  (unless (getf furcadia-launcher::*config* :keep-running)
+    (q+:close launcher)))
 
 (define-launcher-button (button-sync "Sync!"))
 
 (define-launcher-button (button-quit "Quit")
   (q+:close launcher))
-
-(define-slot (launcher news-fetched) ()
-  (declare (connected launcher (enable-news)))
-  (let* ((news furcadia-launcher::*fetched-news*)
-         (updatedp furcadia-launcher::*fetched-updatedp*)
-         (widgets (mapcar #'make-news-widget news)))
-    (mapc (curry #'q+:add-widget news-contents) widgets)
-    (setf (q+:enabled button-news) t)
-    (when updatedp
-      (let ((font (q+:make-qfont)))
-        (setf (q+:bold font) t
-              (q+:text button-news) "News!"
-              (q+:font button-news) font)))))

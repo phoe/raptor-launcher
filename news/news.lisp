@@ -21,7 +21,6 @@
          (add-date (x) (cons (multiply-date (cadr x)) x)))
     (let* ((data (split-sequence #\Newline news :remove-empty-subseqs t))
            (news (nthcdr 8 data))
-           (lastcons (nthcdr 7 data))
            (*separator* #\Tab)
            (fn (compose #'add-date
                         #'add-filename
@@ -29,7 +28,6 @@
                         #'skip-second
                         #'read-csv-line
                         #'make-string-input-stream)))
-      (setf (cdr lastcons) nil)
       (values (mapcar fn news) (nth 7 data)))))
 
 (defun get-all-news ()

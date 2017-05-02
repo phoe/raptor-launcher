@@ -49,3 +49,7 @@ is replaced with replacement."
                            :end (or pos (length string)))
           when pos do (write-string replacement out)
             while pos)))
+
+(defun get-unix-time ()
+  "Returns the current Unix timestamp."
+  (- (get-universal-time) 2208988800))

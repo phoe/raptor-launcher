@@ -8,7 +8,8 @@
         #:bordeaux-threads
         #:fare-csv
         #:split-sequence
-        #:lparallel.queue))
+        #:lparallel.queue)
+  (:export #:note))
 
 (defpackage #:furcadia-launcher-gui
   (:use #:cl+qt

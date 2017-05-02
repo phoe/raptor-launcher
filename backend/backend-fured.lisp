@@ -29,11 +29,10 @@
 (defun http-load-character (sname cookie-jar)
   "Loads the character JSON with the provided shortname, using the provided
 cookie jar."
-  (let ((page (http-request *http-load-character*
-                            :method :post
-                            :parameters `(("name" . ,sname))
-                            :cookie-jar cookie-jar)))
-    page))
+  (http-request *http-load-character*
+                :method :post
+                :parameters `(("name" . ,sname))
+                :cookie-jar cookie-jar))
 
 (defun decode-character (load-character-page)
   "Decodes and returns the character JSON using the provided load character HTTP

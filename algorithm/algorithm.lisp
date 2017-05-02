@@ -41,8 +41,7 @@ Check that the configuration file is writable."
         (setf *config* (load-config-file))
         t)
     (error (e)
-      (note :error (error-message-load-config e))
-      (write-dummy-config-file))))
+      (note :error (error-message-load-config e)))))
 
 (defun algorithm-verify-config-file ()
   (note :info "Verifying config file.")

@@ -41,8 +41,6 @@
                     (signal! launcher (enable-news)))
                   :name "Raptor Launcher news downloader"))
 
-(define-signal (launcher enable-news) ())
-
 (define-subwidget (launcher news-contents-widget) (q+:make-qwidget)
   (setf (q+:layout news-contents-widget) news-contents))
 
@@ -57,3 +55,5 @@
 
 (define-subwidget (launcher news-box) (q+:make-qwidget)
   (setf (q+:layout news-box) news-layout))
+
+(define-signal (launcher enable-news) ())
