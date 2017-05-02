@@ -45,6 +45,7 @@
                (:file "gui/buttons")
                (:file "gui/image")
                (:file "gui/layout")
+               (:file "build/build")
                )
   :defsystem-depends-on (:qtools)
   :build-operation "qt-program-op"
