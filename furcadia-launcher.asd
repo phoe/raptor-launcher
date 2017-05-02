@@ -49,5 +49,5 @@
   :defsystem-depends-on (:qtools)
   :build-operation "qt-program-op"
   :build-pathname "launcher"
-  :entry-point "furcadia-launcher-gui:build-main"
+  :entry-point "furcadia-launcher-gui:main"
   )
