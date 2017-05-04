@@ -75,10 +75,8 @@ Check the logs for more information."))))
 (defmacro with-slot-thread (&body body)
   `(bt:make-thread
     (lambda ()
-      ,@body
-      ;; (handler-case (progn ,@body)
-      ;;   (error (e) (note :error "Thread finished with an error: ~A" e)))
-      )))
+      (handler-case (progn ,@body)
+        (error (e) (note :error "Thread finished with an error: ~A" e))))))
 
 ;;;; VERIFY-CONFIG-FILE
 
