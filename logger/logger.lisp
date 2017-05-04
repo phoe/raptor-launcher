@@ -6,7 +6,6 @@
 ;;;; HOOKS
 
 (defparameter *log-dir* "~/.furcadia-launcher/logs/")
-(ensure-directories-exist *log-dir*)
 (defparameter *logger-filename*
   (merge-pathnames (format nil "logger-~A.txt" (get-unix-time)) *log-dir*))
 
@@ -17,6 +16,7 @@
     (fresh-line (stream-of *logger*))))
 
 (defun logger-file-hook (type &rest args)
+  (ensure-directories-exist *log-dir*)
   (with-open-file (stream *logger-filename*
                           :direction :output
                           :if-exists :append
