@@ -12,14 +12,21 @@
 (defun generate-furcadia-command (furcadia-path login-link)
   "Generates a Furcadia command suitable for use with UIOP:LAUNCH-PROGRAM,
 dependent on the provided Furcadia path and login link."
-  (let* ((fixed-path (cat "\"" (princ-to-string (truename furcadia-path)) "\""))
+  ;;;; WINDOWS IS AN ABOMINATION
+  (let* ((fixed-path
+           (cat "\""
+                (replace-all (princ-to-string (truename furcadia-path))
+                             "/" "\\")
+                "\""))
          (exe-path (princ-to-string (truename (cat furcadia-path
                                                    "Furcadia.exe"))))
          (path (if (uiop:os-windows-p)
                    fixed-path
                    (winepath furcadia-path)))
          (command (if (uiop:os-windows-p)
-                      (list "/c" "start" (cat "\"" exe-path "\""))
+                      (list "/c" "start" "\"\""
+                            (replace-all (cat "\"" exe-path "\"")
+                                         "/" "\\"))
                       (list "wine" (winepath exe-path))))
          (result (append command
                          (list "-defaultpath" path
