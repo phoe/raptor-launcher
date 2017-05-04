@@ -75,8 +75,10 @@ Check the logs for more information."))))
 (defmacro with-slot-thread (&body body)
   `(bt:make-thread
     (lambda ()
-      (handler-case (progn ,@body)
-        (error (e) (note :error "Thread finished with an error: ~A" e))))))
+      ,@body
+      ;; (handler-case (progn ,@body)
+      ;;   (error (e) (note :error "Thread finished with an error: ~A" e)))
+      )))
 
 ;;;; VERIFY-CONFIG-FILE
 
@@ -87,7 +89,7 @@ Check the logs for more information."))))
   (with-slot-thread
     (if (furcadia-launcher::algorithm-verify-config-file)
         (signal! launcher (verify-config-file-okay))
-        (signal! launcher (algorithm-failure) (error-text 'accounts)))))
+        (signal! launcher (algorithm-failure string) (error-text 'accounts)))))
 
 ;;;; LOGIN-ALL-ACCOUNTS
 
@@ -99,7 +101,7 @@ Check the logs for more information."))))
   (with-slot-thread
     (if (furcadia-launcher::algorithm-login-all-accounts)
         (signal! launcher (login-all-accounts-okay))
-        (signal! launcher (algorithm-failure) (error-text 'login)))))
+        (signal! launcher (algorithm-failure string) (error-text 'login)))))
 
 ;;;; FETCH-ALL-ACCOUNTS
 
@@ -111,7 +113,7 @@ Check the logs for more information."))))
   (with-slot-thread
     (if (furcadia-launcher::algorithm-fetch-all-accounts)
         (signal! launcher (fetch-all-accounts-okay))
-        (signal! launcher (algorithm-failure) (error-text 'fetch)))))
+        (signal! launcher (algorithm-failure string) (error-text 'fetch)))))
 
 ;;;; FETCH-ALL-CHARACTERS
 
@@ -123,7 +125,7 @@ Check the logs for more information."))))
   (with-slot-thread
     (if (furcadia-launcher::algorithm-fetch-all-characters)
         (signal! launcher (fetch-all-characters-okay))
-        (signal! launcher (algorithm-failure) (error-text 'chars)))))
+        (signal! launcher (algorithm-failure string) (error-text 'chars)))))
 
 ;;;; FINISH-INITIALIZATION
 

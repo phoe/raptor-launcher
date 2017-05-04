@@ -56,8 +56,13 @@
   (list 'logger-console-hook
         'logger-file-hook))
 
-(defvar *logger* (make-instance 'logger)
-  "The current logger.")
+(defmethod alivep ((logger logger))
+  (thread-alive-p (thread logger)))
+
+(defmethod kill ((logger logger))
+  (unless (eq (current-thread) (thread logger))
+    (destroy-thread (thread logger)))
+  (values))
 
 (defun note (type &rest args)
   (%note type args))
@@ -67,13 +72,8 @@
     (push-queue (cons type args) (queue *logger*))
     nil))
 
-(defmethod alivep ((logger logger))
-  (thread-alive-p (thread logger)))
-
-(defmethod kill ((logger logger))
-  (unless (eq (current-thread) (thread logger))
-    (destroy-thread (thread logger)))
-  (values))
+(defvar *logger* (make-instance 'logger)
+  "The current logger.")
 
 (defun restart-logger ()
   (kill *logger*)
