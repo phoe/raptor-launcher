@@ -58,7 +58,7 @@
   (q+:show editor-box))
 
 (define-launcher-button (button-debug "Debug")
-    (launcher-hide-all)
+  (launcher-hide-all)
   (q+:show debug-box))
 
 (define-launcher-button (button-help "Help")
@@ -70,21 +70,19 @@
 ;;;; BUTTONS BELOW
 
 (define-launcher-button (button-play "Play!")
-  (let* ((sname (selected-character-sname character-list))
-         (keep-running-p (getf furcadia-launcher::*config* :keep-running)))
+  (when-let ((sname (selected-character-sname character-list)))
     (setf (q+:enabled button-play) nil)
     (bt:make-thread (lambda ()
                       (furcadia-launcher::furcadia sname)
-                      (when keep-running-p
-                        (signal! launcher (launch-done)))))
-    (unless keep-running-p
-      (q+:close launcher))))
+                      (signal! launcher (launch-done))))))
 
 (define-signal (launcher launch-done) ())
 
-(define-slot (launcher enable-play-button) ()
+(define-slot (launcher post-button-play-click) ()
   (declare (connected launcher (launch-done)))
-  (setf (q+:enabled button-play) t))
+  (if (getf furcadia-launcher::*config* :keep-running)
+      (setf (q+:enabled button-play) t)
+      (q+:close launcher)))
 
 (define-launcher-button (button-sync "Sync!"))
 

@@ -58,18 +58,19 @@ SETF (GETF CONFIG :CHARACTERS) on the provided config."
   `(setf (getf ,config :characters)
          (fetch-all-characters ,state ,state-lock)))
 
-(defun character-login-link (sname &optional (config *config*)
-                                     (state *state*) (state-lock *state-lock*))
+(defun character-login-link (sname &optional (config *config*) (state *state*)
+                                     (state-lock *state-lock*) basic-only)
   "Provided a shortname, a config, a state and a state lock, returns a furc://
 login link for the character with the respective shortname."
   (let* ((character (assoc-value (getf config :characters) sname
                                  :test #'string=))
-         (accounts (with-lock-held (state-lock) (gethash :accounts state)))
+         (accounts (state-accounts state state-lock))
          (email-shortnames (mapcan #'make-email-shortname-alist accounts))
          (email (rassoc-value email-shortnames sname :test #'string=))
          (account (find email accounts :test #'string=
                                        :key (rcurry #'assoc-value :email)))
          (fured-secret (assoc-value account :session))
          (cookie-jar (state-cookie state state-lock email))
-         (result (http-save-character character cookie-jar fured-secret)))
+         (result (http-save-character character cookie-jar
+                                      fured-secret basic-only)))
     (extract-login-link result)))

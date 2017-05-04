@@ -35,11 +35,7 @@
       widget)))
 
 (define-subwidget (launcher news-contents) (q+:make-qvboxlayout)
-  (setf (q+:contents-margins news-contents) (values 0 0 0 0))
-  (bt:make-thread (lambda ()
-                    (furcadia-launcher::get-all-newsf)
-                    (signal! launcher (enable-news)))
-                  :name "Raptor Launcher news downloader"))
+  (setf (q+:contents-margins news-contents) (values 0 0 0 0)))
 
 (define-subwidget (launcher news-contents-widget) (q+:make-qwidget)
   (setf (q+:layout news-contents-widget) news-contents))

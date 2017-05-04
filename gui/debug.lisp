@@ -3,7 +3,6 @@
 (in-package :furcadia-launcher-gui)
 (in-readtable :qtools)
 
-
 (defparameter *debug-intro*
   "; This is the debug read-eval-print-loop of the Common Lisp image running ~
 underneath the launcher. Warning: typing stuff here CAN MAKE YOUR LAUNCHER ~

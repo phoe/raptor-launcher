@@ -2,6 +2,7 @@
 
 (in-package :furcadia-launcher)
 
+;; TODO make this race-condition-free, implement a lock and custom accessor
 (defvar *config* nil)
 (defvar *config-path* "~/.furcadia-launcher/config.lisp")
 

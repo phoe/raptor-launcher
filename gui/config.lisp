@@ -25,7 +25,6 @@
   (remove-credential-input config-accounts-widget))
 
 (defparameter *launcher-keep-text*
-  ;;"Keep Launcher running?"
   "Keep Launcher running after launching Furcadia?")
 
 (define-subwidget (launcher config-keep-checkbox) (q+:make-qcheckbox))
@@ -68,7 +67,10 @@
     ;; Accounts
     (setf (getf config :accounts)
           (get-all-credentials config-accounts-widget))
-    (furcadia-launcher::save-config-file)))
+    (furcadia-launcher::algorithm-save-config-file)
+    ;; TODO fix it - full reinitialization might not be required
+    ;; based on the accounts that have changed
+    (signal! launcher (initialization-required))))
 
 (define-slot (launcher reset-config reset-config) ()
   (declare (connected config-reset (clicked)))

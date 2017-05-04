@@ -40,7 +40,7 @@ request."
   (let* ((stream (make-string-input-stream load-character-page))
          (json (decode-json stream)))
     (assert (assoc :name json))
-    (note :info "Loaded and parsed character ~A." (cdr (assoc :snam json)))
+    (note :info "Loaded character ~A." (cdr (assoc :snam json)))
     json))
 
 (defun list-characters (account-json)
@@ -82,7 +82,13 @@ format \"YYYY-MM-DD HH:MM:SS\"."
 (defvar *save-char-keywords*
   '("colr" "desc" "digo" "wing" "port" "tag" "adesc" "awhsp" "aresp"
     "doresp" "adigo" "awing" "atime" "amaxtime" "acolr" "aport" "uid")
-  "Keywords to take into account when generating the save-chracter JSON.")
+  "Keywords to take into account when generating the save-chracter JSON
+for the purpose of saving the character.")
+
+(defvar *save-char-basic-keywords*
+  '("desc" "colr" "port" "uid")
+  "Keywords to take into account when generating the save-character JSON
+purely for the purpose of fetching the download link.")
 
 (defun construct-save-keyword (character-json keyword)
   "Constructs a single key-value pair of the JSON to be saved for the provided
@@ -91,11 +97,13 @@ character JSON and keyword."
                   "")))
     (cons keyword (princ-to-string data))))
 
-(defun construct-save-request (character-json fured-secret)
+(defun construct-save-request (character-json fured-secret &optional basic-only)
   "Constructs a full character-save JSON for the provided character JSON and
 FurEd secret."
   (nconc (mapcar (lambda (x) (construct-save-keyword character-json x))
-                 *save-char-keywords*)
+                 (if basic-only
+                     *save-char-basic-keywords*
+                     *save-char-keywords*))
          (list (cons "tokenRequest" "true")
                (cons "tokenCostume" "-1")
                (cons fured-secret "1"))))
@@ -104,10 +112,12 @@ FurEd secret."
   "https://cms.furcadia.com/fured/saveCharacter.php"
   "Address of the saveCharacter FurEd page.")
 
-(defun http-save-character (character-json cookie-jar fured-secret)
+(defun http-save-character (character-json cookie-jar fured-secret
+                            &optional basic-only)
   "Saves the provided character JSON, using the provided cookie jar and
 FurEd secret. Returns the client login JSON."
-  (let* ((headers (construct-save-request character-json fured-secret))
+  (let* ((headers (construct-save-request character-json fured-secret
+                                          basic-only))
          (result (http-request *http-save-character*
                                :method :post
                                :parameters headers
