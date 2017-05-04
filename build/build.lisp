@@ -11,7 +11,7 @@
 
 (defun logger-build-hook ()
   (kill *logger*)
-  (loop until (not (alivep :*logger*))
+  (loop until (not (alivep *logger*))
         do (sleep 0.1)))
 
 (defun logger-boot-hook ()
