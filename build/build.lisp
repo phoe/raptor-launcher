@@ -4,10 +4,10 @@
 
 (defun main-build-hook ()
   (setf drakma:*drakma-default-external-format* :utf-8)
-  (setf *debugger-hook*
-        (lambda (c x)
-          (declare (ignore c x))
-          (sb-debug:print-backtrace :count most-positive-fixnum))))
+  #+sbcl (setf *debugger-hook*
+               (lambda (c x)
+                 (declare (ignore c x))
+                 (sb-debug:print-backtrace :count most-positive-fixnum))))
 
 (defun logger-build-hook ()
   (kill *logger*)
