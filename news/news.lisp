@@ -33,8 +33,9 @@
 (defun get-all-news ()
   (handler-case
       (multiple-value-bind (furcadia-news furcadia-date) (http-furcadia-news)
+        (note :info "Furcadia news downloaded successfully.")
         (multiple-value-bind (launcher-news launcher-date) (http-launcher-news)
-          (note :info "All news downloaded successfully.")
+          (note :info "Raptor Launcher news downloaded successfully.")
           (let ((urls-1 (mapcar (curry #'nth 7) furcadia-news))
                 (urls-2 (mapcar (curry #'nth 7) launcher-news))
                 (news (sort (nconc furcadia-news launcher-news) #'> :key #'car))

@@ -43,16 +43,17 @@
     (setf (q+:text item) text)))
 
 (defun selected-character-sname (widget)
-  (let* ((list (q+:selected-indexes widget))
-         (index (find 0 list :key #'q+:column))
-         (row (q+:row index))
-         (column (q+:column index))
-         (item (q+:item widget row column))
-         (name (q+:text item))
-         (last-logins (furcadia-launcher::state-last-logins))
-         (alist (find name last-logins :key (rcurry #'assoc-value :name)
-                                       :test #'string=)))
-    (assoc-value alist :shortname)))
+  (let ((list (q+:selected-indexes widget)))
+    (when list
+      (let* ((index (find 0 list :key #'q+:column))
+             (row (q+:row index))
+             (column (q+:column index))
+             (item (q+:item widget row column))
+             (name (q+:text item))
+             (last-logins (furcadia-launcher::state-last-logins))
+             (alist (find name last-logins :key (rcurry #'assoc-value :name)
+                                           :test #'string=)))
+        (assoc-value alist :shortname)))))
 
 (define-subwidget (launcher description-preview) (q+:make-qtextbrowser)
   (setf (q+:minimum-height description-preview) 100
@@ -68,12 +69,49 @@
          (characters (getf furcadia-launcher::*config* :characters))
          (character (cdr (find sname characters :key #'car :test #'string=)))
          (description (assoc-value character :desc)))
-    (setf (q+:text description-preview) description)))
+    (setf (q+:text description-preview) (or description ""))))
+
+(defun launcher-logo-path ()
+  (let ((path (asdf:system-relative-pathname :furcadia-launcher
+                                             "img/logo-small.png")))
+    (cond ((probe-file path)
+           path)
+          ((probe-file "img/logo-small.png")
+           "img/logo-small.png")
+          (t (note :error "The launcher logo file was not found.")
+             ""))))
+
+(defun safe-truename (pathname)
+  (handler-case (truename pathname) (error () "")))
+
+(defun hide-chars-box-text (&optional message)
+  (format nil "<b><big><big>Raptor Launcher</big><br />
+version ~A</big></b><br />
+<i>~~ we launch raptors ~~</i><br /><br />
+<img src=\"~A\"></a><br />
+<p>~A</p>" *version* (safe-truename (launcher-logo-path)) message))
+
+(define-subwidget (launcher hide-chars-box) (q+:make-qlabel)
+  (setf (q+:alignment hide-chars-box)
+        (q+:qt.align-center)
+        (q+:word-wrap hide-chars-box) t
+        (q+:text hide-chars-box)
+        (hide-chars-box-text "")))
+
+(define-signal (launcher hide-chars-witty-text) ())
+
+(define-slot (launcher make-hide-chars-witty) ()
+  (declare (connected launcher (hide-chars-witty-text)))
+  (setf (q+:text hide-chars-box)
+        (hide-chars-box-text (witty-line))))
 
 (define-subwidget (launcher chars-box) (q+:make-qsplitter)
   (q+:add-widget chars-box character-list)
   (q+:add-widget chars-box description-preview)
+  (q+:add-widget chars-box hide-chars-box)
+  (q+:hide character-list)
+  (q+:hide description-preview)
   (setf (q+:orientation chars-box) (q+:qt.vertical)
         (q+:children-collapsible chars-box) nil
-        (q+:stretch-factor chars-box) (values 0 2)
-        (q+:stretch-factor chars-box) (values 1 1)))
+        (q+:stretch-factor chars-box 0) 2
+        (q+:stretch-factor chars-box 1) 1))

@@ -10,10 +10,6 @@ Check that the configuration file exists and is in the proper syntax."
 (defun error-message-credentials () nil
   "Account credentials are missing or improperly set in config.")
 
-(defun error-message-furcadia-path () nil
-  "Furcadia path is missing or improperly set in config. Check that you have ~
-used double slashes in all places while writing it.")
-
 (defun error-login-all-accounts (condition) nil
   (format nil "There was an error of type ~A while logging your accounts in. ~
 Make sure that that the network connection is not interrupted."
@@ -49,12 +45,12 @@ Check that the configuration file is writable."
     (cond ((or (null accounts)
                (some (lambda (x) (< (length x) 2)) accounts)
                (some (compose #'not #'stringp)
+                     (apply #'append accounts))
+               (some (curry #'string= "")
                      (apply #'append accounts)))
            (note :error (error-message-credentials)))
-          ((not (stringp (getf *config* :furcadia-path)))
-           (note :error (error-message-furcadia-path)))
           (t
-           (note :info "Config file seems sane - beginning initialization.")
+           (note :info "Credentials seem sane - ready for initialization.")
            t))))
 
 (defun algorithm-login-all-accounts ()

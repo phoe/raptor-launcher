@@ -15,6 +15,7 @@
                :qtools-evaluator
                :qtcore
                :fare-csv
+               :cxml
                :split-sequence
                :esrap
                :parser.common-rules

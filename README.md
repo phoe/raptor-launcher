@@ -1,7 +1,7 @@
 ![RaptorLauncher logo](img/logo.png)
 
 # RaptorLauncher
-A variant launcher for Furcadia written in Common Lisp and (in the future) CommonQt/Qt4.
+A variant launcher for Furcadia written in Common Lisp and CommonQt/Qt4.
 
 ## Goals
   * Ability to launch Furcadia from command line for any given character, skipping the official launcher. (DONE)
@@ -10,21 +10,15 @@ A variant launcher for Furcadia written in Common Lisp and (in the future) Commo
   * Ability to mix characters from different mail accounts on a single list.
   * Ability to automatically refresh characters to prevent them from expiration.
 
-## TODO
-  * Add logging everywhere
-
 ## Mockup
 Don't get too excited - it's just a mockup so far, but that's how I imagine the main screen of the launcher to be modeled.
 
 ![Mockup](img/mockup.png)
 
 ## Requirements
-  * Ironclad
-  * Drakma
-  * CL-JSON
-  * ASDF 3.2.1
+See the `furcadia-launcher.asd` file for the list of requirements.
 
-## Current technique
+## Summary of the current technique
   1. **Login into Furcadia CMS.**
      1. GET the login page.
      2. Extract the authentication secret from HTML.

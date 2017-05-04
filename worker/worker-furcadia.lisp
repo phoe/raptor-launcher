@@ -2,15 +2,22 @@
 
 (in-package :furcadia-launcher)
 
+(defun error-message-furcadia-path () nil
+  "Furcadia path is missing or improperly set in config. Check that you have ~
+used double slashes in all places while writing it.")
+
 (defun furcadia (sname &optional
                          (config *config*) (state *state*)
                          (state-lock *state-lock*))
   "Launches Furcadia for the character with the given shortname."
-  (let* ((login-link (character-login-link sname config state state-lock))
-         (furcadia-path (getf *config* :furcadia-path))
-         (process (launch-furcadia furcadia-path login-link)))
-    (note :info "Furcadia launched for character ~A." sname)
-    process))
+
+  (if (stringp (getf *config* :furcadia-path))
+      (let* ((login-link (character-login-link sname config state state-lock t))
+             (furcadia-path (getf *config* :furcadia-path))
+             (process (launch-furcadia furcadia-path login-link)))
+        (note :info "Furcadia launched for character ~A." sname)
+        process)
+      (note :error (error-message-furcadia-path))))
 
 (defun initialize ()
   "A high-level function for initializing the launcher."
