@@ -110,6 +110,7 @@ of each list with its keywordized version, if said CAR is a string."
     "Reading floppy disk..."
     "Planting seeds of doubt..."
     "Finding rubber duckies..."
+    "Feeding trolls..."
     "Increasing security by 25%...")
   "These are meant to be funny, you know.")
 
