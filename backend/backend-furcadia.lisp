@@ -65,10 +65,10 @@ dependent on the provided Furcadia path and login link."
 because non-Windows implementations seemingly lack the ability to process ~
 Windows paths. Use :IM-SURE T to override.")
     (unless im-sure (return-from windows-furcadia-command)))
-  (let* ((dir-path (uiop:native-namestring furcadia-path))
+  (let* ((dir-path (replace-all furcadia-path " " "^ "))
          (result (list ;;"cmd" "/c" "start" "\"Furcadia\""
-                       (cat (prin1-to-string dir-path) "Furcadia.exe")
-                       "-defaultpath" (prin1-to-string dir-path)
+                       "Furcadia.exe"
+                       "-defaultpath" dir-path
                        "-followurl" login-link)))
     ;;(format nil "~{~A~^ ~}" result)
     result))
