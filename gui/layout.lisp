@@ -145,7 +145,9 @@ Check the logs for more information."))))
   (mapc (curry #'add-character-to-list character-list)
         (furcadia-launcher::state-last-logins))
   (q+:clear-selection character-list)
-  (setf (q+:sorting-enabled character-list) t))
+  (setf (q+:sorting-enabled character-list) t)
+  ;; TODO use trivial-garbage later
+  #+sbcl (sb-ext:gc :full t))
 
 ;;;; EMERGENCY-UNLOCK
 
@@ -157,7 +159,9 @@ Check the logs for more information."))))
         (hide-chars-box-text message)
         (q+:enabled button-play) nil
         (q+:enabled config-reset) t
-        (q+:enabled config-save) t))
+        (q+:enabled config-save) t)
+  ;; TODO use trivial-garbage later
+  #+sbcl (sb-ext:gc :full t))
 
 ;;;; MAIN
 
