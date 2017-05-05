@@ -18,7 +18,7 @@
     (let* ((widget (q+:make-qwidget))
            (layout (q+:make-qhboxlayout))
            (pathname (furcadia-launcher::news-image-filename-pathname filename))
-           (pixmap (q+:make-qpixmap (princ-to-string (truename pathname))))
+           (pixmap (q+:make-qpixmap (uiop:native-namestring pathname)))
            (image (q+:make-qlabel))
            (text (q+:make-qlabel)))
       (setf (q+:layout widget) layout
