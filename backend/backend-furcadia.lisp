@@ -67,8 +67,9 @@ Windows paths. Use :IM-SURE T to override.")
     (unless im-sure (return-from windows-furcadia-command)))
   (let* ((exe-path (uiop:native-namestring (cat furcadia-path "Furcadia.exe")))
          (dir-path (uiop:native-namestring furcadia-path))
-         (result (list "/c" "start" "\"Furcadia\"" exe-path
-                       "-defaultpath" dir-path
+         (result (list "cmd" "/c" "start" "\"Furcadia\""
+                       (prin1-to-string exe-path)
+                       "-defaultpath" (prin1-to-string dir-path)
                        "-followurl" login-link)))
     (format nil "~{~A~^ ~}" result)))
 
