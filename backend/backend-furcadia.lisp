@@ -67,11 +67,13 @@ Windows paths. Use :IM-SURE T to override.")
     (unless im-sure (return-from windows-furcadia-command)))
   (let* ((dir-path (replace-all furcadia-path " " "^ "))
          (result (list ;;"cmd" "/c" "start" "\"Furcadia\""
-                       "Furcadia.exe"
-                       "-defaultpath" dir-path
+                       ;;"Furcadia.exe"
+                       ;;"-defaultpath" dir-path
+                       "start Furcadia"
                        "-followurl" login-link)))
-    ;;(format nil "~{~A~^ ~}" result)
-    result))
+    (format nil "~{~A~^ ~}" result)
+    ;;result
+    ))
 
 (defun linux-furcadia-command (furcadia-path login-link)
   "Generates a command suitable for running Furcadia on Linux through Wine."
