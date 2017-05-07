@@ -34,7 +34,7 @@
         (q+:alignment config-contents) (q+:qt.align-top))
   (q+:add-widget config-contents (q+:make-qlabel *launcher-keep-text*) 0 0 1 4)
   (q+:add-widget config-contents config-keep-checkbox 1 0 1 4)
-  (q+:add-widget config-contents (q+:make-qlabel "Path to Furcadia") 2 0 1 4)
+  (q+:add-widget config-contents (q+:make-qlabel "Path to Furcadia.exe") 2 0 1 4)
   (q+:add-widget config-contents config-furcadia-path 3 0 1 4)
   (q+:add-widget config-contents (q+:make-qlabel "Accounts") 4 0 1 4)
   (q+:add-widget config-contents config-add-account 5 0 1 2)

@@ -11,7 +11,8 @@
         #:lparallel.queue)
   (:export #:note
            #:witty-line
-           #:*version*))
+           #:*version*
+           #:cat))
 
 (defpackage #:furcadia-launcher-gui
   (:use #:cl+qt

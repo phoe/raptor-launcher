@@ -2,7 +2,8 @@
 
 (in-package :furcadia-launcher)
 
-(defvar *news-download-dir* "~/.furcadia-launcher/news/")
+(defvar *news-download-dir* "~/.furcadia-launcher/news/"
+  "The directory where news images are downloaded and stored.")
 
 (defun http-furcadia-news ()
   (split-news (replace-all (flexi-streams:octets-to-string
