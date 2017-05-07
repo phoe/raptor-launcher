@@ -7,7 +7,8 @@
   "The directory where character images and stored.")
 
 (defvar *character-image-empty* "No Character Image
-\(click here to add)")
+\(click here to add,
+150x400+)")
 
 (define-subwidget (launcher image) (q+:make-qpushbutton *character-image-empty*)
   (setf (q+:minimum-width image) 150
@@ -52,8 +53,9 @@
     (clear-image image)))
 
 (defun clear-image (image)
-  (setf (q+:text image) *character-image-empty*
-        (q+:icon image) (q+:make-qicon)))
+  (when (string= (q+:text image) "")
+    (setf (q+:text image) *character-image-empty*
+          (q+:icon image) (q+:make-qicon))))
 
 (defun selected-character-image-path (widget)
   (let ((sname (selected-character-sname widget)))
