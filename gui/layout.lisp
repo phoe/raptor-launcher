@@ -133,6 +133,7 @@ Check the logs for more information."))))
 
 (define-signal (launcher fetch-all-accounts-okay) ())
 
+;;;; TODO add checking for character changes between synchronizations
 (define-slot (launcher fetch-all-characters) ()
   (declare (connected launcher (fetch-all-accounts-okay)))
   (signal! launcher (hide-chars-witty-text))
