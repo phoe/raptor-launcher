@@ -19,17 +19,11 @@
 (defun image-select-file (widget)
   (let ((dialog (q+:make-qfiledialog widget "Select image" "."
                                      "PNG/JPG Image Files (*.png *.jpg)")))
-    (setf (q+:name-filter dialog) "PNG/JPG Image Files (*.png *.jpg)")
-    (print (q+:exec dialog))
-    (let ((return-value (first (q+:selected-files dialog))))
-      (finalize dialog)
-      return-value))
-  ;; (let ((path (q+:qfiledialog-get-open-file-name
-  ;;              (null-qobject "QWidget")
-  ;;              "Select image"
-  ;;              "." "PNG/JPG Image Files (*.png *.jpg)")))
-  ;;   (if (string= path "") nil path))
-  )
+    (setf (q+:option dialog #x10) nil)
+    (unwind-protect
+         (when (= 1 (q+:exec dialog))
+           (first (q+:selected-files dialog)))
+      (finalize dialog))))
 
 (define-slot (launcher image-clicked) ()
   (declare (connected image (clicked)))
