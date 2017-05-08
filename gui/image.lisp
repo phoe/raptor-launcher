@@ -32,7 +32,7 @@
                (from-type (pathname-type from-path))
                (filename (cat sname "." (string-downcase from-type)))
                (to-pathname (merge-pathnames filename *character-image-dir*))
-               (to-path (princ-to-string to-pathname)))
+               (to-path (uiop:native-namestring to-pathname)))
           (ensure-directories-exist *character-image-dir*)
           (delete-character-image sname)
           (copy-file from-path to-path :finish-output t)
