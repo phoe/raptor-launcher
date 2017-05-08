@@ -16,18 +16,24 @@
         (q+:size-policy image) (values (q+:qsizepolicy.expanding)
                                        (q+:qsizepolicy.expanding))))
 
-(defun image-select-file ()
-  (let ((path (q+:qfiledialog-get-open-file-name
-               (null-qobject "QWidget")
-               "Select image"
-               "." "PNG/JPG Image Files (*.png *.jpg)")))
-    (if (string= path "") nil path)))
+(defun image-select-file (widget)
+  (let ((dialog (q+:make-qfiledialog widget "Select image" "."
+                                     "PNG/JPG Image Files (*.png *.jpg)")))
+    (setf (q+:name-filter dialog) "PNG/JPG Image Files (*.png *.jpg)")
+    (print (q+:exec dialog))
+    (first (q+:selected-files dialog)))
+  ;; (let ((path (q+:qfiledialog-get-open-file-name
+  ;;              (null-qobject "QWidget")
+  ;;              "Select image"
+  ;;              "." "PNG/JPG Image Files (*.png *.jpg)")))
+  ;;   (if (string= path "") nil path))
+  )
 
 (define-slot (launcher image-clicked) ()
   (declare (connected image (clicked)))
   (let ((snames (selected-characters character-list)))
     (when (= 1 (length snames))
-      (when-let ((from-path (image-select-file)))
+      (when-let ((from-path (image-select-file launcher)))
         (let* ((sname (first snames))
                (from-type (pathname-type from-path))
                (filename (cat sname "." (string-downcase from-type)))
