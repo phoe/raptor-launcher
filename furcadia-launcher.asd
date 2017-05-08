@@ -27,6 +27,7 @@
                (:file "logger/logger")
                (:file "db/config")
                (:file "db/state")
+               (:file "db/cookies")
                (:file "backend/backend-login")
                (:file "backend/backend-fured")
                (:file "backend/backend-furcadia")

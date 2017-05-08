@@ -40,11 +40,14 @@
   (when (null-qobject-p (q+:item widget row column))
     (setf (q+:item widget row column) (q+:make-qtablewidgetitem)))
   (let ((item (q+:item widget row column)))
+    (setf (q+:flags item) (+ (q+:qt.item-is-selectable)
+                             (q+:qt.item-is-enabled)))
     (setf (q+:text item) text)))
 
 (defun selected-character-sname (widget)
   (let ((list (q+:selected-indexes widget)))
     (when list
+      (print list)
       (let* ((index (find 0 list :key #'q+:column))
              (row (q+:row index))
              (column (q+:column index))

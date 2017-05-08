@@ -60,8 +60,24 @@ Check the logs for more information."))))
 (define-signal (launcher initialization-required) ())
 
 (define-slot (launcher initialize) ()
-  (declare (connected launcher (initialization-required))
-           (connected button-sync (clicked)))
+  (declare (connected launcher (initialization-required)))
+  (let ((state (furcadia-launcher::load-state-file)))
+    (cond ((getf furcadia-launcher::*config* :sync-on-startup)
+           (note :info "Synchronizing on startup as per config file.")
+           (signal! launcher (synchronization-required)))
+          ((furcadia-launcher::valid-state-p state)
+           (note :info "State is valid, skipping synchronization with server.")
+           (setf furcadia-launcher::*state* state)
+           (signal! launcher (loaded-state-okay)))
+          (t
+           (note :info "State is invalid, forcing synchronization.")
+           (signal! launcher (synchronization-required))))))
+
+(define-signal (launcher synchronization-required) ())
+
+(define-slot (launcher synchronize) ()
+  (declare (connected button-sync (clicked)))
+  (declare (connected launcher (synchronization-required)))
   (signal! launcher (hide-chars-witty-text))
   (setf (q+:focus) button-config
         (q+:enabled button-play) nil
@@ -127,10 +143,13 @@ Check the logs for more information."))))
 
 ;;;; FINISH-INITIALIZATION
 
+(define-signal (launcher loaded-state-okay) ())
+
 (define-signal (launcher fetch-all-characters-okay) ())
 
 (define-slot (launcher finish-initialization) ()
   (declare (connected launcher (fetch-all-characters-okay)))
+  (declare (connected launcher (loaded-state-okay)))
   (q+:show character-list)
   (q+:show description-preview)
   (q+:hide hide-chars-box)
@@ -164,26 +183,29 @@ Check the logs for more information."))))
   #+sbcl (sb-ext:gc :full t))
 
 ;;;; MAIN
+;;;; TODO move this to a separate file in GUI, loaded last
 
 (defvar *launcher* nil)
 
-;;;; TODO move this to a separate file in GUI, loaded last
+(defun make-news-thread (launcher)
+  (bt:make-thread
+   (lambda ()
+     (handler-case
+         (progn
+           (note :info "Downloading news.")
+           (furcadia-launcher::get-all-newsf)
+           (signal! launcher (enable-news)))
+       (error (e)
+         (note :error "Error while downloading news: ~A" e))))
+   :name "Raptor Launcher news downloader"))
+
 (defun main ()
   (unwind-protect
        (with-main-window (launcher 'launcher)
          (note :info "Raptor Launcher GUI started.")
          (setf *launcher* launcher)
          (furcadia-launcher::algorithm-load-config-file)
-         (bt:make-thread
-          (lambda ()
-            (handler-case
-                (progn
-                  (note :info "Downloading news.")
-                  (furcadia-launcher::get-all-newsf)
-                  (signal! launcher (enable-news)))
-              (error (e)
-                (note :error "Error while downloading news: ~A" e))))
-          :name "Raptor Launcher news downloader")
+         (make-news-thread launcher)
          (reset-config launcher)
          (signal! launcher (initialization-required)))
     (setf *launcher* nil)))

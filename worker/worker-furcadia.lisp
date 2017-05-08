@@ -12,7 +12,7 @@ used double slashes in all places while writing it.")
   "Launches Furcadia for the character with the given shortname."
 
   (if (stringp (getf *config* :furcadia-path))
-      (let* ((login-link (character-login-link sname config state state-lock t))
+      (let* ((login-link (character-login-link sname config state state-lock))
              (furcadia-path (getf *config* :furcadia-path))
              (process (launch-furcadia furcadia-path login-link)))
         (note :info "Furcadia launched for character ~A." sname)

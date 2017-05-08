@@ -84,7 +84,8 @@
       (setf (q+:enabled button-play) t)
       (q+:close launcher)))
 
-(define-launcher-button (button-sync "Sync!"))
+(define-launcher-button (button-sync "Sync!")
+  (signal! launcher (synchronize)))
 
 (define-launcher-button (button-quit "Quit")
   (q+:close launcher))

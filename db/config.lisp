@@ -20,7 +20,7 @@ do it manually."
                             :direction :input
                             :if-does-not-exist :create)
            (read s nil nil))
-    (note :info "Configuration file loaded.")))
+    (note :info "Configuration loaded from disk.")))
 
 (defun save-config-file (&optional (config *config*))
   "Saves the current config to disk. If no config is provided, the value of

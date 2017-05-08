@@ -29,17 +29,25 @@
 
 (define-subwidget (launcher config-keep-checkbox) (q+:make-qcheckbox))
 
+(defparameter *launcher-sync-text*
+  "Synchronize with the server on each startup?")
+
+(define-subwidget (launcher config-sync-checkbox) (q+:make-qcheckbox))
+
 (define-subwidget (launcher config-contents) (q+:make-qgridlayout)
   (setf (q+:contents-margins config-contents) (values 0 0 0 0)
         (q+:alignment config-contents) (q+:qt.align-top))
-  (q+:add-widget config-contents (q+:make-qlabel *launcher-keep-text*) 0 0 1 4)
-  (q+:add-widget config-contents config-keep-checkbox 1 0 1 4)
-  (q+:add-widget config-contents (q+:make-qlabel "Path to Furcadia.exe") 2 0 1 4)
-  (q+:add-widget config-contents config-furcadia-path 3 0 1 4)
-  (q+:add-widget config-contents (q+:make-qlabel "Accounts") 4 0 1 4)
-  (q+:add-widget config-contents config-add-account 5 0 1 2)
-  (q+:add-widget config-contents config-delete-account 5 2 1 2)
-  (q+:add-widget config-contents config-accounts-widget 6 0 1 4))
+  (mapc (curry #'apply #'q+:add-widget config-contents)
+        `((,(q+:make-qlabel *launcher-sync-text*) 0 0 1 4)
+          (,config-sync-checkbox 1 0 1 4)
+          (,(q+:make-qlabel *launcher-keep-text*) 2 0 1 4)
+          (,config-keep-checkbox 3 0 1 4)
+          (,(q+:make-qlabel "Path to Furcadia.exe") 4 0 1 4)
+          (,config-furcadia-path 5 0 1 4)
+          (,(q+:make-qlabel "Accounts") 6 0 1 4)
+          (,config-add-account 7 0 1 2)
+          (,config-delete-account 7 2 1 2)
+          (,config-accounts-widget 8 0 1 4))))
 
 (define-subwidget (launcher config-contents-widget) (q+:make-qwidget)
   (setf (q+:layout config-contents-widget) config-contents))
@@ -60,6 +68,8 @@
 (define-slot (launcher save-config) ()
   (declare (connected config-save (clicked)))
   (symbol-macrolet ((config furcadia-launcher::*config*))
+    ;; Sync on startup?
+    (setf (getf config :sync-on-startup) (q+:is-checked config-sync-checkbox))
     ;; Keep running?
     (setf (getf config :keep-running) (q+:is-checked config-keep-checkbox))
     ;; Furcadia path
@@ -70,11 +80,13 @@
     (furcadia-launcher::algorithm-save-config-file)
     ;; TODO fix it - full reinitialization might not be required
     ;; based on the accounts that have changed
-    (signal! launcher (initialization-required))))
+    (signal! launcher (synchronize))))
 
 (define-slot (launcher reset-config reset-config) ()
   (declare (connected config-reset (clicked)))
   (symbol-macrolet ((config furcadia-launcher::*config*))
+    ;; Sync on startup?
+    (setf (q+:checked config-sync-checkbox) (getf config :sync-on-startup))
     ;; Keep running?
     (setf (q+:checked config-keep-checkbox) (getf config :keep-running))
     ;; Furcadia path

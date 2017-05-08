@@ -86,15 +86,15 @@ format \"YYYY-MM-DD HH:MM:SS\"."
 for the purpose of saving the character.")
 
 (defvar *save-char-basic-keywords*
-  '("desc" "colr" "port" "uid")
+  '("desc" "colr" "port" "uid" "digo")
   "Keywords to take into account when generating the save-character JSON
 purely for the purpose of fetching the download link.")
 
 (defun construct-save-keyword (character-json keyword)
   "Constructs a single key-value pair of the JSON to be saved for the provided
 character JSON and keyword."
-  (let ((data (or (cdr (assoc keyword character-json :test #'string-equal))
-                  "")))
+  (let* ((value (assoc-value character-json keyword :test #'string-equal))
+         (data (or value "")))
     (cons keyword (princ-to-string data))))
 
 (defun construct-save-request (character-json fured-secret &optional basic-only)
