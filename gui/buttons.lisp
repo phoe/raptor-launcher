@@ -62,19 +62,23 @@
   (q+:show debug-box))
 
 (define-launcher-button (button-help "Help")
-    (launcher-hide-all)
+  (launcher-hide-all)
   (q+:show help-box))
 
 ;;;; TODO RaptorLauncher image label here
 
 ;;;; BUTTONS BELOW
 
+(defun make-launch-thread (sname)
+  (bt:make-thread (lambda () (furcadia-launcher::furcadia sname))))
+
 (define-launcher-button (button-play "Play!")
-  (when-let ((sname (selected-character-sname character-list)))
+  (when-let ((snames (selected-characters character-list)))
     (setf (q+:enabled button-play) nil)
-    (bt:make-thread (lambda ()
-                      (furcadia-launcher::furcadia sname)
-                      (signal! launcher (launch-done))))))
+    (let* ((threads (mapcar #'make-launch-thread snames)))
+      (bt:make-thread (lambda ()
+                        (mapc #'bt:join-thread threads)
+                        (signal! launcher (launch-done)))))))
 
 (define-signal (launcher launch-done) ())
 

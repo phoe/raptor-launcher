@@ -44,19 +44,24 @@
                              (q+:qt.item-is-enabled)))
     (setf (q+:text item) text)))
 
-(defun selected-character-sname (widget)
-  (let ((list (q+:selected-indexes widget)))
+(defun index-text (widget index)
+  (let* ((row (q+:row index))
+         (column (q+:column index))
+         (item (q+:item widget row column))
+         (name (q+:text item)))
+    name))
+
+(defun selected-characters (character-list)
+  (let ((list (q+:selected-indexes character-list)))
     (when list
-      (print list)
-      (let* ((index (find 0 list :key #'q+:column))
-             (row (q+:row index))
-             (column (q+:column index))
-             (item (q+:item widget row column))
-             (name (q+:text item))
+      (let* ((indices (remove-if-not (curry #'= 0) list :key #'q+:column))
+             (names (mapcar (curry #'index-text character-list) indices))
              (last-logins (furcadia-launcher::state-last-logins))
-             (alist (find name last-logins :key (rcurry #'assoc-value :name)
-                                           :test #'string=)))
-        (assoc-value alist :shortname)))))
+             (find-fn (rcurry #'find last-logins
+                              :key (rcurry #'assoc-value :name)
+                              :test #'string=))
+             (alists (mapcar find-fn names)))
+        (mapcar (rcurry #'assoc-value :shortname) alists)))))
 
 (define-subwidget (launcher description-preview) (q+:make-qtextbrowser)
   (setf (q+:minimum-height description-preview) 100
@@ -68,11 +73,13 @@
 
 (define-slot (launcher char-selection-change) ()
   (declare (connected character-list (item-selection-changed)))
-  (let* ((sname (selected-character-sname character-list))
-         (characters (getf furcadia-launcher::*config* :characters))
-         (character (cdr (find sname characters :key #'car :test #'string=)))
-         (description (assoc-value character :desc)))
-    (setf (q+:text description-preview) (or description ""))))
+  (let ((snames (selected-characters character-list)))
+    (when (= 1 (length snames))
+      (let* ((sname (first snames))
+             (characters (getf furcadia-launcher::*config* :characters))
+             (character (cdr (find sname characters :key #'car :test #'string=)))
+             (description (assoc-value character :desc)))
+        (setf (q+:text description-preview) (or description ""))))))
 
 (defun launcher-logo-path ()
   (let ((path (asdf:system-relative-pathname :furcadia-launcher
