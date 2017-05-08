@@ -57,14 +57,15 @@
             (setf (q+:text image) ""
                   (q+:icon image) new-icon
                   (q+:icon-size image) (q+:size (q+:rect pixmap)))
-            (when old-icon
-              (finalize old-icon)))
+            (finalize old-icon))
           (clear-image image))))))
 
 (defun clear-image (image)
   (when (string= (q+:text image) "")
-    (setf (q+:text image) *character-image-empty*
-          (q+:icon image) (q+:make-qicon))))
+    (let ((old-icon (q+:icon image)))
+      (setf (q+:text image) *character-image-empty*
+            (q+:icon image) (q+:make-qicon))
+      (finalize old-icon))))
 
 (defun selected-character-image-path (sname)
   (let* ((path-base (cat *character-image-dir* sname))
