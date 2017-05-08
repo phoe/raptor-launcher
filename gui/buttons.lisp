@@ -72,6 +72,7 @@
 (defun make-launch-thread (sname)
   (bt:make-thread (lambda () (furcadia-launcher::furcadia sname))))
 
+;;;; TODO force resync if
 (define-launcher-button (button-play "Play!")
   (when-let ((snames (selected-characters character-list)))
     (setf (q+:enabled button-play) nil)

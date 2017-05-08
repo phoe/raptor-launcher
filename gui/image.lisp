@@ -19,7 +19,7 @@
 (defun image-select-file (widget)
   (let ((path (q+:qfiledialog-get-open-file-name
                widget "Select image"
-               "~" "PNG/JPG Image Files (*.png *.jpg)")))
+               "." "PNG/JPG Image Files (*.png *.jpg)")))
     (if (string= path "") nil path)))
 
 (define-slot (launcher image-clicked) ()
