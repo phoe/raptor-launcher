@@ -165,6 +165,7 @@ Check the logs for more information."))))
         (furcadia-launcher::state-last-logins))
   (q+:clear-selection character-list)
   (setf (q+:sorting-enabled character-list) t)
+  (furcadia-launcher::save-state-file)
   ;; TODO use trivial-garbage later
   #+sbcl (sb-ext:gc :full t))
 

@@ -7,8 +7,7 @@
   "The directory where character images and stored.")
 
 (defvar *character-image-empty* "No Character Image
-\(click here to add,
-150x400+)")
+\(click here to add)")
 
 (define-subwidget (launcher image) (q+:make-qpushbutton *character-image-empty*)
   (setf (q+:minimum-width image) 150
@@ -18,26 +17,26 @@
                                        (q+:qsizepolicy.expanding))))
 
 (defun image-select-file (widget)
-  (q+:qfiledialog-get-open-file-name
-   widget "Select image"
-   "~" "PNG/JPG Image Files (*.png *.jpg)"))
+  (let ((path (q+:qfiledialog-get-open-file-name
+               widget "Select image"
+               "~" "PNG/JPG Image Files (*.png *.jpg)")))
+    (if (string= path "") path nil)))
 
 (define-slot (launcher image-clicked) ()
   (declare (connected image (clicked)))
   (let ((snames (selected-characters character-list)))
     (when (= 1 (length snames))
-      (let ((sname (first snames))
-            (from-path (image-select-file launcher)))
-        (when (string/= from-path "")
-          (let* ((from-type (pathname-type from-path))
-                 (filename (cat sname "." (string-downcase from-type)))
-                 (to-pathname (merge-pathnames filename *character-image-dir*))
-                 (to-path (princ-to-string to-pathname)))
-            (ensure-directories-exist *character-image-dir*)
-            (delete-character-image sname)
-            (copy-file from-path to-path :finish-output t)
-            (note :info "Selected image copied to ~A." filename)
-            (signal! launcher (update-image))))))))
+      (when-let ((from-path (image-select-file launcher)))
+        (let* ((sname (first snames))
+               (from-type (pathname-type from-path))
+               (filename (cat sname "." (string-downcase from-type)))
+               (to-pathname (merge-pathnames filename *character-image-dir*))
+               (to-path (princ-to-string to-pathname)))
+          (ensure-directories-exist *character-image-dir*)
+          (delete-character-image sname)
+          (copy-file from-path to-path :finish-output t)
+          (note :info "Selected image copied to ~A." filename)
+          (signal! launcher (update-image)))))))
 
 (define-signal (launcher update-image) ())
 
