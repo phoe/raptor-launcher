@@ -21,7 +21,9 @@
                                      "PNG/JPG Image Files (*.png *.jpg)")))
     (setf (q+:name-filter dialog) "PNG/JPG Image Files (*.png *.jpg)")
     (print (q+:exec dialog))
-    (first (q+:selected-files dialog)))
+    (let ((return-value (first (q+:selected-files dialog))))
+      (finalize dialog)
+      return-value))
   ;; (let ((path (q+:qfiledialog-get-open-file-name
   ;;              (null-qobject "QWidget")
   ;;              "Select image"
