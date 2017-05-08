@@ -12,7 +12,8 @@
                              (sb-debug:print-backtrace
                               :count most-positive-fixnum))))
             (note :error "Fatal error: ~A~%Backtrace:~%~A" c backtrace)
-            (sb-ext:exit :code 1)))))
+            ;; (sb-ext:exit :code 1)
+            ))))
 
 (defun logger-build-hook ()
   (kill *logger*)
