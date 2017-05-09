@@ -1,6 +1,6 @@
-![RaptorLauncher logo](img/logo.png)
+<p align="center"><img src="img/logo-small.png" /></p>
 
-# RaptorLauncher
+# Raptor Launcher
 A variant launcher for Furcadia written in Common Lisp and CommonQt/Qt4.
 
 ## Scope
