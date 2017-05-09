@@ -14,6 +14,7 @@ A variant launcher for Furcadia written in Common Lisp and CommonQt/Qt4.
   * Import legacy INI files for creating costumes.
   * Bulk-set details for all characters, such as AFK information.
   * Automatically refresh characters to prevent them from expiration.
+  * Integrate the launcher with Pounce.
   * Launch Furcadia directly from command line for any given character.
 
 ## Screenshots
