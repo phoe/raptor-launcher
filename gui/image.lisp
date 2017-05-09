@@ -7,6 +7,7 @@
   "The directory where character images and stored.")
 
 (defvar *character-image-empty* "No Character Image
+150x400+
 \(click here to add)")
 
 (define-subwidget (launcher image) (q+:make-qpushbutton *character-image-empty*)

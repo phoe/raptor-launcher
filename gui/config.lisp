@@ -3,6 +3,7 @@
 (in-package :furcadia-launcher-gui)
 (in-readtable :qtools)
 
+;;;; TODO clarify this - change to Path to main Furcadia executable:
 (define-subwidget (launcher config-furcadia-path) (q+:make-qlineedit))
 
 (define-subwidget (launcher config-add-account)
@@ -142,4 +143,6 @@
   (let* ((children (find-children widget "QLineEdit"))
          (credentials (mapcar #'q+:text children)))
     (loop for (email password) on credentials by #'cddr
-          collect (list email password))))
+          collect (list (string-downcase email) password))))
+
+;;;; TODO add an option to nuke configuration in case shit's on fire
