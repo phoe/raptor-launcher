@@ -8,3 +8,6 @@ Then add a translation for it.
 in an external configuration file, depending on the implementation and
 use (load-logical-pathname-translations)
 |#
+
+;; use USER-HOMEDIR-PATHNAME
+;; http://www.lispworks.com/documentation/HyperSpec/Body/f_user_h.htm
