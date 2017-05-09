@@ -3,6 +3,8 @@
 (in-package :furcadia-launcher-gui)
 (in-readtable :qtools)
 
+;;;; TODO layout, differentiate action buttons depending on the tab
+
 ;;;; MAIN LAYOUT
 
 (defmacro set-launcher-layout ()
@@ -62,7 +64,7 @@ Check the logs for more information."))))
 (define-slot (launcher initialize) ()
   (declare (connected launcher (initialization-required)))
   (let ((state (furcadia-launcher::load-state-file)))
-    (cond ((getf furcadia-launcher::*config* :sync-on-startup)
+    (cond ((not (getf furcadia-launcher::*config* :skip-sync-on-startup))
            (note :info "Synchronizing on startup as per config file.")
            (signal! launcher (synchronization-required)))
           ((furcadia-launcher::valid-state-p state)

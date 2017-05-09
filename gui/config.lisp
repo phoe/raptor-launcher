@@ -30,7 +30,7 @@
 (define-subwidget (launcher config-keep-checkbox) (q+:make-qcheckbox))
 
 (defparameter *launcher-sync-text*
-  "Synchronize with the server on each startup?")
+  "Skip synchronizing with the server on startup?")
 
 (define-subwidget (launcher config-sync-checkbox) (q+:make-qcheckbox))
 
@@ -69,7 +69,8 @@
   (declare (connected config-save (clicked)))
   (symbol-macrolet ((config furcadia-launcher::*config*))
     ;; Sync on startup?
-    (setf (getf config :sync-on-startup) (q+:is-checked config-sync-checkbox))
+    (setf (getf config :skip-sync-on-startup)
+          (q+:is-checked config-sync-checkbox))
     ;; Keep running?
     (setf (getf config :keep-running) (q+:is-checked config-keep-checkbox))
     ;; Furcadia path
@@ -86,7 +87,7 @@
   (declare (connected config-reset (clicked)))
   (symbol-macrolet ((config furcadia-launcher::*config*))
     ;; Sync on startup?
-    (setf (q+:checked config-sync-checkbox) (getf config :sync-on-startup))
+    (setf (q+:checked config-sync-checkbox) (getf config :skip-sync-on-startup))
     ;; Keep running?
     (setf (q+:checked config-keep-checkbox) (getf config :keep-running))
     ;; Furcadia path
