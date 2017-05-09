@@ -3,17 +3,21 @@
 # RaptorLauncher
 A variant launcher for Furcadia written in Common Lisp and CommonQt/Qt4.
 
-## Goals
-  * Ability to launch Furcadia from command line for any given character, skipping the official launcher. (DONE)
-  * Ability to edit descriptions and other attributes as pure text.
-  * Ability to show arbitrary images when a given character is selected.
-  * Ability to mix characters from different mail accounts on a single list.
-  * Ability to automatically refresh characters to prevent them from expiration.
+## Scope
+  * Launch Furcadia from command line for any given character, skipping the official launcher. **(DONE)**
+  * Edit descriptions and other attributes as pure text.
+  * Edit descriptions and other attributes as graphics.
+  * Bulk-set details for all characters, such as AFK information.
+  * Show arbitrary images when a given character is selected. **(DONE)**
+  * Display characters from different mail accounts on a single list. **(DONE)**
+  * Automatically refresh characters to prevent them from expiration.
 
-## Mockup
-Don't get too excited - it's just a mockup so far, but that's how I imagine the main screen of the launcher to be modeled.
-
-![Mockup](img/mockup.png)
+## Screenshots
+![Characters](img/screen-chars.png)
+![Config](img/screen-config.png)
+![News](img/screen-news.png)
+![Debug](img/screen-debug.png)
+![Help](img/screen-help.png)
 
 ## Requirements
 See the `furcadia-launcher.asd` file for the list of requirements.
