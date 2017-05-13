@@ -24,6 +24,7 @@
       (setf (q+:layout widget) layout
             (q+:pixmap image) pixmap
             (q+:minimum-size image) (values 84 100)
+            (q+:maximum-size image) (values 84 100)
             (q+:word-wrap text) t
             (q+:text-interaction-flags text)
             (q+:qt.text-browser-interaction)
