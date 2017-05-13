@@ -20,5 +20,5 @@
         #:furcadia-launcher)
   (:export #:main))
 
-(defparameter furcadia-launcher::*version* "0.3"
+(defparameter furcadia-launcher::*version* "0.3.1"
   "The version of the Raptor Launcher.")

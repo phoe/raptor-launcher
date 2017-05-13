@@ -40,9 +40,9 @@
   (when (null-qobject-p (q+:item widget row column))
     (setf (q+:item widget row column) (q+:make-qtablewidgetitem)))
   (let ((item (q+:item widget row column)))
-    (setf (q+:flags item) (+ (q+:qt.item-is-selectable)
-                             (q+:qt.item-is-enabled)))
-    (setf (q+:text item) text)))
+    (setf (q+:text item) text
+          (q+:flags item) (+ (q+:qt.item-is-selectable)
+                             (q+:qt.item-is-enabled)))))
 
 (defun index-text (widget index)
   (let* ((row (q+:row index))

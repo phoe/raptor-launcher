@@ -4,7 +4,9 @@
 (in-readtable :qtools)
 
 ;;;; TODO clarify this - change to Path to main Furcadia executable:
-(define-subwidget (launcher config-furcadia-path) (q+:make-qlineedit))
+(define-subwidget (launcher config-furcadia-path) (q+:make-qlineedit)
+  (setf (q+:placeholder-text config-furcadia-path)
+        "e.g. C:\\Program Files (x86)\\Furcadia\\"))
 
 (define-subwidget (launcher config-add-account)
     (q+:make-qpushbutton "Add"))
@@ -43,7 +45,7 @@
           (,config-sync-checkbox 1 0 1 4)
           (,(q+:make-qlabel *launcher-keep-text*) 2 0 1 4)
           (,config-keep-checkbox 3 0 1 4)
-          (,(q+:make-qlabel "Path to Furcadia.exe") 4 0 1 4)
+          (,(q+:make-qlabel "Path to Furcadia installation folder") 4 0 1 4)
           (,config-furcadia-path 5 0 1 4)
           (,(q+:make-qlabel "Accounts") 6 0 1 4)
           (,config-add-account 7 0 1 2)
