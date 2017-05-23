@@ -17,6 +17,7 @@
 
 (defun logger-build-hook ()
   (kill *logger*)
+  (setf *log-dir* (merge-pathnames ".furcadia-launcher/logs/" (user-homedir-pathname)))
   (loop until (not (alivep *logger*))
         do (sleep 0.1)))
 
@@ -28,3 +29,9 @@
 (pushnew 'logger-build-hook qtools:*build-hooks*)
 
 (pushnew 'logger-boot-hook qtools:*boot-hooks*)
+
+(defun die-hook ()
+  (finish-output *standard-output*)
+  #+ccl (#__exit 0))
+
+(pushnew 'die-hook qtools:*quit-hooks*)

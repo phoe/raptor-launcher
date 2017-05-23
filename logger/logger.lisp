@@ -5,7 +5,7 @@
 
 ;;;; HOOKS
 
-(defparameter *log-dir* "~/.furcadia-launcher/logs/")
+(defparameter *log-dir* (merge-pathnames ".furcadia-launcher/logs/" (user-homedir-pathname)))
 (defparameter *logger-filename*
   (merge-pathnames (format nil "logger-~A.txt" (get-unix-time)) *log-dir*))
 
@@ -16,6 +16,8 @@
     (fresh-line (stream-of *logger*))))
 
 (defun logger-file-hook (type &rest args)
+  (setf *log-dir* (merge-pathnames ".furcadia-launcher/logs/" (user-homedir-pathname)))
+  (setf *logger-filename* (merge-pathnames (format nil "logger-~A.txt" (get-unix-time)) *log-dir*))
   (ensure-directories-exist *log-dir*)
   (with-open-file (stream *logger-filename*
                           :direction :output
@@ -37,6 +39,7 @@
   (:documentation "The logger class, borrowed from Gateway and adapted."))
 
 (defmethod initialize-instance :after ((logger logger) &key)
+  (setf *log-dir* (merge-pathnames ".furcadia-launcher/logs/" (user-homedir-pathname)))
   (let ((name "Furcadia Launcher logger")
         (setter (lambda () (setf (stream-of logger) *standard-output*))))
     (join-thread (make-thread setter))
@@ -53,8 +56,9 @@
         (mapc (rcurry #'apply data) *logger-hooks*)))))
 
 (defparameter *logger-hooks*
-  (list 'logger-console-hook
-        'logger-file-hook))
+  (list ;;'logger-console-hook
+        'logger-file-hook
+		))
 
 (defmethod alivep ((logger logger))
   (thread-alive-p (thread logger)))
