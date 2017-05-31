@@ -3,6 +3,9 @@
 # Raptor Launcher
 A variant launcher for Furcadia written in Common Lisp and CommonQt/Qt4.
 
+## Download
+https://raptorlauncher.github.io/
+
 ## Scope
   * Show arbitrary images when a given character is selected. **(DONE)**
   * Display characters from different mail accounts on a single list. **(DONE)**
