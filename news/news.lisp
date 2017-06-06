@@ -20,8 +20,8 @@
          (skip-second (x) (setf (cdr x) (cddr x)) x)
          (add-filename (x) (cons (url-filename (sixth x)) x))
          (add-date (x) (cons (multiply-date (cadr x)) x)))
-    (let* ((data (split-sequence #\Newline news :remove-empty-subseqs t))
-           (news (nthcdr 8 data))
+    (let* ((data (print (split-sequence #\Newline news :remove-empty-subseqs t)))
+           (news (print (nthcdr 8 data)))
            (*separator* #\Tab)
            (fn (compose #'add-date
                         #'add-filename
@@ -78,9 +78,10 @@ Check your network connection." e)
        (* 10000 (third date)))))
 
 (defun url-filename (url)
-  (let* ((position (1+ (position #\/ url :from-end t)))
-         (filename (subseq url position)))
-    filename))
+  (let* ((position (position #\/ url :from-end t)))
+    (if position
+        (subseq url (1+ position))
+        "")))
 
 (defun news-image-filename-pathname (filename)
   (merge-pathnames filename *news-download-dir*))
@@ -92,21 +93,22 @@ Check your network connection." e)
 
 (defun download-news-image (url)
   (ensure-directories-exist *news-download-dir*)
-  (let* ((filename (url-filename url))
-         (filepath (merge-pathnames filename *news-download-dir*)))
-    (handler-case
-        (with-open-file (file filepath
-                              :direction :output
-                              :if-does-not-exist :create
-                              :if-exists nil
-                              :element-type '(unsigned-byte 8))
-          (when file
-            (note :info "Downloading news image ~A." filename)
-            (let ((input (drakma:http-request url :want-stream t)))
-              (unwind-protect
-                   (loop for x = (read-byte input nil nil)
-                         while x do (write-byte x file))
-                (close input))))
-          filepath)
-      (error (e)
-        (note :error "Failed to download news image ~A: ~A" filename e)))))
+  (unless (string= url "")
+    (let* ((filename (url-filename url))
+           (filepath (merge-pathnames filename *news-download-dir*)))
+      (handler-case
+          (with-open-file (file filepath
+                                :direction :output
+                                :if-does-not-exist :create
+                                :if-exists nil
+                                :element-type '(unsigned-byte 8))
+            (when file
+              (note :info "Downloading news image ~A." filename)
+              (let ((input (drakma:http-request url :want-stream t)))
+                (unwind-protect
+                     (loop for x = (read-byte input nil nil)
+                           while x do (write-byte x file))
+                  (close input))))
+            filepath)
+        (error (e)
+          (note :error "Failed to download news image ~A: ~A" filename e))))))
