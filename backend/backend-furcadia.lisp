@@ -7,23 +7,7 @@
 dependent on the provided Furcadia path and login link."
   (if (uiop:os-windows-p)
       (windows-furcadia-command furcadia-path login-link)
-      (linux-furcadia-command furcadia-path login-link))
-  ;; (let* ((fixed-path
-  ;;          (cat "\""
-  ;;               (replace-all (princ-to-string (truename furcadia-path))
-  ;;                            "/" "\\")
-  ;;               "\""))
-  ;;        (exe-path (princ-to-string (truename (cat furcadia-path
-  ;;                                                  "Furcadia.exe"))))
-  ;;        (path fixed-path)
-  ;;        (command (list "/c" "start" "\"Furcadia\""
-  ;;                       (replace-all (cat "\"" exe-path "\"")
-  ;;                                    "/" "\\")))
-  ;;        (result (append command
-  ;;                        (list "-defaultpath" path
-  ;;                              "-followurl" login-link))))
-  ;;   (format nil "~{~A~^ ~}" result))
-  )
+      (linux-furcadia-command furcadia-path login-link)))
 
 (defun windows-furcadia-command (furcadia-path login-link &key im-sure)
   "Generates a command suitable for running Furcadia on Windows through CMD."

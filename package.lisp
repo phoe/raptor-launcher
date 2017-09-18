@@ -8,6 +8,7 @@
         #:bordeaux-threads
         #:fare-csv
         #:split-sequence
+        #:static-vectors
         #:lparallel.queue)
   (:export #:note
            #:witty-line

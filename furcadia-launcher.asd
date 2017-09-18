@@ -19,6 +19,7 @@
                :split-sequence
                :esrap
                :parser.common-rules
+               :static-vectors
                :qtgui)
   :serial t
   :components ((:file "package")
