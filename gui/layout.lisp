@@ -34,7 +34,7 @@
 
 (define-subwidget (launcher layout) (q+:make-qgridlayout)
   (setf (q+:window-title launcher) (format nil "Raptor Launcher ~A" *version*)
-        (q+:minimum-size launcher) (values 600 420)
+        (q+:minimum-size launcher) (values 600 600)
         ;;(q+:fixed-size launcher) (values 600 420)
         (q+:layout central-widget) layout
         (q+:focus) character-list)

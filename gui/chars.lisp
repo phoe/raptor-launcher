@@ -77,7 +77,8 @@
     (when (= 1 (length snames))
       (let* ((sname (first snames))
              (characters (getf furcadia-launcher::*config* :characters))
-             (character (cdr (find sname characters :key #'car :test #'string=)))
+             (character (cdr (find sname characters :key #'car
+                                                    :test #'string=)))
              (description (assoc-value character :desc)))
         (setf (q+:text description-preview) (or description ""))))))
 
