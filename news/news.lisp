@@ -20,8 +20,8 @@
          (skip-second (x) (setf (cdr x) (cddr x)) x)
          (add-filename (x) (cons (url-filename (sixth x)) x))
          (add-date (x) (cons (multiply-date (cadr x)) x)))
-    (let* ((data (print (split-sequence #\Newline news :remove-empty-subseqs t)))
-           (news (print (nthcdr 8 data)))
+    (let* ((data (split-sequence #\Newline news :remove-empty-subseqs t))
+           (news (nthcdr 8 data))
            (*separator* #\Tab)
            (fn (compose #'add-date
                         #'add-filename
