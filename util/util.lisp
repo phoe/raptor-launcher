@@ -2,9 +2,11 @@
 
 (in-package :furcadia-launcher)
 
-(defun cat (&rest strings)
+;;; TODO migrate to PHOE-TOOLBOX
+
+(defun cat (string &rest strings)
   "Concatenates all strings passed as arguments."
-  (apply #'concatenate 'string strings))
+  (apply #'concatenate 'string string strings))
 
 (defun trim-whitespace (string)
   "Trims whitespace characters from both sides of a string."
@@ -109,6 +111,10 @@ of each list with its keywordized version, if said CAR is a string."
     "Altering character DNA..."
     "[test message please ignore]"
     "Qwertyuiop..."
+    "Implementing third-party protocols..."
+    "Connecting to Test World..."
+    "Washing rubies in rain..."
+    "Applying functions to arguments..."
     "Cultivating crops..."
     "Reticulating splines..."
     "Roleplaying..."
