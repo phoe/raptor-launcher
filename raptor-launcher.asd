@@ -1,10 +1,17 @@
-;;;; furcadia-launcher.asd
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; RAPTOR-LAUNCHER
+;;;; © Michał "phoe" Herda 2017
+;;;; raptor-launcher.asd
 
-(asdf:defsystem #:furcadia-launcher
+(asdf:defsystem #:raptor-launcher
   :description "A launcher for Furcadia"
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
   :depends-on (:alexandria
+               :phoe-toolbox
+               :esrap
+               :parser.common-rules
+               #|
                :ironclad
                :drakma
                :uiop
@@ -17,14 +24,16 @@
                :fare-csv
                :cxml
                :split-sequence
-               :esrap
-               :parser.common-rules
                :static-vectors
-               :qtgui)
+               :qtgui
+               |#
+               )
   :serial t
   :components ((:file "package")
                (:file "util/util")
+               (:file "util/witty-lines")
                (:file "util/date-parser")
+               #|
                (:file "logger/logger")
                (:file "db/config")
                (:file "db/state")
@@ -50,9 +59,12 @@
                (:file "gui/image")
                (:file "gui/layout")
                (:file "build/build")
+               |#
                )
+  #|
   :defsystem-depends-on (:qtools)
   :build-operation "qt-program-op"
   :build-pathname "launcher"
   :entry-point "furcadia-launcher-gui:main"
+  |#
   )

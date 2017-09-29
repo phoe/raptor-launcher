@@ -1,25 +1,33 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; RAPTOR-LAUNCHER
+;;;; © Michał "phoe" Herda 2017
 ;;;; package.lisp
 
-(defpackage #:furcadia-launcher
+(defpackage #:raptor-launcher
   (:use #:cl
         #:alexandria
+        #:phoe-toolbox
+        #|
         #:drakma
         #:json
         #:bordeaux-threads
         #:fare-csv
         #:split-sequence
         #:static-vectors
-        #:lparallel.queue)
+        #:lparallel.queue
+        )
   (:export #:note
            #:witty-line
            #:*version*
-           #:cat))
-
+           #:cat)
+        |#))
+#|
 (defpackage #:furcadia-launcher-gui
   (:use #:cl+qt
         #:alexandria
         #:furcadia-launcher)
   (:export #:main))
+|#
 
-(defparameter furcadia-launcher::*version* "0.3.1"
-  "The version of the Raptor Launcher.")
+(defparameter raptor-launcher::*version* "0.4alpha"
+  "The version of the Raptor Launcher.") ;; TODO move to constants

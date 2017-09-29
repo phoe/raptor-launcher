@@ -1,6 +1,9 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; RAPTOR-LAUNCHER
+;;;; © Michał "phoe" Herda 2017
 ;;;; date-parser.lisp
 
-(defpackage #:date-parser
+(defpackage #:raptor-launcher/date-parser
   (:use
    #:cl
    #:esrap
@@ -8,7 +11,7 @@
   (:export
    #:parse-date))
 
-(in-package #:date-parser)
+(in-package #:raptor-launcher/date-parser)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *months*
