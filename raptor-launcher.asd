@@ -7,10 +7,21 @@
   :description "A launcher for Furcadia"
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
-  :depends-on (:alexandria
+  :depends-on (;; utils
+               :alexandria
                :phoe-toolbox
+               ;; parser
                :esrap
                :parser.common-rules
+               ;; logging
+               :verbose
+               ;; Qt
+               #|
+               :qtools
+               :qtools-evaluator
+               :qtcore
+               :qtgui
+               |#
                #|
                :ironclad
                :drakma
@@ -18,14 +29,10 @@
                :cl-json
                :bordeaux-threads
                :lparallel
-               :qtools
-               :qtools-evaluator
-               :qtcore
                :fare-csv
                :cxml
                :split-sequence
                :static-vectors
-               :qtgui
                |#
                )
   :serial t

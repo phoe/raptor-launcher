@@ -61,8 +61,7 @@
 
 (defparameter *logger-hooks*
   (list ;;'logger-console-hook
-        'logger-file-hook
-    ))
+   'logger-file-hook))
 
 (defmethod alivep ((logger logger))
   (thread-alive-p (thread logger)))
