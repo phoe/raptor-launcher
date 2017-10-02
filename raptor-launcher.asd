@@ -8,13 +8,14 @@
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
   :depends-on (;; utils
-               :alexandria
-               :phoe-toolbox
+               #:alexandria
+               #:phoe-toolbox
                ;; parser
-               :esrap
-               :parser.common-rules
+               #:raptor-launcher.date-parser
+               ;;:esrap
+               ;;:parser.common-rules
                ;; logging
-               :verbose
+               #:verbose
                ;; Qt
                #|
                :qtools
@@ -39,7 +40,6 @@
   :components ((:file "package")
                (:file "util/util")
                (:file "util/witty-lines")
-               (:file "util/date-parser")
                #|
                (:file "logger/logger")
                (:file "db/config")

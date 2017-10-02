@@ -9,6 +9,7 @@
    #:esrap
    #:parser.common-rules)
   (:export
+   #:*months*
    #:parse-date))
 
 (in-package #:raptor-launcher/date-parser)
@@ -22,17 +23,15 @@
 
 (defrule skippable? whitespace*)
 
-(defrule/s delimiter-comma #\,  (:constant nil))
+(defrule/s delimiter-comma #\, (:constant nil))
 
-(defrule/s month
-    #.`(or ,@*months*))
+(defrule/s month #.`(or ,@*months*))
 
 (defrule/s day integer-literal/decimal)
 
 (defrule year integer-literal/decimal)
 
-(defrule date
-    (and month/s day/?s delimiter-comma/?s year)
+(defrule date (and month/s day/?s delimiter-comma/?s year)
   (:destructure (month day comma year)
     (declare (ignore comma))
     (list day month year)))
