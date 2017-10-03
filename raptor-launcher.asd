@@ -12,8 +12,6 @@
                #:phoe-toolbox
                ;; parser
                #:raptor-launcher.date-parser
-               ;;:esrap
-               ;;:parser.common-rules
                ;; logging
                #:verbose
                ;; Qt
