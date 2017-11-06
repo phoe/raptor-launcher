@@ -28,6 +28,8 @@
     "Loading Windows 98..."
     "Multiplying kirins..."
     "Trading digos around..."
+    "Wiretapping Beekin channels..."
+    "Consulting the 8-ball..."
     "Summoning the secret Watu tribe..."
     "Finding the different turret..."
     "Raptor Launcher: better than Uranus."

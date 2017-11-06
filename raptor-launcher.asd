@@ -11,7 +11,7 @@
                #:alexandria
                #:phoe-toolbox
                ;; parser
-               #:raptor-launcher.date-parser
+               #:cl-furcadia.date-parser
                ;; logging
                #:verbose
                ;; Qt
