@@ -3,7 +3,7 @@
 ;;;; © Michał "phoe" Herda 2017
 ;;;; witty-lines.lisp
 
-(in-package :raptor-launcher)
+(in-package :raptor-launcher/util)
 
 (defparameter *witty-lines*
   '("Bouncing raptors on dragons..."
@@ -28,6 +28,8 @@
     "Loading Windows 98..."
     "Multiplying kirins..."
     "Trading digos around..."
+    "Wiretapping Beekin channels..."
+    "Consulting the 8-ball..."
     "Summoning the secret Watu tribe..."
     "Finding the different turret..."
     "Raptor Launcher: better than Uranus."
@@ -40,7 +42,9 @@
     "[test message please ignore]"
     "Qwertyuiop..."
     "Implementing third-party protocols..."
+    "Shooting a 90kg character over 300 meters..."
     "Connecting to Test World..."
+    "Converting GIF portraits into FOX5..."
     "Washing rubies in rain..."
     "Applying functions to arguments..."
     "Cultivating crops..."
