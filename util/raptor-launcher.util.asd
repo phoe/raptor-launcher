@@ -10,7 +10,9 @@
   :serial t
   :depends-on (;; utils
                #:alexandria
-               #:phoe-toolbox)
+               #:phoe-toolbox
+               ;; Qt
+               #:qtools)
   :components ((:file "package")
                (:file "util")
                (:file "witty-lines")))

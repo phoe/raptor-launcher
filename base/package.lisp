@@ -6,4 +6,5 @@
 (defpackage #:raptor-launcher/base
   (:use #:cl+qt
         #:alexandria
-        #:phoe-toolbox))
+        #:phoe-toolbox
+        #:raptor-launcher/util))

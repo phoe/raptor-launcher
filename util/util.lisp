@@ -5,7 +5,15 @@
 
 (in-package :raptor-launcher/util)
 
+(defparameter *version* "0.5alpha"
+  "The version of the Raptor Launcher.") ;; TODO move to constants
+
 ;;; Common utilities depend on the PHOE-TOOLBOX system.
+
+(defmacro define-qt-constructor ((class . keys) &body body)
+  `(define-constructor (,class ,@keys)
+     (qtools:with-slots-bound (,class ,class)
+       ,@body)))
 
 (defun keywordize-cars (list) ;; TODO do we use this at all?
   "Traverses and destructively modifies the provided list by replacing the CAR

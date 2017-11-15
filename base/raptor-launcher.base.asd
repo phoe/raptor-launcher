@@ -14,5 +14,8 @@
                ;; Qt
                #:qtools
                #:qtcore
-               #:qtgui)
-  :components ((:file "package")))
+               #:qtgui
+               ;; Raptor Launcher
+               #:raptor-launcher.util)
+  :components ((:file "package")
+               (:file "main-window")))
