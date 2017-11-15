@@ -7,4 +7,9 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
-        #:raptor-launcher/util))
+        #:raptor-launcher/util)
+  (:export #:buttons
+           #:module-selector
+           #:make-module-selector
+           #:make-dummy-button
+           #:*loaded-modules*))
