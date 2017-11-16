@@ -97,6 +97,50 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
 
 ;;; Logic
 
+;; (defvar *available-modules* '()
+;;   "A list of symbols, each naming a class that participates in the Raptor
+;; Launcher module protocol.") ;; TODO define this protocol somewhere with protest
+
+;; (defun instantiate-modules ()
+;;   (loop for module in *available-modules*
+;;         for instance = (make-instance module :main-window main-window)
+;;         collect instance))
+
+;; (defun load-modules (main-window instances)
+;;   (loop for instance in instances
+;;         for selector = (module-selector instance)
+;;         do (load-module main-window instance)
+;;            (setf (main-window selector) main-window)
+;;            (push instance (loaded-modules main-window)))
+;;   (nreversef (loaded-modules main-window)))
+
+;; (defun load-module (main-window instance)
+;;   (let ((selector (module-selector instance))
+;;         (buttons (buttons instance)))
+;;     (with-slots-bound (main-window main-window)
+;;       (q+:add-widget left-widget-layout instance)
+;;       (q+:add-widget module-selector-layout selector)
+;;       (dolist (button buttons)
+;;         (q+:add-widget module-buttons-layout button)))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (defvar *loaded-modules* '()
   "The list of all Raptor Launcher modules loaded into the Lisp image. Each
 module is designated by its respective package designator.
@@ -173,10 +217,11 @@ the module buttons layout, and the module selector button."
 ;;; Module selector
 
 ;; TODO bugfix, this does not signal anything
+;; TODO selector should point to module, module should point to main window
 (define-widget module-selector (QPushButton)
-  ((main-window :reader main-window
+  ((main-window :accessor main-window
                 :initarg :main-window
-                :initform (error "Must provide main window."))
+                :initform nil)
    (module-name :accessor module-name
                 :initarg :module-name
                 :initform (error "Must provide module name."))))
@@ -188,10 +233,10 @@ the module buttons layout, and the module selector button."
   (with-slots-bound (module-selector module-selector)
     (signal! main-window (show-module string) module-name)))
 
-(defun make-module-selector (main-window button-name &optional package)
+(defun make-module-selector (button-name &key package main-window)
   (let* ((name (package-name (or package *package*)))
-         (instance (make-instance 'module-selector :main-window main-window
-                                                   :module-name name)))
+         (instance (make-instance 'module-selector :module-name name
+                                                   :main-window main-window)))
     (setf (q+:text instance) button-name)
     instance))
 
@@ -234,7 +279,7 @@ the module buttons layout, and the module selector button."
 (define-constructor (main-widget main-window)
   (setf (q+:text main-widget) #.(package-name *package*))
   (setf (module-selector main-widget)
-        (make-module-selector main-window #.(package-name *package*))))
+        (make-module-selector main-window :package #.(package-name *package*))))
 
 ;;; Dummy 2
 
@@ -261,4 +306,4 @@ the module buttons layout, and the module selector button."
 (define-constructor (main-widget main-window)
   (setf (q+:text main-widget) #.(package-name *package*))
   (setf (module-selector main-widget)
-        (make-module-selector main-window #.(package-name *package*))))
+        (make-module-selector main-window :package #.(package-name *package*))))
