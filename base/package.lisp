@@ -12,4 +12,7 @@
            #:module-selector
            #:make-module-selector
            #:make-dummy-button
+           #:hide-all-modules
+           #:show-module
+           #:main-window
            #:*loaded-modules*))

@@ -8,7 +8,9 @@
 
 ;;; Class declaration
 
-(define-widget main-window (QMainWindow) ()
+(define-widget main-window (QMainWindow)
+  ((loaded-modules :accessor loaded-modules
+                   :initform '()))
   (:documentation "The main window widget for Raptor Launcher.
 \
 The main window contains a single CENTRAL-WIDGET that is split into two. On the
@@ -70,8 +72,9 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
   (setf (q+:size-policy left-widget) (values (q+:qsizepolicy.expanding)
                                              (q+:qsizepolicy.expanding))))
 
-(define-subwidget (main-window left-widget-layout) (q+:make-qlayout)
-  (setf (q+:contents-margins left-widget-layout) (values 0 0 0 0)))
+(define-subwidget (main-window left-widget-layout) (q+:make-qvboxlayout)
+  (setf (q+:layout left-widget) left-widget-layout
+        (q+:contents-margins left-widget-layout) (values 0 0 0 0)))
 
 ;;; Right main widget (buttons)
 
@@ -91,154 +94,115 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
     (setf (q+:window-title main-window) title
           (q+:minimum-size main-window) (values 600 600)
           (q+:layout central-widget) central-layout))
-  (if (null *loaded-modules*)
-      (error "not implemented, use TEST1 instead")
-      (load-modules main-window)))
+  (instantiate-modules main-window)
+  (load-modules main-window (loaded-modules main-window))
+  ;; (unless *available-modules* (error "no modules loaded"))
+  )
 
-;;; Logic
+;;; Logic - definitions
 
-;; (defvar *available-modules* '()
-;;   "A list of symbols, each naming a class that participates in the Raptor
-;; Launcher module protocol.") ;; TODO define this protocol somewhere with protest
-
-;; (defun instantiate-modules ()
-;;   (loop for module in *available-modules*
-;;         for instance = (make-instance module :main-window main-window)
-;;         collect instance))
-
-;; (defun load-modules (main-window instances)
-;;   (loop for instance in instances
-;;         for selector = (module-selector instance)
-;;         do (load-module main-window instance)
-;;            (setf (main-window selector) main-window)
-;;            (push instance (loaded-modules main-window)))
-;;   (nreversef (loaded-modules main-window)))
-
-;; (defun load-module (main-window instance)
-;;   (let ((selector (module-selector instance))
-;;         (buttons (buttons instance)))
-;;     (with-slots-bound (main-window main-window)
-;;       (q+:add-widget left-widget-layout instance)
-;;       (q+:add-widget module-selector-layout selector)
-;;       (dolist (button buttons)
-;;         (q+:add-widget module-buttons-layout button)))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(defvar *loaded-modules* '()
-  "The list of all Raptor Launcher modules loaded into the Lisp image. Each
-module is designated by its respective package designator.
+(defvar *available-modules* '()
+  "A list of symbols, each naming a Raptor Launcher module class.
 \
 Each module is required to provide a compatible interface, in form of the
 following protocol:
-* Class MAIN-WIDGET that is a QWidget meant to be shown whenever the
-  MODULE-SELECTOR button is pressed. This class must subclass the MODULE
-  protocol class. There must exist methods specializing on this class for the
-  following generic functions:
+* Each class participating in the protocol must subclass the MODULE protocol
+  class. There must exist methods specializing on this class for the following
+  generic functions:
 * Accessor BUTTONS holding a list of QPushButton instances meant to be shown in
   the module buttons layout.
-* Accessor MODULE-SELECTOR holding a QPushButton meant to be added to the
-  module selector list.")
+* Accessor MODULE-SELECTOR holding an instance of MODULE-SELECTOR meant to be
+  added to the module selector list.
+* Accessor MAIN-WINDOW pointing to the main Raptor Launcher window that the
+  instance is loaded into.")
+
+(defclass module (QWidget) ()) ;; TODO turn into protocol
 
 (defgeneric buttons (object)) ;; TODO turn into protocol
 
 (defgeneric module-selector (object)) ;; TODO turn into protocol
 
-;;; Module handling
+(define-signal (main-window show-module) (string)) ;; TODO turn into protocol
 
-(defun load-module-components (main-window package)
-  "Given a package designator that designates a Raptor Launcher module, returns
-three values: the main widget of the module, a list of buttons to be shown in
-the module buttons layout, and the module selector button."
-  (let* ((package (find-package package))
-         (symbol (find-symbol (string :main-widget) package))
-         (class (find-class symbol))
-         (instance (make-instance class :main-window main-window))
-         (buttons (buttons instance))
-         (module-selector (module-selector instance)))
-    (values instance buttons module-selector)))
+(define-slot (main-window show-module) ((module-name string))
+  (let ((instance (find module-name (loaded-modules main-window)
+                        :test #'string= :key #'type-of)))
+    (unless instance (error "Module ~A not found." module-name))
+    (hide-all-modules main-window)
+    (show-module instance)))
 
-(defun load-modules (main-window)
-  "Loads all modules from *LOADED-MODULES* into the given main window."
-  (with-slots-bound (main-window main-window)
-    (loop for module in *loaded-modules*
-          for (main-widget buttons selector)
-            = (multiple-value-list (load-module-components main-window module))
-          do (q+:add-widget left-widget-layout main-widget)
-             (q+:add-widget module-selector-layout selector)
-             (dolist (button buttons)
-               (q+:add-widget module-buttons-layout button))))
-  (hide-all-modules main-window))
+;;; Logic
 
-(defun show-module (main-window module)
-  "Shows the provided module inside the provided main window."
-  (hide-all-modules main-window)
-  (with-slots-bound (main-window main-window)
-    (let ((module (find module *loaded-modules*)))
-      (multiple-value-bind (main-widget buttons selector)
-          ;; TODO bugfix below, this creates a new instance each time
-          (load-module-components main-window module)
-        (declare (ignore selector))
-        (q+:show main-widget)
-        (dolist (button buttons)
-          (q+:show button))))))
+(defun instantiate-modules (main-window)
+  "Instantiates all modules in *AVAILABLE-MODULES* and adds them to the provided
+main window."
+  (assert (null (loaded-modules main-window)))
+  (setf (loaded-modules main-window)
+        (mapcar (rcurry #'make-instance :main-window main-window)
+                *available-modules*)))
+
+(defun load-modules (main-window instances)
+  "Loads all modules from the provided list of instances into the provided main
+window."
+  (flet ((load-module (main-window instance)
+           (with-slots-bound (main-window main-window)
+             (let ((selector (module-selector instance))
+                   (buttons (buttons instance)))
+               (q+:add-widget left-widget-layout instance)
+               (q+:hide instance)
+               (q+:add-widget module-selector-layout selector)
+               (dolist (button buttons)
+                 (q+:add-widget module-buttons-layout button)
+                 (q+:hide button))
+               (setf (main-window instance) main-window)))))
+    (loop for instance in instances
+          for selector = (module-selector instance)
+          do (load-module main-window instance)
+             (push instance (loaded-modules main-window)))
+    (nreversef (loaded-modules main-window))))
 
 (defun hide-all-modules (main-window)
   (with-slots-bound (main-window main-window)
-    (loop for module in *loaded-modules*
-          for (main-widget buttons selector)
-            = (multiple-value-list (load-module-components main-window module))
-          do (q+:hide main-widget)
+    (loop for instance in (loaded-modules main-window)
+          for buttons = (buttons instance)
+          do (q+:hide instance)
              (dolist (button buttons)
                (q+:hide button)))))
 
-(define-slot (main-window show-module) ((module-name string))
-  (let ((keyword (find module-name *loaded-modules* :test #'string=)))
-    (if keyword
-        (show-module main-window keyword)
-        (error "Module ~A not found." module-name))))
+(defun show-module (instance)
+  (q+:show instance)
+  (dolist (button (buttons instance))
+    (q+:show button)))
 
 ;;; Module selector
 
 ;; TODO bugfix, this does not signal anything
-;; TODO selector should point to module, module should point to main window
 (define-widget module-selector (QPushButton)
-  ((main-window :accessor main-window
-                :initarg :main-window
+  ((main-widget :accessor main-widget
+                :initarg :main-widget
                 :initform nil)
    (module-name :accessor module-name
                 :initarg :module-name
                 :initform (error "Must provide module name."))))
 
-(define-signal (main-window show-module) (string))
-
 (define-slot (module-selector pressed) ()
   (declare (connected module-selector (pressed)))
-  (with-slots-bound (module-selector module-selector)
-    (signal! main-window (show-module string) module-name)))
+  (print "haha")
+  (signal! main-widget (show-module string) module-name))
 
-(defun make-module-selector (button-name &key package main-window)
-  (let* ((name (package-name (or package *package*)))
-         (instance (make-instance 'module-selector :module-name name
-                                                   :main-window main-window)))
+(defun make-module-selector (button-name module-name &key main-widget)
+  (let* ((instance (make-instance 'module-selector
+                                  :module-name (string module-name)
+                                  :main-widget main-widget)))
     (setf (q+:text instance) button-name)
     instance))
+
+(define-signal (module-selector show-module) (string))
+
+(defun connect-selector (main-window selector)
+  (setf (main-widget selector) main-window)
+  (with-slots-bound (selector module-selector)
+    (connect! selector (show-module string) main-window (show-module string))))
 
 ;;; Dummy buttons
 
@@ -247,63 +211,68 @@ the module buttons layout, and the module selector button."
 
 ;;; Test 1
 
+(defpackage :raptor-launcher/test
+  (:use #:cl+qt
+        #:alexandria
+        #:phoe-toolbox
+        #:raptor-launcher/util
+        #:raptor-launcher/base)
+  (:export #:dummy-1 #:dummy-2 #:dummy-3))
+
+(in-package :raptor-launcher/test)
+(in-readtable :qtools)
+
+(define-widget dummy-1 (QLabel)
+  ((buttons :reader buttons
+            :initform (list (make-dummy-button :dummy-1 :a (random 1000))
+                            (make-dummy-button :dummy-1 :b (random 1000))
+                            (make-dummy-button :dummy-1 :c (random 1000))))
+   (main-window :accessor main-window
+                :initform nil)
+   (module-selector :accessor module-selector)))
+
+(define-subwidget (dummy-1 selector)
+    (q+:make-qpushbutton (cat "DUMMY-1 " (prin1-to-string (random 1000)))))
+
+(define-slot (dummy-1 selected) ()
+  (declare (connected selector (pressed)))
+  (hide-all-modules (main-window dummy-1))
+  (show-module dummy-1))
+
+(define-qt-constructor (dummy-1)
+  (setf (q+:text dummy-1) (cat "DUMMY-1 " (prin1-to-string (random 1000))))
+  (setf (module-selector dummy-1) selector
+        (q+:style-sheet dummy-1) "background: blue;"))
+
+;; setStyleSheet("background: red");
+
+(define-widget dummy-2 (QLabel)
+  ((buttons :reader buttons
+            :initform (list (make-dummy-button :dummy-2 :a (random 1000))
+                            (make-dummy-button :dummy-2 :b (random 1000))
+                            (make-dummy-button :dummy-2 :c (random 1000))))
+   (main-window :accessor main-window
+                :initform nil)
+   (module-selector :accessor module-selector)))
+
+(define-subwidget (dummy-2 selector)
+    (q+:make-qpushbutton (cat "DUMMY-2 " (prin1-to-string (random 1000)))))
+
+(define-slot (dummy-2 selected) ()
+  (declare (connected selector (pressed)))
+  (hide-all-modules (main-window dummy-2))
+  (show-module dummy-2))
+
+(define-qt-constructor (dummy-2)
+  (setf (q+:text dummy-2) (cat "DUMMY-2 " (prin1-to-string (random 1000))))
+  (setf (module-selector dummy-2) selector
+        (q+:style-sheet dummy-2) "background: red;"))
+
+;;; Test 1
+
 (defun test1 ()
-  (let ((*loaded-modules* '(:raptor-launcher/dummy-1
-                            :raptor-launcher/dummy-2)))
-    (with-main-window (main-window 'main-window)
-      ;; (show-module main-window :raptor-launcher/dummy-1)
-      )))
-
-;;; Dummy 1
-
-(defpackage :raptor-launcher/dummy-1
-  (:use #:cl+qt
-        #:alexandria
-        #:phoe-toolbox
-        #:raptor-launcher/util
-        #:raptor-launcher/base))
-
-(in-package :raptor-launcher/dummy-1)
-(in-readtable :qtools)
-
-(define-widget main-widget (QLabel)
-  ((buttons :reader buttons
-            :initform (list (make-dummy-button :dummy-1 :a)
-                            (make-dummy-button :dummy-1 :b)
-                            (make-dummy-button :dummy-1 :c)))
-   (main-window :reader main-window
-                :initarg :main-window
-                :initform (error "Must provide main window."))
-   (module-selector :accessor module-selector)))
-
-(define-constructor (main-widget main-window)
-  (setf (q+:text main-widget) #.(package-name *package*))
-  (setf (module-selector main-widget)
-        (make-module-selector main-window :package #.(package-name *package*))))
-
-;;; Dummy 2
-
-(defpackage :raptor-launcher/dummy-2
-  (:use #:cl+qt
-        #:alexandria
-        #:phoe-toolbox
-        #:raptor-launcher/util
-        #:raptor-launcher/base))
-
-(in-package :raptor-launcher/dummy-2)
-(in-readtable :qtools)
-
-(define-widget main-widget (QLabel)
-  ((buttons :reader buttons
-            :initform (list (make-dummy-button :dummy-2 :a)
-                            (make-dummy-button :dummy-2 :b)
-                            (make-dummy-button :dummy-2 :c)))
-   (main-window :reader main-window
-                :initarg :main-window
-                :initform (error "Must provide main window."))
-   (module-selector :accessor module-selector)))
-
-(define-constructor (main-widget main-window)
-  (setf (q+:text main-widget) #.(package-name *package*))
-  (setf (module-selector main-widget)
-        (make-module-selector main-window :package #.(package-name *package*))))
+  (let ((*available-modules* '(raptor-launcher/test:dummy-1
+                               raptor-launcher/test:dummy-2
+                               ;; raptor-launcher/test:dummy-3
+                               )))
+    (with-main-window (main-window 'main-window))))

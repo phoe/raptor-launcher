@@ -46,7 +46,7 @@
       (furcadia-launcher::save-config-file))))
 
 (define-launcher-button (button-config "Config")
-  (launcher-hide-all)
+    (launcher-hide-all)
   (q+:show config-box))
 
 (define-launcher-button (button-chars "Characters")
