@@ -31,9 +31,9 @@
                      :initform nil)
         (buttons :reader buttons
                  :initform (make-dummy-buttons (+ 1 (random 5)) ',symbol))
-        (module-selector :accessor module-selector)))
+        (selector :accessor selector)))
      (define-qt-constructor (,symbol)
-       (setf (module-selector ,symbol) selector)
+       (setf (selector ,symbol) selector)
        (setf (q+:text ,symbol) (string ',symbol)
              (q+:style-sheet ,symbol)
              (format nil "background: #~6,'0X;" (random #.(expt 16 6)))))
@@ -54,6 +54,16 @@
 (define-test-dummy dummy-4)
 
 (define-test-dummy dummy-5)
+
+(define-test-dummy dummy-6)
+
+(define-test-dummy dummy-7)
+
+(define-test-dummy dummy-8)
+
+(define-test-dummy dummy-9)
+
+(define-test-dummy dummy-0)
 
 ;;; Test 1
 

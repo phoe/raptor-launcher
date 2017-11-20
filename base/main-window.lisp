@@ -31,11 +31,11 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
 
 ;;; Module selector
 
-(define-subwidget (main-window module-selector) (q+:make-qwidget))
+(define-subwidget (main-window selector) (q+:make-qwidget))
 
-(define-subwidget (main-window module-selector-layout) (q+:make-qvboxlayout)
-  (setf (q+:contents-margins module-selector-layout) (values 0 0 0 0))
-  (setf (q+:layout module-selector) module-selector-layout))
+(define-subwidget (main-window selector-layout) (q+:make-qvboxlayout)
+  (setf (q+:contents-margins selector-layout) (values 0 0 0 0))
+  (setf (q+:layout selector) selector-layout))
 
 ;;; Button separator
 
@@ -62,7 +62,7 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
 ;;; Buttons layour
 
 (define-subwidget (main-window buttons-layout) (q+:make-qvboxlayout)
-  (q+:add-widget buttons-layout module-selector)
+  (q+:add-widget buttons-layout selector)
   (q+:add-widget buttons-layout button-separator)
   (q+:add-widget buttons-layout module-buttons)
   (q+:add-widget buttons-layout main-quit-button)

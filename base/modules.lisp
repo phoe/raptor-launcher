@@ -16,7 +16,7 @@ following protocol:
   generic functions:
 * Accessor BUTTONS holding a list of QPushButton instances meant to be shown in
   the module buttons layout.
-* Accessor MODULE-SELECTOR holding an instance of MODULE-SELECTOR meant to be
+* Accessor SELECTOR holding an instance of SELECTOR meant to be
   added to the module selector list.
 * Accessor MAIN-WINDOW pointing to the main Raptor Launcher window that the
   instance is loaded into.")
@@ -25,7 +25,7 @@ following protocol:
 
 (defgeneric buttons (object)) ;; TODO turn into protocol
 
-(defgeneric module-selector (object)) ;; TODO turn into protocol
+(defgeneric selector (object)) ;; TODO turn into protocol
 
 ;;; TODO turn the below into methods and protocolize them
 
@@ -42,17 +42,17 @@ main window."
 window."
   (flet ((load-module (main-window instance)
            (with-slots-bound (main-window main-window)
-             (let ((selector (module-selector instance))
+             (let ((selector (selector instance))
                    (buttons (buttons instance)))
                (q+:add-widget left-widget-layout instance)
                (q+:hide instance)
-               (q+:add-widget module-selector-layout selector)
+               (q+:add-widget selector-layout selector)
                (dolist (button buttons)
                  (q+:add-widget module-buttons-layout button)
                  (q+:hide button))
                (setf (main-window instance) main-window)))))
     (loop for instance in instances
-          for selector = (module-selector instance)
+          for selector = (selector instance)
           do (load-module main-window instance)
              (push instance (loaded-modules main-window)))
     (nreversef (loaded-modules main-window))))

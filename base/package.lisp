@@ -15,7 +15,7 @@
    ;; module
    #:module
    #:buttons
-   #:module-selector
+   #:selector
    ;; modules
    #:*available-modules*
    #:hide-all-modules
