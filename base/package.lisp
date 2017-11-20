@@ -8,11 +8,15 @@
         #:alexandria
         #:phoe-toolbox
         #:raptor-launcher/util)
-  (:export #:buttons
-           #:module-selector
-           #:make-module-selector
-           #:make-dummy-button
-           #:hide-all-modules
-           #:show-module
-           #:main-window
-           #:*loaded-modules*))
+  (:export
+   ;; main window
+   #:main-window
+   #:loaded-modules
+   ;; module
+   #:module
+   #:buttons
+   #:module-selector
+   ;; modules
+   #:*available-modules*
+   #:hide-all-modules
+   #:show-module))
