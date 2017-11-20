@@ -20,56 +20,43 @@
   (q+:make-qpushbutton (format nil "~{~A~^ ~}" things)))
 
 (defun make-dummy-buttons (amount thing)
-  (mapcar (curry #'make-dummy-button thing) (iota amount)))
+  (mapcar (curry #'make-dummy-button thing "-") (iota amount)))
 
-;;; dummy-1
+(defvar *dummies* '())
 
-(define-widget dummy-1 (QLabel module)
-  ((buttons :reader buttons
-            :initform (make-dummy-buttons (+ 5 (random 5)) 'dummy-1))
-   (main-window :accessor main-window
-                :initform nil)
-   (module-selector :accessor module-selector)))
+(defmacro define-test-dummy (symbol)
+  `(progn
+     (define-widget ,symbol (QLabel module)
+       ((main-window :accessor main-window
+                     :initform nil)
+        (buttons :reader buttons
+                 :initform (make-dummy-buttons (+ 1 (random 5)) ',symbol))
+        (module-selector :accessor module-selector)))
+     (define-qt-constructor (,symbol)
+       (setf (module-selector ,symbol) selector)
+       (setf (q+:text ,symbol) (string ',symbol)
+             (q+:style-sheet ,symbol)
+             (format nil "background: #~6,'0X;" (random #.(expt 16 6)))))
+     (define-subwidget (,symbol selector)
+         (q+:make-qpushbutton (string ',symbol)))
+     (define-slot (,symbol selected) ()
+       (declare (connected selector (pressed)))
+       (hide-all-modules (main-window ,symbol))
+       (show-module ,symbol))
+     (pushnew ',symbol *dummies*)))
 
-(define-subwidget (dummy-1 selector)
-    (q+:make-qpushbutton (cat "DUMMY-1 " (prin1-to-string (random 1000)))))
+(define-test-dummy dummy-1)
 
-(define-slot (dummy-1 selected) ()
-  (declare (connected selector (pressed)))
-  (hide-all-modules (main-window dummy-1))
-  (show-module dummy-1))
+(define-test-dummy dummy-2)
 
-(define-qt-constructor (dummy-1)
-  (setf (q+:text dummy-1) (cat "DUMMY-1 " (prin1-to-string (random 1000))))
-  (setf (module-selector dummy-1) selector
-        (q+:style-sheet dummy-1) "background: blue;"))
+(define-test-dummy dummy-3)
 
-;;; dummy-2
+(define-test-dummy dummy-4)
 
-(define-widget dummy-2 (QLabel module)
-  ((buttons :reader buttons
-            :initform (list (make-dummy-button :dummy-2 :a (random 1000))
-                            (make-dummy-button :dummy-2 :b (random 1000))
-                            (make-dummy-button :dummy-2 :c (random 1000))))
-   (main-window :accessor main-window
-                :initform nil)
-   (module-selector :accessor module-selector)))
-
-(define-subwidget (dummy-2 selector)
-    (q+:make-qpushbutton (cat "DUMMY-2 " (prin1-to-string (random 1000)))))
-
-(define-slot (dummy-2 selected) ()
-  (declare (connected selector (pressed)))
-  (hide-all-modules (main-window dummy-2))
-  (show-module dummy-2))
-
-(define-qt-constructor (dummy-2)
-  (setf (q+:text dummy-2) (cat "DUMMY-2 " (prin1-to-string (random 1000))))
-  (setf (module-selector dummy-2) selector
-        (q+:style-sheet dummy-2) "background: #FFFF00;"))
+(define-test-dummy dummy-5)
 
 ;;; Test 1
 
 (defun test1 ()
-  (let ((*available-modules* '(dummy-1 dummy-2)))
+  (let ((*available-modules* (reverse *dummies*)))
     (with-main-window (main-window 'main-window))))
