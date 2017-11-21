@@ -11,6 +11,8 @@
   :depends-on (;; utils
                #:alexandria
                #:phoe-toolbox
+               ;; protocol
+               #:protest
                ;; Qt
                #:qtools
                #:qtcore

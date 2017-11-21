@@ -7,6 +7,7 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:protest
         #:raptor-launcher/util)
   (:export
    ;; main window

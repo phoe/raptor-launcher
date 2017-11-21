@@ -7,6 +7,7 @@
 (in-readtable :qtools)
 
 ;;; TODO define protocol and symbols exported by /BASE
+;;; TODO create RAPTOR-LAUNCHER/PROTOCOL system
 
 ;;; Class declaration
 
@@ -98,5 +99,3 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
           (q+:layout central-widget) central-layout))
   (instantiate-modules main-window)
   (load-modules main-window (loaded-modules main-window)))
-
-;;; Modules - definitions
