@@ -8,6 +8,7 @@
         #:alexandria
         #:phoe-toolbox
         #:raptor-launcher/util
+        #:raptor-launcher/protocol
         #:raptor-launcher/base)
   (:export #:dummy-1 #:dummy-2 #:dummy-3))
 
@@ -69,4 +70,4 @@
 
 (defun test1 ()
   (let ((*available-modules* (reverse *dummies*)))
-    (with-main-window (main-window 'main-window))))
+    (with-main-window (main-window 'raptor-launcher))))

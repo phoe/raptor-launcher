@@ -10,6 +10,7 @@
   :serial t
   :depends-on
   (#:raptor-launcher.util
+   #:raptor-launcher.protocol
    #:raptor-launcher.base)
   :components
   ((:file "package")))

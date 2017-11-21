@@ -20,6 +20,6 @@
                ;; Raptor Launcher
                #:raptor-launcher.util)
   :components ((:file "package")
-               (:file "main-window")
+               (:file "raptor-launcher")
                (:file "modules")
                (:file "test")))

@@ -8,16 +8,8 @@
         #:alexandria
         #:phoe-toolbox
         #:protest
-        #:raptor-launcher/util)
+        #:raptor-launcher/util
+        #:raptor-launcher/protocol)
   (:export
-   ;; main window
-   #:main-window
-   #:loaded-modules
-   ;; module
-   #:module
-   #:buttons
-   #:selector
-   ;; modules
-   #:*available-modules*
-   #:hide-all-modules
-   #:show-module))
+   ;; main window class
+   #:raptor-launcher))
