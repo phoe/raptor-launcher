@@ -4,9 +4,11 @@
 ;;;; package.lisp
 
 (uiop:define-package #:raptor-launcher
-  (:use
-   #:raptor-launcher/util
-   #:raptor-launcher/base)
+    (:use
+     #:raptor-launcher/util
+     #:raptor-launcher/protocol
+     #:raptor-launcher/base)
   (:reexport
    #:raptor-launcher/util
+   #:raptor-launcher/protocol
    #:raptor-launcher/base))
