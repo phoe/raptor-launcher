@@ -6,7 +6,12 @@
 (in-package :raptor-launcher/util)
 
 (defparameter *witty-lines*
-  '("Bouncing raptors on dragons..."
+  '("Loading..."
+    "Processing..."
+    "Proceeding..."
+    "Translating the responses into Klingon..."
+    "Uploading your hard drive to the cloud..."
+    "Bouncing raptors on dragons..."
     "Painting all characters green..."
     "Setting all passwords to qwerty123..."
     "Randomly flipping characters' genders..."
@@ -15,6 +20,7 @@
     "Rewriting the launcher in C++..."
     "Obfuscating configuration..."
     "Brewing original British tea on your CPU..."
+    "Launching a 90kg projectile over 300 meters..."
     "Launching all alts at once..."
     "Launching pies..."
     "Wasting your time..."
