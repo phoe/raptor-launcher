@@ -5,15 +5,15 @@
 (defvar *news-download-dir* "~/.furcadia-launcher/news/"
   "The directory where news images are downloaded and stored.")
 
-(defun http-furcadia-news ()
-  (split-news (replace-all (flexi-streams:octets-to-string
-                            (http-request "http://news.furcadia.com/current"
-                                          :external-format-out :utf-8))
-                           "#LF#" "")))
+;; (defun http-furcadia-news ()
+;;   (split-news (replace-all (flexi-streams:octets-to-string
+;;                             (http-request "http://news.furcadia.com/current"
+;;                                           :external-format-out :utf-8))
+;;                            "#LF#" "")))
 
-(defun http-launcher-news ()
-  (split-news (http-request "http://raptorlauncher.github.io/news.txt"
-                            :external-format-out :utf-8)))
+;; (defun http-launcher-news ()
+;;   (split-news (http-request "http://raptorlauncher.github.io/news.txt"
+;;                             :external-format-out :utf-8)))
 
 (defun split-news (news)
   (flet ((cut-newsentry (x) (setf (car x) (subseq (car x) 10)) x)

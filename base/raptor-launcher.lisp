@@ -51,7 +51,8 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
 
 ;;; Quit button
 
-(define-subwidget (raptor-launcher main-quit-button) (q+:make-qpushbutton "Quit"))
+(define-subwidget (raptor-launcher main-quit-button)
+    (q+:make-qpushbutton "Quit"))
 
 (define-slot (raptor-launcher quit) ()
   (declare (connected main-quit-button (pressed)))
