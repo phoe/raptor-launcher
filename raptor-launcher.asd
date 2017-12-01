@@ -11,6 +11,7 @@
   :depends-on
   (#:raptor-launcher.util
    #:raptor-launcher.protocol
+   #:raptor-launcher.config
    #:raptor-launcher.base)
   :components
   ((:file "package")))
