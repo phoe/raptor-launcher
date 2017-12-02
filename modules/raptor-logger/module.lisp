@@ -35,6 +35,7 @@
     (signal! logger (new-log string) html-message))
   (values))
 
+;; TODO modify protocol to include lowest message type we want to see
 (defmethod logs ((logger raptor-logger))
   (log-list logger))
 
@@ -55,7 +56,7 @@
 </p>")
 
 (defun htmlize-message (type timestamp formatted-message)
-  (let ((color (config :raptor-config :message-type :color type))
+  (let ((color (or (config :raptor-config :message-type :color type) '(0 0 0)))
         (text (plump-dom:encode-entities formatted-message))
         (hour (local-time:timestamp-hour timestamp))
         (minute (local-time:timestamp-minute timestamp))

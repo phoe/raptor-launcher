@@ -20,7 +20,7 @@ this protocol class."
   "A list of message types valid for logging. The first element of each type ~
 is the type's keyword, the second is a list of default RGB values for ~
 displaying it."
-  (:function note (logger type message &rest args) (values))
+  (:function note (logger type message &rest args) t)
   "Logs the provided message on the provided LOGGER. MESSAGE and ARGS should ~
 follow the same convention as FORMAT arguments.
 \

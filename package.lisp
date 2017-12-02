@@ -25,5 +25,4 @@
         (name (format nil "Raptor Launcher ~A" *version*)))
     (qtools:with-main-window (main-window 'raptor-launcher :name name)
       (setf *main-window* main-window)
-      (loop for (type . color) in *message-types*
-            do (note t type "Test message of type ~A" type)))))
+      (note t :info "Raptor Launcher starting."))))
