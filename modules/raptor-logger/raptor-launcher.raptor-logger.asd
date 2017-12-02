@@ -1,18 +1,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; RAPTOR-LAUNCHER
 ;;;; © Michał "phoe" Herda 2017
-;;;; raptor-launcher.asd
+;;;; raptor-launcher.protocol.asd
 
-(asdf:defsystem #:raptor-launcher
-  :description "A graphical launcher and toolsuite for Furcadia"
+(asdf:defsystem #:raptor-launcher.raptor-logger
+  :description "Standard logger for Raptor Launcher"
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
   :serial t
   :depends-on
-  (#:raptor-launcher.util
+  (#:plump
+   #:local-time
+   #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config
-   #:raptor-launcher.base
-   #:raptor-launcher.raptor-logger)
+   #:raptor-launcher.base)
   :components
-  ((:file "package")))
+  ((:file "package")
+   (:file "module")))

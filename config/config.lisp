@@ -26,6 +26,12 @@ the value was found in the configuration."
   (let ((*storage-pathname* *config-path*))
     (apply #'value path)))
 
+(defun default-config (default &rest path)
+  "Fetch the configuration value for the given path and return it. If the value
+is not found, DEFAULT is set as the value and returned."
+  (let ((*storage-pathname* *config-path*))
+    (apply #'defaulted-value default path)))
+
 (defmacro econfig (&rest path)
   "Returns the configuration value for the given path. Signals an error if the
 value was not found."

@@ -11,5 +11,6 @@
    #:*config-path*
    #:*dl-path*
    #:config
+   #:default-config
    #:econfig
    #:remconfig))

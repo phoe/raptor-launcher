@@ -28,7 +28,7 @@
     (loop for instance in instances
           for selector = (selector instance)
           do (load-module main-window instance)
-             (push instance (loaded-modules main-window)))
+             (pushnew instance (loaded-modules main-window)))
     (nreversef (loaded-modules main-window))))
 
 (defmethod hide-all-modules ((main-window raptor-launcher))
@@ -48,6 +48,7 @@
 
 (defmacro define-raptor-module (name (&rest protocol-classes) &body clauses)
   (let* ((main-window-clause (assoc-value-or-die clauses :main-window))
+         (main-window-slots (cdr main-window-clause))
          (selector-clause (assoc-value-or-die clauses :selector))
          (constructor-clause (assoc-value clauses :constructor))
          (pred (lambda (x) (eq (car x) :button)))
@@ -60,9 +61,11 @@
          ((%main-window :accessor main-window
                         :initform nil)
           (%buttons :accessor buttons)
-          (%selector :accessor selector)))
+          (%selector :accessor selector)
+          ,@main-window-slots))
        (define-subwidget (,name layout) (q+ ,layout-constructor)
-         (setf (q+:layout ,name) layout))
+         (setf (q+:layout ,name) layout
+               (q+:margin layout) 0))
        (define-subwidget (,name selector) (q+:make-qpushbutton ,selector-name)
          (setf (q+:checkable selector) t))
        ,@(loop for (button-name button-text) in button-clauses
@@ -75,7 +78,6 @@
        (define-qt-constructor (,name)
          (setf (selector ,name) selector
                (buttons ,name) (list ,@(mapcar #'car button-clauses)))
-         ,@(when constructor-clause
-             `((funcall ,@constructor-clause))))
+         (funcall (lambda () ,@constructor-clause)))
        (pushnew ',name *available-modules*)
        ',name)))

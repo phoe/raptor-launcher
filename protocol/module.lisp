@@ -23,6 +23,9 @@ list."
   (:function main-window ((module module)) (or widget null))
   "Returns the main window the module is loaded into, or NIL if the module is ~
 not loaded."
+  (:function layout ((module module)) qlayout)
+  "Returns the layout of the module, into which it is possible to embed ~
+Qt widgets."
   (:function show-module ((module module)) t)
   "Shows the provided module instance inside its main window."
   (:macro define-raptor-module (name (&rest protocol-classes) &body clauses))
@@ -30,8 +33,9 @@ not loaded."
 PROTOCOL-CLASSES.
 \
 The possible clauses are:
-\(:MAIN-WINDOW LAYOUT-CLASS) - required, one permitted. LAYOUT-CLASS is the ~
-class of Qt layout to be instantiated and embedded in the main window.
+\(:MAIN-WINDOW LAYOUT-CLASS SLOTS) - required, one permitted. LAYOUT-CLASS ~
+is the class of Qt layout to be instantiated and embedded in the Raptor ~
+Launcher's main window. SLOTS is a list of all slots in the widget.
 \(:SELECTOR TEXT) - required, one permitted. TEXT is the text that will be ~
 shown on the button.
 \(:BUTTON NAME TEXT) - optional, multiple permitted. NAME is the slot name of ~

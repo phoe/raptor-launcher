@@ -91,9 +91,7 @@ LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
 ;;; Main window constructor
 
 (define-qt-constructor (raptor-launcher)
-  (let ((title (format nil "Raptor Launcher ~A" *version*)))
-    (setf (q+:window-title raptor-launcher) title
-          (q+:minimum-size raptor-launcher) (values 600 600)
-          (q+:layout central-widget) central-layout))
+  (setf (q+:minimum-size raptor-launcher) (values 600 600)
+        (q+:layout central-widget) central-layout)
   (instantiate-modules raptor-launcher)
   (load-modules raptor-launcher))

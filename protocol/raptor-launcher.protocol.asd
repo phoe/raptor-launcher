@@ -9,6 +9,8 @@
   :license "GPLv3"
   :serial t
   :depends-on (#:closer-mop
+               #:moptilities
+               #:alexandria
                #:protest)
   :components ((:file "package")
                ;; base

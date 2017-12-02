@@ -5,12 +5,25 @@
 
 (uiop:define-package #:raptor-launcher
   (:use
+   #:cl
    #:raptor-launcher/util
    #:raptor-launcher/config
    #:raptor-launcher/protocol
    #:raptor-launcher/base)
+  (:export
+   #:main)
   (:reexport
    #:raptor-launcher/util
    #:raptor-launcher/config
    #:raptor-launcher/protocol
    #:raptor-launcher/base))
+
+(in-package #:raptor-launcher)
+
+(defun main ()
+  (let ((*main-window* nil)
+        (name (format nil "Raptor Launcher ~A" *version*)))
+    (qtools:with-main-window (main-window 'raptor-launcher :name name)
+      (setf *main-window* main-window)
+      (loop for (type . color) in *message-types*
+            do (note t type "Test message of type ~A" type)))))

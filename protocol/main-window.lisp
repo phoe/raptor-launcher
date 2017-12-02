@@ -12,6 +12,9 @@ Raptor Launcher, each capable of loading and displaying modules."
      :export t)
   (:class main-window () ())
   "A main window object."
+  (:variable *main-window* t '())
+  "The currently active main window. This variable must be bound whenever the ~
+main QApplication is executed."
   (:function loaded-modules ((main-window main-window)) t)
   "Returns a list of all modules loaded into the main window. The modules are ~
 indirect instances of the MODULE protocol class."
