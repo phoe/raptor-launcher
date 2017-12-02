@@ -46,17 +46,17 @@
   (dolist (button (buttons instance))
     (q+:show button)))
 
-;; TODO document this as a part of MODULE protocol
-(defmacro define-raptor-module (name (&rest classes) &body clauses)
+(defmacro define-raptor-module (name (&rest protocol-classes) &body clauses)
   (let* ((main-window-clause (assoc-value-or-die clauses :main-window))
          (selector-clause (assoc-value-or-die clauses :selector))
+         (constructor-clause (assoc-value clauses :constructor))
          (pred (lambda (x) (eq (car x) :button)))
          (button-clauses (mapcar #'cdr (remove-if-not pred clauses)))
          (layout-class (first main-window-clause))
          (layout-constructor (symbolicate "MAKE-" layout-class))
          (selector-name (first selector-clause)))
     `(progn
-       (define-widget ,name (qwidget ,@classes)
+       (define-widget ,name (qwidget ,@protocol-classes)
          ((%main-window :accessor main-window
                         :initform nil)
           (%buttons :accessor buttons)
@@ -74,6 +74,8 @@
          (show-module ,name))
        (define-qt-constructor (,name)
          (setf (selector ,name) selector
-               (buttons ,name) (list ,@(mapcar #'car button-clauses))))
+               (buttons ,name) (list ,@(mapcar #'car button-clauses)))
+         ,@(when constructor-clause
+             `((funcall ,@constructor-clause))))
        (pushnew ',name *available-modules*)
        ',name)))

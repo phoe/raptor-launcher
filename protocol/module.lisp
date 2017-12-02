@@ -7,7 +7,8 @@
 
 (define-protocol module
     (:description "The MODULE protocol describes objects representing the ~
-Raptor Launcher modules, displayable in the main window of the Raptor Launcher."
+Raptor Launcher modules, displayable in the main window of the Raptor Launcher.
+Modules are expected to be defined using the DEFINE-RAPTOR-MODULE macro."
      :tags (:raptor-launcher :module)
      :export t)
   (:class module () ())
@@ -23,4 +24,17 @@ list."
   "Returns the main window the module is loaded into, or NIL if the module is ~
 not loaded."
   (:function show-module ((module module)) t)
-  "Shows the provided module instance inside its main window.")
+  "Shows the provided module instance inside its main window."
+  (:macro define-raptor-module (name (&rest protocol-classes) &body clauses))
+  "Defines a new concrete Raptor Launcher module with name NAME, subclassing ~
+PROTOCOL-CLASSES.
+\
+The possible clauses are:
+\(:MAIN-WINDOW LAYOUT-CLASS) - required, one permitted. LAYOUT-CLASS is the ~
+class of Qt layout to be instantiated and embedded in the main window.
+\(:SELECTOR TEXT) - required, one permitted. TEXT is the text that will be ~
+shown on the button.
+\(:BUTTON NAME TEXT) - optional, multiple permitted. NAME is the slot name of ~
+the button and TEXT is the text that will be shown on it.
+\(:CONSTRUCTOR FUNCTION) - optional, one permitted. Must be a function of zero ~
+arguments that will be called after the module instance is constructed.")

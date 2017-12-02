@@ -1,3 +1,8 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; RAPTOR-LAUNCHER
+;;;; © Michał "phoe" Herda 2017
+;;;; package.lisp
+
 (defpackage :raptor-launcher/raptor-logger
   (:use #:cl+qt
         #:alexandria
@@ -13,4 +18,5 @@
 (define-raptor-module raptor-logger (logger)
   (:main-window qhboxlayout)
   (:selector "Logger")
-  (:button clear-button "Clear"))
+  (:button clear-button "Clear")
+  (:constructor (lambda () )))
