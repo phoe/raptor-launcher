@@ -11,5 +11,8 @@
   :depends-on (#:closer-mop
                #:protest)
   :components ((:file "package")
+               ;; base
                (:file "module")
-               (:file "main-window")))
+               (:file "main-window")
+               ;; modules
+               (:file "modules/logger")))

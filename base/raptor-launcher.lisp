@@ -9,8 +9,8 @@
 ;;; Class declaration
 
 (define-widget raptor-launcher (QMainWindow)
-  ((loaded-modules :accessor loaded-modules
-                   :initform '()))
+  ((%loaded-modules :accessor loaded-modules
+                    :initform '()))
   (:documentation "The main window widget for Raptor Launcher.
 \
 The main window contains a single CENTRAL-WIDGET that is split into two. On the
