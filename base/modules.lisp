@@ -46,18 +46,19 @@
   (dolist (button (buttons instance))
     (q+:show button)))
 
-(defmacro define-raptor-module (name (&rest protocol-classes) &body clauses)
+(defmacro define-raptor-module (name (&rest protocol-classes) &rest clauses)
   (let* ((main-window-clause (assoc-value-or-die clauses :main-window))
          (main-window-slots (cdr main-window-clause))
          (selector-clause (assoc-value-or-die clauses :selector))
          (constructor-clause (assoc-value clauses :constructor))
          (pred (lambda (x) (eq (car x) :button)))
          (button-clauses (mapcar #'cdr (remove-if-not pred clauses)))
-         (layout-class (first main-window-clause))
+         (widget-class (first main-window-clause))
+         (layout-class (second main-window-clause))
          (layout-constructor (symbolicate "MAKE-" layout-class))
          (selector-name (first selector-clause)))
     `(progn
-       (define-widget ,name (qwidget ,@protocol-classes)
+       (define-widget ,name (,widget-class ,@protocol-classes)
          ((%main-window :accessor main-window
                         :initform nil)
           (%buttons :accessor buttons)

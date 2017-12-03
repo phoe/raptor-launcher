@@ -6,9 +6,8 @@
 (in-package :raptor-launcher/raptor-logger)
 (in-readtable :qtools)
 
-;; TODO use verbose for logging
 (define-raptor-module raptor-logger (logger)
-  (:main-window qhboxlayout
+  (:main-window qwidget qhboxlayout
                 (log-list :accessor log-list :initform '()))
   (:selector "Logger")
   (:button clear-button "Clear")
@@ -49,8 +48,11 @@
   (signal! logger (clear-logs))
   (values))
 
+;; TODO do it better, place a separate configuration section somewhere,
+;; document the configuration in some place, perhaps add a CONFIGURATION
+;; section in PROTEST
 (loop for (type . color) in *message-types*
-      do (default-config color :raptor-config :message-type :color type))
+      do (default-config color :logger :message-type :color type))
 
 (defparameter *htmlize-format-string* "
 <p>
@@ -61,7 +63,7 @@
 </p>")
 
 (defun htmlize-message (type timestamp formatted-message)
-  (let ((color (or (config :raptor-config :message-type :color type) '(0 0 0)))
+  (let ((color (or (config :logger :message-type :color type) '(0 0 0)))
         (text (plump-dom:encode-entities formatted-message))
         (hour (local-time:timestamp-hour timestamp))
         (minute (local-time:timestamp-minute timestamp))
