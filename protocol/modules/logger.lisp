@@ -17,19 +17,20 @@ this protocol class."
              '((:trace 191 191 191) (:debug 000 255 255) (:info 000 255 000)
                (:warn 255 255 000) (:error 255 000 000)
                (:severe 255 000 127) (:fatal 255 000 255)))
-  "A list of message types valid for logging. The first element of each type ~
-is the type's keyword, the second is a list of default RGB values for ~
-displaying it."
+  "A list of message types valid for logging, in increasing order of severity. ~
+The first element of each type is the type's keyword, the second is a list of ~
+default RGB values for displaying it."
   (:function note (logger type message &rest args) t)
   "Logs the provided message on the provided LOGGER. MESSAGE and ARGS should ~
 follow the same convention as FORMAT arguments.
 \
 The user might provide T as a logger, at which point, the message will be sent ~
 to all loggers available in the *MAIN-WINDOW*. The user may also ~
-provide NIL, at which point NOTE will simply return a two-element list ~
+provide NIL, at which point the function will simply return a two-element list ~
 containing TYPE and the formatted message."
-  (:function logs ((logger logger)) t)
-  "Returns a list of all messages logged by the logger."
+  (:function logs ((logger logger) &key severity) t)
+  "Returns a list of all messages logged by the logger of equal or higher ~
+importance than the provided one."
   (:function clear ((logger logger)) (values))
   "Clears all messages logged by the logger.")
 

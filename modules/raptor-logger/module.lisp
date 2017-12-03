@@ -6,12 +6,14 @@
 (in-package :raptor-launcher/raptor-logger)
 (in-readtable :qtools)
 
+;; TODO use verbose for logging
 (define-raptor-module raptor-logger (logger)
   (:main-window qhboxlayout
                 (log-list :accessor log-list :initform '()))
   (:selector "Logger")
   (:button clear-button "Clear")
-  (:constructor))
+  (:constructor
+      (note raptor-logger :info "Raptor Logger starting.")))
 
 (define-subwidget (raptor-logger debug-logs) (q+:make-qplaintextedit)
   (q+:add-widget layout debug-logs)
@@ -25,7 +27,9 @@
 
 (define-slot (raptor-logger clear-logs) ()
   (declare (connected clear-button (pressed)))
-  (q+:clear debug-logs))
+  (q+:clear debug-logs)
+  (setf (log-list raptor-logger) '())
+  (note raptor-logger :trace "Logs cleared."))
 
 (defmethod note ((logger raptor-logger) type message &rest args)
   (let* ((formatted-message (apply #'format nil message args))
@@ -35,13 +39,14 @@
     (signal! logger (new-log string) html-message))
   (values))
 
-;; TODO modify protocol to include lowest message type we want to see
-(defmethod logs ((logger raptor-logger))
-  (log-list logger))
+(defmethod logs ((logger raptor-logger) &key (severity :trace))
+  (let* ((severities (mapcar #'car *message-types*))
+         (collected-severities (member severity severities)))
+    (remove-if-not (rcurry #'member collected-severities) (log-list logger)
+                   :key #'car)))
 
 (defmethod clear ((logger raptor-logger))
   (signal! logger (clear-logs))
-  (note logger :trace "Logs cleared.")
   (values))
 
 (loop for (type . color) in *message-types*
