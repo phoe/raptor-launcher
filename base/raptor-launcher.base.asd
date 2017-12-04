@@ -18,8 +18,8 @@
                #:qtcore
                #:qtgui
                ;; Raptor Launcher
-               #:raptor-launcher.util)
+               #:raptor-launcher.util
+               #:raptor-launcher.protocol)
   :components ((:file "package")
                (:file "raptor-launcher")
-               (:file "modules")
-               (:file "test")))
+               (:file "modules")))

@@ -49,14 +49,3 @@ value was not found."
   "Removes the configuration value of the given path."
   (let ((*storage-pathname* *config-path*))
     (apply #'remvalue path)))
-
-;;; Config - test TODO move out of code
-
-(defun test ()
-  (uiop:with-temporary-file (:pathname pathname)
-    (let ((*storage-pathname* pathname))
-      (assert (equal (multiple-value-list (config :foo)) '(nil nil)))
-      (setf (config :foo) :bar)
-      (assert (equal (multiple-value-list (config :foo)) '(:bar t)))
-      (remconfig :foo)
-      (assert (equal (multiple-value-list (config :foo)) '(nil nil))))))

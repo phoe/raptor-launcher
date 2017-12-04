@@ -48,9 +48,6 @@
   (signal! logger (clear-logs))
   (values))
 
-;; TODO do it better, place a separate configuration section somewhere,
-;; document the configuration in some place, perhaps add a CONFIGURATION
-;; section in PROTEST
 (loop for (type . color) in *message-types*
       do (default-config color :logger :message-type :color type))
 
