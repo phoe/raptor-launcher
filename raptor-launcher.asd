@@ -13,6 +13,7 @@
    #:raptor-launcher.protocol
    #:raptor-launcher.config
    #:raptor-launcher.base
-   #:raptor-launcher.raptor-logger)
+   #:raptor-launcher.raptor-logger
+   #:raptor-launcher.raptor-picker)
   :components
   ((:file "package")))

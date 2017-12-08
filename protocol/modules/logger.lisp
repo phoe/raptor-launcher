@@ -44,11 +44,12 @@ This configuration value is expected to be defined for all types mentioned in ~
 *MESSAGE-TYPES*, with the default values are to be taken from the list.")
 
 (defmethod note ((logger (eql 't)) type message &rest args)
-  (let* ((modules (loaded-modules *main-window*))
-         (loggers (remove-if-not (rcurry #'subclassp 'logger) modules
-                                 :key #'class-of)))
-    (mapc (lambda (x) (apply #'note x type message args)) loggers)
-    (values)))
+  (when *main-window*
+    (let* ((modules (loaded-modules *main-window*))
+           (loggers (remove-if-not (rcurry #'subclassp 'logger) modules
+                                   :key #'class-of)))
+      (mapc (lambda (x) (apply #'note x type message args)) loggers)
+      (values))))
 
 (defmethod note ((logger (eql 'nil)) type message &rest args)
   (list type (apply #'format nil message args)))

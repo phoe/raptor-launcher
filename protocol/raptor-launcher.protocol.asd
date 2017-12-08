@@ -17,4 +17,5 @@
                (:file "module")
                (:file "main-window")
                ;; modules
-               (:file "modules/logger")))
+               (:file "modules/logger")
+               (:file "modules/picker")))

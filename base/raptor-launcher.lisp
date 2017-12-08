@@ -24,6 +24,10 @@ defined by the module itself. The upper buttons are the module selector buttons,
 each of which shows the contents of the selected module in the
 LEFT-WIDGET-LAYOUT and shows the module-specific buttons."))
 
+(defmethod initialize-instance :before
+    ((raptor-launcher raptor-launcher) &key &allow-other-keys)
+  (setf *main-window* raptor-launcher))
+
 (define-subwidget (raptor-launcher central-widget) (q+:make-qwidget)
   (setf (q+:central-widget raptor-launcher) central-widget))
 

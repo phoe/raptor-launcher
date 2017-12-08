@@ -9,8 +9,13 @@
 (defmethod instantiate-modules ((main-window raptor-launcher)
                                 &optional (modules *available-modules*))
   (assert (null (loaded-modules main-window)))
-  (setf (loaded-modules main-window)
-        (mapcar (rcurry #'make-instance :main-window main-window) modules)))
+  ;; TODO better ordering here, loggers should go always first
+  ;; (loop for class in classes
+  ;;       nconc (loop for instance in instances
+  ;;                   when (instancep instance class) collect instance))
+  (loop for module in (reverse modules)
+        do (push (make-instance module :main-window main-window)
+                 (loaded-modules main-window))))
 
 (defmethod load-modules ((main-window raptor-launcher)
                          &optional (instances (loaded-modules main-window)))
@@ -46,7 +51,7 @@
   (dolist (button (buttons instance))
     (q+:show button)))
 
-(defmacro define-raptor-module (name (&rest protocol-classes) &rest clauses)
+(defmacro define-raptor-module (name (&rest protocol-classes) &body clauses)
   (let* ((main-window-clause (assoc-value-or-die clauses :main-window))
          (main-window-slots (cdr main-window-clause))
          (selector-clause (assoc-value-or-die clauses :selector))

@@ -24,5 +24,4 @@
   (let ((*main-window* nil)
         (name (format nil "Raptor Launcher ~A" *version*)))
     (qtools:with-main-window (main-window 'raptor-launcher :name name)
-      (setf *main-window* main-window)
       (note t :info "Raptor Launcher starting."))))
