@@ -10,7 +10,7 @@
   (:main-window qwidget qhboxlayout
                 (log-list :accessor log-list :initform '()))
   (:selector "Characters")
-  (:button clear-button "Play!")
-  (:button clear-button "Sync")
+  (:button play-button "Play!")
+  (:button sync-button "Sync")
   (:constructor
       (note t :info "Raptor Picker starting.")))

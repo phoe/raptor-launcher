@@ -12,6 +12,7 @@
   (:selector "Logger")
   (:button clear-button "Clear")
   (:constructor
+      ;; TODO fix this so all loggers get the information
       (note raptor-logger :info "Raptor Logger starting.")))
 
 (define-subwidget (raptor-logger debug-logs) (q+:make-qplaintextedit)
