@@ -2,11 +2,11 @@
 
 (in-package :furcadia-launcher)
 
-(defun extract-fured-page-secret (account-json)
-  "Extracts the FurEd secret from the account JSON."
-  (let* ((result (cdr (assoc :session account-json))))
-    (assert (hexadecimal-string-p result))
-    result))
+;; (defun extract-fured-page-secret (account-json)
+;;   "Extracts the FurEd secret from the account JSON."
+;;   (let* ((result (cdr (assoc :session account-json))))
+;;     (assert (hexadecimal-string-p result))
+;;     result))
 
 (defvar *save-char-keywords*
   '("colr" "desc" "digo" "wing" "port" "tag" "adesc" "awhsp" "aresp"
