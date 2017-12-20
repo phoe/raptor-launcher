@@ -10,6 +10,8 @@
   :serial t
   :depends-on
   (#:cl-furcadia
+   #:drakma
+   #:lparallel
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config

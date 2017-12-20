@@ -5,7 +5,6 @@
 
 (defpackage :raptor-launcher/raptor-picker
   (:use #:cl+qt
-        #:cl-furcadia
         #:alexandria
         #:phoe-toolbox
         #:raptor-launcher/util

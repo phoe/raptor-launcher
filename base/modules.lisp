@@ -17,7 +17,7 @@
     (loop for module in modules
           do (push (make-instance module :main-window main-window)
                    (loaded-modules main-window)))
-    (note t :info "Modules loaded: ~{~A~^, ~}" modules)))
+    (note t :trace "Modules loaded: ~{~A~^, ~}" modules)))
 
 (defun load-module (main-window instance)
   (with-slots-bound (main-window raptor-launcher)

@@ -8,7 +8,13 @@
 
 (define-raptor-module raptor-picker (picker)
   (:main-window qwidget qhboxlayout
-                (log-list :accessor log-list :initform '()))
+                (log-list :accessor log-list :initform '())
+                (accounts :accessor accounts
+                          :initform '())
+                (furres :accessor furres
+                        :initform '())
+                (cookie-jar :accessor cookie-jar
+                            :initform (make-instance 'drakma:cookie-jar)))
   (:selector "Characters")
   (:button play-button "Play!")
   (:button sync-button "Sync")
