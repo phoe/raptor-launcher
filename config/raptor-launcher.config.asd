@@ -8,7 +8,7 @@
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
   :serial t
-  :depends-on (;; configuration
+  :depends-on (#:alexandria
                #:ubiquitous-concurrent)
   :components ((:file "package")
                (:file "config")))

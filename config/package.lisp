@@ -5,6 +5,7 @@
 
 (defpackage #:raptor-launcher/config
   (:use #:cl
+        #:alexandria
         #:ubiquitous)
   (:export
    #:*home-path*
@@ -14,4 +15,5 @@
    #:default-config
    #:econfig
    #:remconfig
-   #:with-config-transaction))
+   #:with-config-transaction
+   #:config-alist))

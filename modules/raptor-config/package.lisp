@@ -7,6 +7,7 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:split-sequence
         #:raptor-launcher/util
         #:raptor-launcher/protocol
         #:raptor-launcher/config

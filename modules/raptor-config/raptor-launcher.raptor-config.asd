@@ -11,6 +11,7 @@
   :depends-on
   (#:plump
    #:local-time
+   #:split-sequence
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config

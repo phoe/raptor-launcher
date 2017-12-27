@@ -55,3 +55,22 @@ value was not found."
 meant to be used whenever multiple configuration forms are set in one body of ~
 code to avoid unnecessary disk writes."
   `(with-transaction () ,@body))
+
+(defvar *config-alist-collection* '())
+
+(defun config-alist (&optional config)
+  "Converts the provided configuration into an alist, where keys are lists ~
+denoting the depth, and values are respective configuration values."
+  (let ((*config-alist-collection* '())
+        (config (or config (config))))
+    (%config-alist config '())))
+
+(defun %config-alist (config path)
+  (loop for key being the hash-keys of config
+        for value = (gethash key config)
+        for current-path = (append path (list key))
+        if (hash-table-p value)
+          do (%config-alist value current-path)
+        else
+          do (push (cons current-path value) *config-alist-collection*)
+        finally (return *config-alist-collection*)))

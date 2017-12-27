@@ -35,10 +35,11 @@
   (q+:add-widget layout log-level-chooser))
 
 (define-subwidget (raptor-logger log-level-layout) (q+:make-qhboxlayout)
-  (setf (q+:layout log-level-chooser) log-level-layout))
+  (setf (q+:layout log-level-chooser) log-level-layout)
+  (setf (q+:contents-margins log-level-layout) (values 0 0 0 0)))
 
 (define-subwidget (raptor-logger log-level-label)
-    (q+:make-qlabel "Maxuimum log level:")
+    (q+:make-qlabel "Minimum log level:")
   (q+:add-widget log-level-layout log-level-label))
 
 (define-subwidget (raptor-logger log-level-dropdown)
@@ -55,6 +56,7 @@
   (declare (connected log-level-dropdown (current-index-changed string) level))
   (let ((keyword (make-keyword level)))
     (setf (config :logger :log-level :min-level-shown) keyword)
+    (note t :trace "Changed minimum log level to ~A." level)
     (render-all-logs raptor-logger keyword)))
 
 (defmethod render-all-logs ((logger raptor-logger) (level symbol))
@@ -95,12 +97,10 @@
         do (default-config color :logger :log-level :color type)))
 
 (defparameter *htmlize-format-string* "
-<p>
-  <span style=\"color: #~{~2,'0X~};\">
+<span style=\"color: #~{~2,'0X~};\">
     <b><code style=\"white-space: pre;\">[~6A]</code></b>
     ~2,'0D:~2,'0D:~2,'0D: ~A
-  </span>
-</p>")
+</span>")
 
 (defun htmlize-message (type timestamp formatted-message)
   (let ((color (or (config :logger :log-level :color type) '(0 0 0)))
@@ -108,4 +108,5 @@
         (hour (local-time:timestamp-hour timestamp))
         (minute (local-time:timestamp-minute timestamp))
         (second (local-time:timestamp-second timestamp)))
-    (format nil *htmlize-format-string* color type hour minute second text)))
+    (format nil *htmlize-format-string*
+            color type hour minute second text)))
