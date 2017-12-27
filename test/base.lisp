@@ -17,6 +17,8 @@
 
 ;;; util
 
+;;; TODO either run or remove them, they may bitrot easily
+
 (defun make-dummy-button (&rest things)
   (q+:make-qpushbutton (format nil "~{~A~^ ~}" things)))
 
@@ -25,6 +27,7 @@
 
 (defvar *dummies* '())
 
+;;; TODO use define-raptor-module instead
 (defmacro define-test-dummy (symbol)
   `(progn
      (define-widget ,symbol (QLabel module)

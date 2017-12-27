@@ -18,4 +18,5 @@
                (:file "main-window")
                ;; modules
                (:file "modules/logger")
-               (:file "modules/picker")))
+               (:file "modules/picker")
+               (:file "modules/config")))

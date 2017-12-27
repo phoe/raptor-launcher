@@ -9,6 +9,7 @@
   :license "GPLv3"
   :serial t
   :depends-on (#:alexandria
-               #:ubiquitous-concurrent)
+               #:ubiquitous-concurrent
+               #:raptor-launcher.protocol)
   :components ((:file "package")
                (:file "config")))

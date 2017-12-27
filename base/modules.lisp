@@ -55,6 +55,14 @@
   (dolist (button (buttons instance))
     (q+:show button)))
 
+(defmethod run-post-init-callbacks ((main-window raptor-launcher))
+  (with-slots-bound (main-window raptor-launcher)
+    (let* ((modules (loaded-modules main-window))
+           (callbacks (apply #'append (mapcar #'post-init-callbacks modules))))
+      (mapc #'funcall callbacks))))
+
+;;; TODO extract this to a separate file
+
 (defmacro define-raptor-module (name (&rest protocol-classes) &body clauses)
   (let* ((main-window-clause (assoc-value-or-die clauses :main-window))
          (main-window-slots (cdr main-window-clause))
@@ -72,6 +80,10 @@
                         :initform nil)
           (%buttons :accessor buttons)
           (%selector :accessor selector)
+          (%config-widget-constructor :accessor config-widget-constructor
+                                      :initform nil)
+          (%post-init-callbacks :accessor post-init-callbacks
+                                :initform '())
           ,@main-window-slots))
        (define-subwidget (,name layout) (q+ ,layout-constructor)
          (setf (q+:layout ,name) layout

@@ -6,7 +6,8 @@
 (defpackage #:raptor-launcher/config
   (:use #:cl
         #:alexandria
-        #:ubiquitous)
+        #:ubiquitous
+        #:raptor-launcher/protocol)
   (:export
    #:*home-path*
    #:*config-path*

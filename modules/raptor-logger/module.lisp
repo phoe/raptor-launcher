@@ -39,7 +39,7 @@
   (setf (q+:contents-margins log-level-layout) (values 0 0 0 0)))
 
 (define-subwidget (raptor-logger log-level-label)
-    (q+:make-qlabel "Minimum log level:")
+    (q+:make-qlabel "Displayed log level:")
   (q+:add-widget log-level-layout log-level-label))
 
 (define-subwidget (raptor-logger log-level-dropdown)
@@ -56,7 +56,7 @@
   (declare (connected log-level-dropdown (current-index-changed string) level))
   (let ((keyword (make-keyword level)))
     (setf (config :logger :log-level :min-level-shown) keyword)
-    (note t :trace "Changed minimum log level to ~A." level)
+    (note t :trace "Changed displayed log level to ~A." level)
     (render-all-logs raptor-logger keyword)))
 
 (defmethod render-all-logs ((logger raptor-logger) (level symbol))
