@@ -26,22 +26,25 @@ containing TYPE and the formatted message."
 importance than the provided one."
   (:function clear ((logger logger)) (values))
   "Clears all messages logged by the logger."
-  (:variable *message-types* t
+  (:variable *log-levels* t
              '((:trace 191 191 191) (:debug 000 255 255) (:info 000 255 000)
                (:warn 255 255 000) (:error 255 000 000)
                (:severe 255 000 127) (:fatal 255 000 255)))
-  "A list of message types valid for logging, in increasing order of severity. ~
+  "A list of log levels valid for logging, in increasing order of severity. ~
 The first element of each type is the type's keyword, the second is a list of ~
 default RGB values for displaying it."
   (:config (:logger))
   "The root node for all logger configuration."
-  (:config (:logger :message-type :color type))
-  "The configuration value describing the color for the provided TYPE, which ~
-is a message type. The value of this should be a list of three integers, ~
+  (:config (:logger :log-level :min-level-shown))
+  "The configuration value describing the minimum logging level shown in the ~
+logger. The value of this should be any type mentioned in *LOG-LEVELS*."
+  (:config (:logger :log-level :color level))
+  "The configuration value describing the color for the provided LEVEL, which ~
+is a valid log level. The value of this should be a list of three integers, ~
 denoting a RGB color.
 \
 This configuration value is expected to be defined for all types mentioned in ~
-*MESSAGE-TYPES*, with the default values are to be taken from the list.")
+*LOG-LEVELS*, with the default values are to be taken from the list.")
 
 (defmethod note ((logger (eql 't)) type message &rest args)
   (when *main-window*

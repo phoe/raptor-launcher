@@ -3,6 +3,7 @@
 ;;;; © Michał "phoe" Herda 2017
 ;;;; modules.lisp
 
+;;; TODO only keywords in all IN-PACKAGE forms
 (in-package :raptor-launcher/base)
 (in-readtable :qtools)
 

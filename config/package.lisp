@@ -13,4 +13,5 @@
    #:config
    #:default-config
    #:econfig
-   #:remconfig))
+   #:remconfig
+   #:with-config-transaction))

@@ -49,3 +49,9 @@ value was not found."
   "Removes the configuration value of the given path."
   (let ((*storage-pathname* *config-path*))
     (apply #'remvalue path)))
+
+(defmacro with-config-transaction (() &body body)
+  "Executes the following form inside a config transaction. This macro is ~
+meant to be used whenever multiple configuration forms are set in one body of ~
+code to avoid unnecessary disk writes."
+  `(with-transaction () ,@body))
