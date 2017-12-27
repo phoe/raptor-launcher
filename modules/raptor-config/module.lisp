@@ -62,7 +62,7 @@ in the editor: ~A")
              (old-value (apply #'config path)))
         (handler-case
             (let* ((new-value (read-from-string text))
-                   (log-value (if (eq (lastcar key) :password)
+                   (log-value (if (eq (lastcar path) :password)
                                   "hunter2" new-value)))
               (apply #'(setf config) new-value path)
               (note t :trace "Set config path ~S to value ~S." path log-value))
