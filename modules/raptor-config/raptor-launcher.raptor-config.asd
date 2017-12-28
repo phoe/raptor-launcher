@@ -18,4 +18,8 @@
    #:raptor-launcher.base)
   :components
   ((:file "package")
-   (:file "module")))
+   (:file "definition")
+   (:file "config-widget")
+   (:file "simple-config")
+   (:file "advanced-config")
+   (:file "tabs-callbacks")))

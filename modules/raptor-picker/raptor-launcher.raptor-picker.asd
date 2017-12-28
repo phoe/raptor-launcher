@@ -18,4 +18,6 @@
    #:raptor-launcher.base)
   :components
   ((:file "package")
+   (:file "definition")
+   (:file "config-widget")
    (:file "module")))
