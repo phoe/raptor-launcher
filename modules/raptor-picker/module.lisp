@@ -47,18 +47,9 @@
 (defun insert-row (widget s1 s2 s3)
   (let ((count (q+:row-count widget)))
     (q+:insert-row widget count)
-    (put-table-text widget s1 count 0)
-    (put-table-text widget s2 count 1)
-    (put-table-text widget s3 count 2)))
-
-;; TODO turn into SETF TABLE-TEXT
-(defun put-table-text (widget text row column)
-  (when (null-qobject-p (q+:item widget row column))
-    (setf (q+:item widget row column) (q+:make-qtablewidgetitem)))
-  (let ((item (q+:item widget row column)))
-    (setf (q+:text item) text
-          (q+:flags item) (+ (q+:qt.item-is-selectable)
-                             (q+:qt.item-is-enabled)))))
+    (setf (table-text widget count 0) s1
+          (table-text widget count 1) s2
+          (table-text widget count 2) s3)))
 
 (define-subwidget (raptor-picker loading-screen) (q+:make-qwidget)
   (q+:add-widget layout loading-screen)

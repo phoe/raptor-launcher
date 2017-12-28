@@ -21,5 +21,6 @@
                #:raptor-launcher.util
                #:raptor-launcher.protocol)
   :components ((:file "package")
+               (:file "utils")
                (:file "raptor-launcher")
                (:file "modules")))

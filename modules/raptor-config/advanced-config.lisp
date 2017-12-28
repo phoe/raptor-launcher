@@ -70,12 +70,3 @@ in the editor: ~A")
         (note t :error *config-set-error* (type-of e) text path e)
         (apply #'(setf config) old-value path)))
     (redisplay-config advanced-config)))
-
-(defun (setf table-text) (new-value widget row column &optional editablep)
-  (when (null-qobject-p (q+:item widget row column))
-    (setf (q+:item widget row column) (q+:make-qtablewidgetitem)))
-  (let ((item (q+:item widget row column)))
-    (setf (q+:text item) new-value
-          (q+:flags item) (+ (q+:qt.item-is-selectable)
-                             (q+:qt.item-is-enabled)
-                             (if editablep (q+:qt.item-is-editable) 0)))))

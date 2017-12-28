@@ -11,5 +11,7 @@
         #:raptor-launcher/util
         #:raptor-launcher/protocol)
   (:export
+   ;; utils
+   #:table-text
    ;; main window class
    #:raptor-launcher))
