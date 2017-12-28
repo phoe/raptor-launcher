@@ -7,7 +7,9 @@
   (:use #:cl
         #:alexandria
         #:phoe-toolbox)
-  (:export #:keywordize-cars
-           #:witty-line
-           #:define-qt-constructor
-           #:*version*))
+  (:export
+   #:witty-line
+   #:witty-password
+   #:keywordize-cars
+   #:define-qt-constructor
+   #:*version*))

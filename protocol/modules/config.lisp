@@ -15,4 +15,8 @@ are meant for allowing the user to read and modify the Launcher's configuration.
 this protocol class."
   (:config :config :show-advanced)
   "The configuration value stating if the configuration widget should display ~
-a window with advanced options.")
+a window with advanced options."
+  (:config :config :accounts n :email)
+  "The configuration value stating the email used for account N."
+  (:config :config :accounts n :password)
+  "The configuration value stating the password used for account N.")

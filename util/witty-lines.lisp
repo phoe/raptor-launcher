@@ -75,3 +75,24 @@
 (defun witty-line ()
   "Returns a random witty line."
   (random-elt *witty-lines*))
+
+(defparameter *witty-passwords*
+  '("hunter2"
+    "password"
+    "admin"
+    "root"
+    "123456"
+    "12345678"
+    "smelly_socks12"
+    "look_ma_no_pants"
+    "RaptorLauncher"
+    "donthackmeplease"
+    "qwerty"
+    "totallyNotAFakePasswordDude"
+    "furcadia-best-game"
+    "$up4HP4$$w0Rd_xD"
+    "********"))
+
+(defun witty-password ()
+  "Returns a random witty password."
+  (prin1-to-string (random-elt *witty-passwords*)))

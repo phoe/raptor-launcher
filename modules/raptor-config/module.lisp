@@ -14,6 +14,8 @@
       (note t :debug "Raptor Config starting.")
       (setf (config-widget-constructor raptor-config)
        (lambda () (make-instance 'config-widget :module raptor-config)))
+      (push (make-spacer raptor-config)
+            (post-init-callbacks raptor-config))
       (push (make-callback raptor-config)
             (post-init-callbacks raptor-config))))
 
@@ -21,16 +23,15 @@
 
 ;; TODO config-widget protoclass
 (define-widget config-widget (qwidget)
-  ((raptor-config :accessor module
-                  :initarg :module)))
+  ((module :accessor module
+           :initarg :module)))
 
 (define-qt-constructor (config-widget)
   (let ((checkedp (config :config :show-advanced)))
     (signal! (module config-widget) (advanced-checkbox-clicked bool) checkedp)))
 
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
-  (setf (q+:layout config-widget) layout
-        (q+:column-stretch layout 0) 300))
+  (setf (q+:layout config-widget) layout))
 
 (define-subwidget (config-widget title) (q+:make-qlabel "Configuration")
   (q+:add-widget layout title 0 0 1 1)
@@ -48,30 +49,23 @@
          (state (if checkedp (q+:qt.checked) (q+:qt.unchecked))))
     (setf (q+:check-state checkbox) state)))
 
-(define-subwidget (config-widget spacer) (q+:make-qwidget)
-  (q+:add-widget layout spacer 3 0 1 1)
-  (setf (q+:row-stretch layout 3) 9001))
+;; TODO add spacer somewhere or just spam enough settings
+;; (define-subwidget (config-widget spacer) (q+:make-qwidget)
+;;   ;; (q+:add-widget layout spacer 3 0 1 1)
+;;   ;; (setf (q+:row-stretch layout 3) 9001)
+;;   )
 
 (define-slot (config-widget show-advanced) ()
   (declare (connected checkbox (clicked)))
   (let ((checkedp (q+:is-checked checkbox)))
     (setf (config :config :show-advanced) checkedp)
-    (signal! (raptor-config config-widget)
+    (signal! (module config-widget)
              (advanced-checkbox-clicked bool) checkedp)))
 
 ;;; Config tabs
 
 (define-subwidget (raptor-config config-tabs) (q+:make-qtabwidget)
   (q+:add-widget layout config-tabs))
-
-(define-signal (raptor-config advanced-checkbox-clicked) (bool))
-
-(define-slot (raptor-config toggle-advanced) ((checkedp bool))
-  (declare (connected raptor-config (advanced-checkbox-clicked bool)))
-  (let ((index (q+:index-of config-tabs advanced-config)))
-    (if checkedp
-        (q+:add-tab config-tabs advanced-config "Advanced")
-        (q+:remove-tab config-tabs index))))
 
 ;;; Simple config ;; TODO extract these to separate files
 
@@ -124,8 +118,7 @@
           for i from 0
           for string-key = (format nil "~{~S~^ ~}" key)
           for string-value = (if (eq (lastcar key) :password)
-                                 "hunter2"
-                                 (prin1-to-string value))
+                                 (witty-password) (prin1-to-string value))
           do (q+:insert-row advanced-config i)
              (with-signals-blocked (advanced-config)
                (setf (table-text advanced-config i 0) string-key
@@ -154,7 +147,7 @@ in the editor: ~A")
     (handler-case
         (let* ((new-value (read-from-string text))
                (log-value (if (eq (lastcar path) :password)
-                              "hunter2" new-value)))
+                              (witty-password) new-value)))
           (apply #'(setf config) new-value path)
           (note t :trace "Set config path ~S to value ~S." path log-value))
       (error (e)
@@ -171,6 +164,19 @@ in the editor: ~A")
                              (q+:qt.item-is-enabled)
                              (if editablep (q+:qt.item-is-editable) 0)))))
 
+;;; Config tabs - behavior
+
+(define-signal (raptor-config advanced-checkbox-clicked) (bool))
+
+(define-slot (raptor-config toggle-advanced) ((checkedp bool))
+  (declare (connected raptor-config (advanced-checkbox-clicked bool)))
+  (let ((index (q+:index-of config-tabs advanced-config)))
+    (if checkedp
+        (q+:add-tab config-tabs advanced-config "Advanced")
+        (q+:remove-tab config-tabs index))))
+
+;;; Callbacks
+
 (defun make-callback (raptor-config)
   (with-all-slots-bound (raptor-config raptor-config)
     (lambda ()
@@ -179,3 +185,9 @@ in the editor: ~A")
              (widgets (mapcar #'funcall (remove nil constructors))))
         (mapc (lambda (x) (q+:add-widget simple-config-layout x))
               widgets)))))
+
+(defun make-spacer (raptor-config)
+  (with-all-slots-bound (raptor-config raptor-config)
+    (lambda ()
+      (let ((layout (q+:layout simple-config-layout)))
+        (q+:add-stretch layout 9001)))))
