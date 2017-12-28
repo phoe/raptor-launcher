@@ -9,7 +9,8 @@
    #:raptor-launcher/util
    #:raptor-launcher/config
    #:raptor-launcher/protocol
-   #:raptor-launcher/base)
+   #:raptor-launcher/base
+   )
   (:export
    #:main))
 

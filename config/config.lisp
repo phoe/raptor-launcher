@@ -7,15 +7,19 @@
 
 ;;; Paths
 
-(defvar *home-path*
+(defparameter *home-path*
   (merge-pathnames ".raptor-launcher/" (user-homedir-pathname))
   "The home directory for Raptor Launcher.")
 
-(defvar *config-path* (merge-pathnames "config/config.lisp" *home-path*)
+(defparameter *config-path* (merge-pathnames "config/config.lisp" *home-path*)
   "The file for storing Raptor Launcher configuration.")
 
-(defvar *dl-path* (merge-pathnames "dl/" *home-path*)
+(defparameter *dl-path* (merge-pathnames "dl/" *home-path*)
   "The directory for storing files downloaded by Raptor Launcher.")
+
+(defun ubiquitous:config-directory () *config-path*)
+
+(restore *config-path*)
 
 ;;; Config
 
@@ -54,7 +58,9 @@ value was not found."
   "Executes the following form inside a config transaction. This macro is ~
 meant to be used whenever multiple configuration forms are set in one body of ~
 code to avoid unnecessary disk writes."
-  `(with-transaction () ,@body))
+  `(with-transaction ()
+     (let ((*storage-pathname* *config-path*))
+       ,@body)))
 
 (defvar *config-alist-collection* '())
 

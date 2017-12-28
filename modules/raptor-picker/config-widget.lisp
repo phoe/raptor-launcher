@@ -6,20 +6,13 @@
 (in-package :raptor-launcher/raptor-picker)
 (in-readtable :qtools)
 
-;;; Configuration widget
-
 ;;; TODO add traces everywhere, EVERYWHERE
+
+(default-config (make-hash-table) :config :accounts)
 
 (define-widget config-widget (qwidget)
   ((module :accessor module
            :initarg :module)))
-
-(define-qt-constructor (config-widget)
-  (loop with accounts-data = (config :config :accounts)
-        for index being the hash-keys of accounts-data
-        for email = (config :config :accounts index :email)
-        for password = (config :config :accounts index :password)
-        do (add-account accounts config-widget email password)))
 
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
   (setf (q+:layout config-widget) layout))
@@ -54,12 +47,21 @@
   (remove-account accounts))
 
 (define-slot (config-widget update-accounts) ()
-  (remconfig :config :accounts)
   (let ((accounts (get-all-accounts accounts)))
+    (loop for n from 1
+          for account in accounts
+          do (remconfig :config :accounts n))
     (loop for n from 1
           for (email password) in accounts
           do (setf (config :config :accounts n :email) email)
              (setf (config :config :accounts n :password) password))))
+
+(define-qt-constructor (config-widget)
+  (loop with accounts-data = (config :config :accounts)
+        for index being the hash-keys of accounts-data
+        for email = (config :config :accounts index :email)
+        for password = (config :config :accounts index :password)
+        do (add-account accounts config-widget email password)))
 
 (defun new-account-number (widget)
   (let ((accounts (find-children widget "QLineEdit")))
