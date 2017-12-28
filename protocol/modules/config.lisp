@@ -12,4 +12,7 @@ are meant for allowing the user to read and modify the Launcher's configuration.
      :export t)
   (:class config (module) ())
   "A config object. Each class participating in the protocol must subclass ~
-this protocol class.")
+this protocol class."
+  (:config :config :show-advanced)
+  "The configuration value stating if the configuration widget should display ~
+a window with advanced options.")
