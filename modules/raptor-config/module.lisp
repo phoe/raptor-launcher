@@ -3,7 +3,7 @@
 ;;;; © Michał "phoe" Herda 2017
 ;;;; module.lisp
 
-(in-package :raptor-launcher/raptor-logger)
+(in-package :raptor-launcher/raptor-config)
 (in-readtable :qtools)
 
 (define-raptor-module raptor-config (config)
@@ -13,7 +13,7 @@
   (:constructor
       (note t :debug "Raptor Config starting.")
       (setf (config-widget-constructor raptor-config)
-       (lambda () (make-instance 'config-widget :raptor-config raptor-config)))
+       (lambda () (make-instance 'config-widget :module raptor-config)))
       (push (make-callback raptor-config)
             (post-init-callbacks raptor-config))))
 
@@ -21,13 +21,12 @@
 
 ;; TODO config-widget protoclass
 (define-widget config-widget (qwidget)
-  ((raptor-config :accessor raptor-config
-                  :initarg :raptor-config)))
+  ((raptor-config :accessor module
+                  :initarg :module)))
 
 (define-qt-constructor (config-widget)
   (let ((checkedp (config :config :show-advanced)))
-    (signal! (raptor-config config-widget)
-             (advanced-checkbox-clicked bool) checkedp)))
+    (signal! (module config-widget) (advanced-checkbox-clicked bool) checkedp)))
 
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
   (setf (q+:layout config-widget) layout
