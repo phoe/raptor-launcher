@@ -39,7 +39,6 @@
 ;;; Show account number in character list?
 
 ;;; TODO define-config-checkbox for checkboxen
-;;; TODO define this config value in protocol
 (define-subwidget (config-widget account-number-checkbox)
     (q+:make-qcheckbox "Show account number in character list?")
   (q+:add-widget layout account-number-checkbox 2 0 1 2)
@@ -56,7 +55,6 @@
 
 ;;; Show last login in character list?
 
-;;; TODO define this config value in protocol
 (define-subwidget (config-widget last-login-checkbox)
     (q+:make-qcheckbox "Show last login in character list?")
   (q+:add-widget layout last-login-checkbox 3 0 1 2)
