@@ -31,17 +31,21 @@
         (q+:qabstractitemview.scroll-per-pixel)
         (q+:selection-behavior furre-list)
         (q+:qabstractitemview.select-rows))
+  (let ((size-policy (q+:size-policy furre-list)))
+    (setf (q+:horizontal-policy size-policy)
+          (q+:qsizepolicy.fixed)))
   (let ((h-header (q+:horizontal-header furre-list))
         (v-header (q+:vertical-header furre-list)))
     (setf (q+:stretch-last-section h-header) t
           (q+:resize-mode v-header) (q+:qheaderview.fixed)
+          (q+:resize-mode h-header) (q+:qheaderview.resize-to-contents)
           (q+:default-section-size v-header) 24
           (q+:sort-indicator h-header 0) (q+:qt.ascending-order))
     (q+:hide v-header))
   (insert-row furre-list "1" "Foobar" "2017-08-01 10:00")
   (insert-row furre-list "2" "Bumblebutt" "2017-07-01 10:00")
-  (insert-row furre-list "1" "Oskar Fjötenssën" "2017-09-01 10:00")
-  (insert-row furre-list "1" "Hehehehehehe" "2017-08-01 10:00")
+  (insert-row furre-list "1" "Oskar Fjötenssën" "2017-09-01 10:30")
+  (insert-row furre-list "1" "Hehehehehehe" "2017-08-01 10:20")
   (setf (q+:sorting-enabled furre-list) t))
 
 (defun insert-row (widget s1 s2 s3)
@@ -61,3 +65,9 @@
 (define-slot (raptor-picker show-hide-account-number) ((showp bool))
   (declare (connected raptor-picker (show-account-checkbox-clicked bool)))
   (setf (q+:column-hidden furre-list 0) (not showp)))
+
+(define-signal (raptor-picker last-login-checkbox-clicked) (bool))
+
+(define-slot (raptor-picker last-login-last-login) ((showp bool))
+  (declare (connected raptor-picker (last-login-checkbox-clicked bool)))
+  (setf (q+:column-hidden furre-list 2) (not showp)))

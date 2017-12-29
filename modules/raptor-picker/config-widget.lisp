@@ -15,44 +15,72 @@
            :initarg :module)))
 
 (define-qt-constructor (config-widget)
-  (let ((checkedp (q+:is-checked checkbox)))
+  (let ((checkedp (q+:is-checked account-number-checkbox)))
     (signal! (module config-widget)
-             (show-account-checkbox-clicked bool) checkedp)))
+             (show-account-checkbox-clicked bool) checkedp))
+  (let ((checkedp (q+:is-checked last-login-checkbox)))
+    (signal! (module config-widget)
+             (last-login-checkbox-clicked bool) checkedp)))
 
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
   (setf (q+:layout config-widget) layout))
+
+;;; Header
 
 (define-subwidget (config-widget title) (q+:make-qlabel "Accounts")
   (q+:add-widget layout title 0 0 1 2)
   (setf (q+:style-sheet title) "font-weight: bold;"))
 
-(define-subwidget (config-widget checkbox)
+(define-subwidget (config-widget separator) (q+:make-qframe)
+  (q+:add-widget layout separator 1 0 1 2)
+  (setf (q+:frame-shape separator) (q+:qframe.hline)
+        (q+:frame-shadow separator) (q+:qframe.sunken)))
+
+;;; Show account number in character list?
+
+;;; TODO define-config-checkbox for checkboxen
+;;; TODO define this config value in protocol
+(define-subwidget (config-widget account-number-checkbox)
     (q+:make-qcheckbox "Show account number in character list?")
-  (q+:add-widget layout checkbox 1 0 1 2)
+  (q+:add-widget layout account-number-checkbox 2 0 1 2)
   (let* ((checkedp (config :picker :show-account-number))
          (state (if checkedp (q+:qt.checked) (q+:qt.unchecked))))
-    (setf (q+:check-state checkbox) state)))
+    (setf (q+:check-state account-number-checkbox) state)))
 
 (define-slot (config-widget show-account-number) ()
-  (declare (connected checkbox (clicked)))
-  (let ((checkedp (q+:is-checked checkbox)))
+  (declare (connected account-number-checkbox (clicked)))
+  (let ((checkedp (q+:is-checked account-number-checkbox)))
     (setf (config :picker :show-account-number) checkedp)
     (signal! (module config-widget)
              (show-account-checkbox-clicked bool) checkedp)))
 
-(define-subwidget (config-widget separator) (q+:make-qframe)
-  (q+:add-widget layout separator 2 0 1 2)
-  (setf (q+:frame-shape separator) (q+:qframe.hline)
-        (q+:frame-shadow separator) (q+:qframe.sunken)))
+;;; Show last login in character list?
+
+;;; TODO define this config value in protocol
+(define-subwidget (config-widget last-login-checkbox)
+    (q+:make-qcheckbox "Show last login in character list?")
+  (q+:add-widget layout last-login-checkbox 3 0 1 2)
+  (let* ((checkedp (config :picker :show-last-login))
+         (state (if checkedp (q+:qt.checked) (q+:qt.unchecked))))
+    (setf (q+:check-state last-login-checkbox) state)))
+
+(define-slot (config-widget show-last-login) ()
+  (declare (connected last-login-checkbox (clicked)))
+  (let ((checkedp (q+:is-checked last-login-checkbox)))
+    (setf (config :picker :show-last-login) checkedp)
+    (signal! (module config-widget)
+             (last-login-checkbox-clicked bool) checkedp)))
+
+;;; Account adding and deleting
 
 (define-subwidget (config-widget add-button) (q+:make-qpushbutton "Add")
-  (q+:add-widget layout add-button 3 0 1 1))
+  (q+:add-widget layout add-button 4 0 1 1))
 
 (define-subwidget (config-widget delete-button) (q+:make-qpushbutton "Delete")
-  (q+:add-widget layout delete-button 3 1 1 1))
+  (q+:add-widget layout delete-button 4 1 1 1))
 
 (define-subwidget (config-widget accounts) (q+:make-qwidget)
-  (q+:add-widget layout accounts 4 0 1 2))
+  (q+:add-widget layout accounts 5 0 1 2))
 
 (define-subwidget (config-widget accounts-layout) (q+:make-qvboxlayout)
   (setf (q+:layout accounts) accounts-layout))
