@@ -10,8 +10,10 @@
   :serial t
   :depends-on
   (#:cl-furcadia
-   #:drakma
    #:lparallel
+   #:bordeaux-threads
+   #:closer-mop
+   #:bordeaux-threads
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config
@@ -19,5 +21,6 @@
   :components
   ((:file "package")
    (:file "definition")
+   (:file "backend")
    (:file "config-widget")
    (:file "module")))

@@ -7,8 +7,11 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:lparallel.queue
+        #:bordeaux-threads
         #:raptor-launcher/util
         #:raptor-launcher/protocol
         #:raptor-launcher/config
         #:raptor-launcher/base)
+  (:import-from #:closer-mop #:subclassp)
   (:export #:raptor-picker))

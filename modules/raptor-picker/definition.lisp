@@ -8,16 +8,27 @@
 
 (define-raptor-module raptor-picker (picker)
   (:main-window qwidget qhboxlayout
-                (cookie-jar :accessor cookie-jar
-                            :initform (make-instance 'drakma:cookie-jar)))
+                (%queue :accessor queue
+                        :initform (make-queue))
+                (%queue-joiner :accessor queue-joiner
+                               :initform nil)
+                (%lock :accessor lock
+                       :initform (make-lock))
+                (%emails-cookie-jars :accessor emails-cookie-jars
+                                     :initform (make-hash-table :test #'equal))
+                (%emails-accounts :accessor emails-accounts
+                                  :initform (make-hash-table :test #'equal)))
   (:selector "Characters")
   (:button play-button "Play!")
   (:button sync-button "Sync")
   (:constructor
       (note t :debug "Raptor Picker starting.")
+      (push (set-main-window-for-threads raptor-picker)
+       (post-init-callbacks raptor-picker))
       (setf (config-widget-constructor raptor-picker)
-       (lambda () (make-instance 'config-widget :module raptor-picker)))))
+            (lambda () (make-instance 'config-widget :module raptor-picker)))))
 
-(define-slot (raptor-picker sync) ()
-  (declare (connected sync-button (clicked)))
-  (sync raptor-picker))
+(defun set-main-window-for-threads (raptor-picker)
+  (lambda ()
+    (setf (assoc-value *default-special-bindings* '*main-window*)
+          (main-window raptor-picker))))

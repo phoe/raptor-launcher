@@ -40,17 +40,22 @@
 
 (define-slot (config-widget add-account) ()
   (declare (connected add-button (clicked)))
-  (add-account accounts config-widget))
+  (add-account accounts config-widget)
+  (signal! config-widget (account-update-needed)))
 
 (define-slot (config-widget delete-acccount) ()
   (declare (connected delete-button (clicked)))
-  (remove-account accounts))
+  (remove-account accounts)
+  (signal! config-widget (account-update-needed)))
+
+(define-signal (config-widget account-update-needed) ())
 
 (define-slot (config-widget update-accounts) ()
+  (declare (connected config-widget (account-update-needed)))
+  (loop with hash-table = (config :config :accounts)
+        for n being the hash-key of hash-table
+        do (remconfig :config :accounts n))
   (let ((accounts (get-all-accounts accounts)))
-    (loop for n from 1
-          for account in accounts
-          do (remconfig :config :accounts n))
     (loop for n from 1
           for (email password) in accounts
           do (setf (config :config :accounts n :email) email)
