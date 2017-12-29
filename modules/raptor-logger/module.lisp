@@ -9,7 +9,7 @@
 (define-raptor-module raptor-logger (logger)
   (:main-window qwidget qvboxlayout
                 (log-list :accessor log-list :initform '()))
-  (:selector "Logger")
+  (:selector "Logs")
   (:button clear-button "Clear")
   (:constructor
       ;; TODO fix this so all loggers get the information

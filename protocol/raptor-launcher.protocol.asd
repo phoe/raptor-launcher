@@ -19,4 +19,5 @@
                ;; modules
                (:file "modules/logger")
                (:file "modules/picker")
-               (:file "modules/config")))
+               (:file "modules/config")
+               (:file "modules/editor")))

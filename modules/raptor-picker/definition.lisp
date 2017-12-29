@@ -18,7 +18,7 @@
                                      :initform (make-hash-table :test #'equal))
                 (%emails-accounts :accessor emails-accounts
                                   :initform (make-hash-table :test #'equal)))
-  (:selector "Characters")
+  (:selector "Launcher")
   (:button play-button "Play!")
   (:button sync-button "Sync")
   (:constructor

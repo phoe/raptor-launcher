@@ -16,5 +16,5 @@ this protocol class."
   (:function edit-furre ((editor editor) (furre furre)))
   "Selects the provided furre in the editor for editing."
   (:function edit-furre-and-switch ((editor editor) (furre furre)))
-  "Selects the furre designator in the editor for editing and selects the editor ~
-on the Raptor Launcher to be the active widget.")
+  "Selects the furre designator in the editor for editing and selects the ~
+editor on the Raptor Launcher to be the active widget.")
