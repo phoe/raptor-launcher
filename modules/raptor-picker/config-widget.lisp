@@ -14,6 +14,11 @@
   ((module :accessor module
            :initarg :module)))
 
+(define-qt-constructor (config-widget)
+  (let ((checkedp (q+:is-checked checkbox)))
+    (signal! (module config-widget)
+             (show-account-checkbox-clicked bool) checkedp)))
+
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
   (setf (q+:layout config-widget) layout))
 
@@ -21,19 +26,33 @@
   (q+:add-widget layout title 0 0 1 2)
   (setf (q+:style-sheet title) "font-weight: bold;"))
 
+(define-subwidget (config-widget checkbox)
+    (q+:make-qcheckbox "Show account number in character list?")
+  (q+:add-widget layout checkbox 1 0 1 2)
+  (let* ((checkedp (config :picker :show-account-number))
+         (state (if checkedp (q+:qt.checked) (q+:qt.unchecked))))
+    (setf (q+:check-state checkbox) state)))
+
+(define-slot (config-widget show-account-number) ()
+  (declare (connected checkbox (clicked)))
+  (let ((checkedp (q+:is-checked checkbox)))
+    (setf (config :picker :show-account-number) checkedp)
+    (signal! (module config-widget)
+             (show-account-checkbox-clicked bool) checkedp)))
+
 (define-subwidget (config-widget separator) (q+:make-qframe)
-  (q+:add-widget layout separator 1 0 1 2)
+  (q+:add-widget layout separator 2 0 1 2)
   (setf (q+:frame-shape separator) (q+:qframe.hline)
         (q+:frame-shadow separator) (q+:qframe.sunken)))
 
 (define-subwidget (config-widget add-button) (q+:make-qpushbutton "Add")
-  (q+:add-widget layout add-button 2 0 1 1))
+  (q+:add-widget layout add-button 3 0 1 1))
 
 (define-subwidget (config-widget delete-button) (q+:make-qpushbutton "Delete")
-  (q+:add-widget layout delete-button 2 1 1 1))
+  (q+:add-widget layout delete-button 3 1 1 1))
 
 (define-subwidget (config-widget accounts) (q+:make-qwidget)
-  (q+:add-widget layout accounts 3 0 1 2))
+  (q+:add-widget layout accounts 4 0 1 2))
 
 (define-subwidget (config-widget accounts-layout) (q+:make-qvboxlayout)
   (setf (q+:layout accounts) accounts-layout))
@@ -62,17 +81,28 @@
              (setf (config :config :accounts n :password) password))))
 
 (define-qt-constructor (config-widget)
-  (loop with accounts-data = (config :config :accounts)
-        for index being the hash-keys of accounts-data
-        for email = (config :config :accounts index :email)
-        for password = (config :config :accounts index :password)
-        do (add-account accounts config-widget email password)))
+  (let ((list (loop with accounts-data = (config :config :accounts)
+                    for index being the hash-keys of accounts-data
+                    for email = (config :config :accounts index :email)
+                    for password = (config :config :accounts index :password)
+                    collect (list index email password))))
+    (loop for (index email password) in (sort list #'< :key #'car)
+          do (add-account accounts config-widget email password))))
 
 (defun new-account-number (widget)
   (let ((accounts (find-children widget "QLineEdit")))
     (1+ (/ (length accounts) 2))))
 
+(defun get-all-accounts (widget)
+  (let* ((children (find-children widget "QLineEdit"))
+         (credentials (mapcar #'q+:text children)))
+    (loop for (email password) on credentials by #'cddr
+          collect (list (string-downcase email) password))))
+
 (defun add-account (widget config-widget &optional email-text password-text)
+  (if email-text
+      (note t :trace "Displaying account ~A." email-text)
+      (note t :trace "Adding an account to the configuration."))
   (let* ((layout (q+:layout widget))
          (n (new-account-number widget))
          (email (q+:make-qlineedit))
@@ -87,13 +117,8 @@
     (q+:add-widget layout email)
     (q+:add-widget layout password)))
 
-(defun get-all-accounts (widget)
-  (let* ((children (find-children widget "QLineEdit"))
-         (credentials (mapcar #'q+:text children)))
-    (loop for (email password) on credentials by #'cddr
-          collect (list (string-downcase email) password))))
-
 (defun remove-account (widget)
+  (note t :trace "Removing an account from the configuration.")
   (when (< 1 (new-account-number widget))
     (let ((accounts (find-children widget "QLineEdit")))
       (finalize (last accounts 2))

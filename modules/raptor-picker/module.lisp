@@ -51,6 +51,13 @@
           (table-text widget count 1) s2
           (table-text widget count 2) s3)))
 
-(define-subwidget (raptor-picker loading-screen) (q+:make-qwidget)
+(define-subwidget (raptor-picker loading-screen)
+    (q+:make-qlabel)
   (q+:add-widget layout loading-screen)
   (q+:hide loading-screen))
+
+(define-signal (raptor-picker show-account-checkbox-clicked) (bool))
+
+(define-slot (raptor-picker show-hide-account-number) ((showp bool))
+  (declare (connected raptor-picker (show-account-checkbox-clicked bool)))
+  (setf (q+:column-hidden furre-list 0) (not showp)))

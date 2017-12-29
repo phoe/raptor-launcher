@@ -12,7 +12,7 @@
            :initarg :module)))
 
 (define-qt-constructor (config-widget)
-  (let ((checkedp (config :config :show-advanced)))
+  (let ((checkedp (q+:is-checked checkbox)))
     (signal! (module config-widget) (advanced-checkbox-clicked bool) checkedp)))
 
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
