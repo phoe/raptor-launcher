@@ -13,5 +13,6 @@
   (:export
    ;; utils
    #:table-text
+   #:make-text-qtoolbutton
    ;; main window class
    #:raptor-launcher))

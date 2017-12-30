@@ -16,3 +16,10 @@ If EDITABLEP, sets the widget to be editable."
           (q+:flags item) (+ (q+:qt.item-is-selectable)
                              (q+:qt.item-is-enabled)
                              (if editablep (q+:qt.item-is-editable) 0)))))
+
+(defun make-text-qtoolbutton (text)
+  (let ((button (q+:make-qtoolbutton)))
+    (setf (q+:text button) text
+          (q+:tool-button-style button)
+          (q+:qt.tool-button-text-only))
+    button))
