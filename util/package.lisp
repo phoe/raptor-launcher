@@ -10,6 +10,7 @@
   (:export
    #:witty-line
    #:witty-password
+   #:rgba-argb
    #:keywordize-cars
    #:define-qt-constructor
    #:*version*))

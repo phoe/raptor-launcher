@@ -7,6 +7,7 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:static-vectors
         #:protest
         #:raptor-launcher/util
         #:raptor-launcher/protocol)
@@ -14,5 +15,6 @@
    ;; utils
    #:table-text
    #:make-text-qtoolbutton
+   #:with-qimage-from-vector
    ;; main window class
    #:raptor-launcher))

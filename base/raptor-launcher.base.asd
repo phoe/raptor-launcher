@@ -11,10 +11,12 @@
   :depends-on (;; utils
                #:alexandria
                #:phoe-toolbox
+               #:static-vectors
                ;; protocol
                #:protest
                ;; Qt
                #:qtools
+               #:qtools-ui-flow-layout
                #:qtcore
                #:qtgui
                ;; Raptor Launcher

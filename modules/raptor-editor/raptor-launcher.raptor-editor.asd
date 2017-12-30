@@ -10,10 +10,17 @@
   :serial t
   :depends-on
   (#:alexandria
+   #:protest
+   #:cl-furcadia.constants
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config
    #:raptor-launcher.base)
   :components
   ((:file "package")
-   (:file "module")))
+   (:file "definition")
+   (:file "layout")
+   (:file "description")
+   (:file "looks")
+   (:file "palette/palette")
+   (:file "palette/color-palette")))

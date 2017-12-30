@@ -7,6 +7,7 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:cl-furcadia/constants
         #:raptor-launcher/util
         #:raptor-launcher/protocol
         #:raptor-launcher/config

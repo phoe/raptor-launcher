@@ -20,8 +20,8 @@
         (setf (q+:pixmap label) pixmap
               (q+:central-widget window) label)))))
 
-(defmacro with-qimage-from-vector ((image-var vector width height
-                                    &optional re-endian) &body body)
+(defmacro with-qimage-from-vector
+    ((image-var vector width height &optional re-endian) &body body)
   (with-gensyms (length v re-endian-p)
     `(let* ((,length (array-dimension ,vector 0))
             (,re-endian-p ,re-endian)
