@@ -7,6 +7,7 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:static-vectors
         #:cl-furcadia/constants
         #:raptor-launcher/util
         #:raptor-launcher/protocol

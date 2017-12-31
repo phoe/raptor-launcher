@@ -32,10 +32,10 @@
   (setf (q+:layout color-palette) layout
         (q+:contents-margins layout) (values 0 0 0 0)))
 
-(define-subwidget (color-palette gradient) (q+:make-qwidget)
+(define-subwidget (color-palette gradient) (q+:make-qlabel)
   (q+:add-widget layout gradient 0 0 1 1)
-  (setf (q+:style-sheet gradient) "background-color: white;"
-        (q+:fixed-width gradient) 64))
+  (setf (q+:fixed-width gradient) 64
+        (q+:scaled-contents gradient) t))
 
 (define-subwidget (color-palette scroll) (q+:make-qscrollarea)
   (q+:add-widget layout scroll 0 1 1 1)
@@ -51,30 +51,9 @@
           for color-name in (gethash color-type *color-names*)
           for key = (list color-type color-name)
           for gradient = (gethash key *gradients*)
-          for color-picker = (make-instance 'color-picker :color-name color-name
-                                                          :gradient gradient)
+          for color-picker = (make-instance 'color-picker :palette color-palette
+                                                          :widget gradient
+                                                          :color-type color-type
+                                                          :color-name color-name
+                                                          :vector gradient)
           do (qui:add-widget color-picker picker))))
-
-(define-widget color-picker (qlabel)
-  ((%color-name :accessor color-name
-                :initarg :color-name)
-   (%gradient :accessor gradient
-              :initarg :gradient)
-   (%size :accessor size
-          :initform 64)))
-
-(define-qt-constructor (color-picker)
-  (let* ((size (size color-picker))
-         (gradient (rgba-argb (gradient color-picker))))
-    (setf (q+:fixed-size color-picker) (values size size)
-          (q+:margin color-picker) 2
-          (q+:frame-style color-picker) (logxor (q+:qframe.panel)
-                                                (q+:qframe.raised))
-          (q+:line-width color-picker) 1
-          (q+:tool-tip color-picker) (color-name color-picker))
-    (with-finalizing
-        ((pixmap (with-qimage-from-vector (image gradient 1 256 t)
-                   (with-finalizing ((mirror (q+:mirrored image)))
-                     (q+:qpixmap-from-image mirror)))))
-      (let ((scaled-pixmap (q+:scaled pixmap size size)))
-        (setf (q+:pixmap color-picker) scaled-pixmap)))))

@@ -11,6 +11,7 @@
   :depends-on
   (#:alexandria
    #:protest
+   #:static-vectors
    #:cl-furcadia.constants
    #:raptor-launcher.util
    #:raptor-launcher.protocol
@@ -23,4 +24,5 @@
    (:file "description")
    (:file "looks")
    (:file "palette/palette")
-   (:file "palette/color-palette")))
+   (:file "palette/color-palette")
+   (:file "palette/color-picker")))
