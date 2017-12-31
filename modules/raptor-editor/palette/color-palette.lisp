@@ -32,13 +32,18 @@
   (setf (q+:layout color-palette) layout
         (q+:contents-margins layout) (values 0 0 0 0)))
 
+(define-subwidget (color-palette label) (q+:make-qlabel)
+  (q+:add-widget layout label 0 1 1 1)
+  (setf (q+:style-sheet label) "font-weight: bold;"
+        (q+:alignment label) (q+:qt.align-center)))
+
 (define-subwidget (color-palette gradient) (q+:make-qlabel)
-  (q+:add-widget layout gradient 0 0 1 1)
+  (q+:add-widget layout gradient 0 0 2 1)
   (setf (q+:fixed-width gradient) 64
         (q+:scaled-contents gradient) t))
 
 (define-subwidget (color-palette scroll) (q+:make-qscrollarea)
-  (q+:add-widget layout scroll 0 1 1 1)
+  (q+:add-widget layout scroll 1 1 1 1)
   (setf (q+:widget-resizable scroll) t
         (q+:frame-shape scroll) (q+:qframe.no-frame)))
 

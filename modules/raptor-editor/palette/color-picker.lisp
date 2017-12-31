@@ -44,6 +44,7 @@
 
 (define-slot (color-palette color-picker-clicked) ((color-picker color-picker))
   (declare (connected color-palette (color-picked color-picker)))
+  (setf (q+:text label) (color-name color-picker))
   (let* ((vector (rgba-argb (gradient-vector color-picker))))
     (with-finalizing ((pixmap (with-qimage-from-vector (image vector 1 256 t)
                                 (with-finalizing ((mirror (q+:mirrored image)))

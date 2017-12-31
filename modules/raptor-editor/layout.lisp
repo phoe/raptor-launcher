@@ -8,8 +8,7 @@
 
 (define-subwidget (raptor-editor preview) (q+:make-qwidget)
   (q+:add-widget layout preview 0 0 5 1)
-  (setf (q+:fixed-size preview) (values 135 135)
-        (q+:style-sheet preview) "background-color:black;")
+  (setf (q+:fixed-size preview) (values 135 135))
   (let ((size-policy (q+:size-policy preview)))
     (setf (q+:horizontal-policy size-policy) (q+:qsizepolicy.fixed)
           (q+:vertical-policy size-policy) (q+:qsizepolicy.fixed))))
