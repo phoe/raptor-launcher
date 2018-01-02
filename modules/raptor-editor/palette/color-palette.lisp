@@ -6,7 +6,7 @@
 (in-package :raptor-launcher/raptor-editor)
 (in-readtable :qtools)
 
-;;; TODO fix all DEFINE-WIDGETS so they have %s in slot names
+;;; TODO fix all DEFINE-WIDGETS so they have %s in slot names(?)
 (define-widget color-palette (qwidget palette)
   ((%selector :accessor selector
               :initarg :selector)
