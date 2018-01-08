@@ -46,7 +46,9 @@
   (declare (connected color-palette (color-picked color-picker)))
   (setf (q+:text label) (color-name color-picker))
   (let* ((vector (rgba-argb (gradient-vector color-picker))))
-    (with-finalizing ((pixmap (with-qimage-from-vector (image vector 1 256 t)
-                                (with-finalizing ((mirror (q+:mirrored image)))
-                                  (q+:qpixmap-from-image mirror)))))
-      (setf (q+:pixmap gradient) pixmap))))
+    (with-qimage-from-vector (image vector 1 256 t)
+      (with-finalizing ((mirror (q+:mirrored image)))
+        (with-finalizing ((pixmap (q+:qpixmap-from-image mirror)))
+          (setf (q+:pixmap gradient) pixmap))))))
+
+;;; TODO define custom user agent for Raptor Launcher
