@@ -33,29 +33,29 @@
 
 ;;; Loading screen
 
-(define-widget loading-screen (qwidget)
-  ((%module :accessor module :initarg :module)
-   (%progress-logins
-    :accessor progress-logins
-    :initform (make-instance 'progress :label-text "Accounts logged in"))
-   (%progress-accounts
-    :accessor progress-accounts
-    :initform (make-instance 'progress :label-text "Accounts downloaded"))
-   (%progress-furres
-    :accessor progress-furres
-    :initform (make-instance 'progress :label-text "Furres downloaded"))
-   (%progress-portraits
-    :accessor progress-portraits
-    :initform (make-instance 'progress :label-text "Portraits downloaded"))
-   (%progress-specitags
-    :accessor progress-specitags
-    :initform (make-instance 'progress :label-text "Specitags downloaded"))
-   (%progress-costumes
-    :accessor progress-costumes
-    :initform (make-instance 'progress :label-text "Costumes downloaded"))
-   (%progress-images
-    :accessor progress-images
-    :initform (make-instance 'progress :label-text "Images downloaded"))))
+(defmacro define-loading-screen (name (qt-class &rest direct-superclasses)
+                                 direct-slots progress-bars &rest options)
+  `(define-widget ,name (,qt-class ,@direct-superclasses)
+     (,@direct-slots
+      ,@(loop for (accessor label-text) in progress-bars
+              collect `(,(symbolicate "%" accessor)
+                        :accessor ,accessor
+                        :initform (make-instance 'progress
+                                                 :label-text ,label-text))))
+     ,@options))
+
+(trivial-indent:define-indentation define-loading-screen
+    (4 4 &rest 2))
+
+(define-loading-screen loading-screen (qwidget)
+  ((%module :accessor module :initarg :module))
+  ((progress-logins "Accounts logged in")
+   (progress-accounts "Accounts downloaded")
+   (progress-furres "Furres downloaded")
+   (progress-portraits "Portraits downloaded")
+   (progress-specitags "Specitags downloaded")
+   (progress-costumes "Costumes downloaded")
+   (progress-images "Images downloaded")))
 
 (define-subwidget (loading-screen layout) (q+:make-qvboxlayout)
   (setf (q+:layout loading-screen) layout))

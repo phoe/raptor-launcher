@@ -10,6 +10,7 @@
   :serial t
   :depends-on
   (#:cl-furcadia
+   #:alexandria
    #:lparallel
    #:bordeaux-threads
    #:closer-mop
