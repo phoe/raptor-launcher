@@ -21,6 +21,8 @@
   :components
   ((:file "package")
    (:file "definition")
+   (:file "furre-list")
    (:file "backend")
    (:file "config-widget")
+   (:file "loading-screen")
    (:file "module")))

@@ -16,20 +16,18 @@
 
 (define-slot (raptor-picker got-sync-started) ()
   (declare (connected raptor-picker (sync-started)))
-  (setf (q+:text loading-screen)
-        "Synchronization in progress.")
+  ;; (setf (q+:text (loading-screen raptor-picker))
+  ;;       "Synchronization in progress.")
   (q+:hide furre-list)
   (q+:hide image)
-  (q+:show loading-screen))
+  (q+:show (loading-screen raptor-picker)))
 
 ;;; Login completed
 
 (define-signal (raptor-picker login-completed) (string)) ;; email
 
 (define-slot (raptor-picker got-login-completed) ((email string))
-  (declare (connected raptor-picker (login-completed string)))
-  ;; (format t "Login completed! ~A~%" email)
-  )
+  (declare (connected raptor-picker (login-completed string))))
 
 ;;; Account downloaded
 
@@ -65,12 +63,13 @@
   (declare (connected raptor-picker (sync-complete bool)))
   (case successp
     ((nil)
-     (setf (q+:text loading-screen)
-           "Synchronization failed - see logs for details."))
+     ;; (setf (q+:text (loading-screen raptor-picker)) TODO
+     ;;       "Synchronization failed - see logs for details.")
+     )
     ((t)
      (q+:show furre-list)
      (q+:show image)
-     (q+:hide loading-screen))))
+     (q+:hide (loading-screen raptor-picker)))))
 
 ;;; Sync
 

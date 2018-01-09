@@ -8,6 +8,7 @@
 
 (define-raptor-module raptor-picker (picker)
   (:main-window qwidget qhboxlayout
+                (%loading-screen :accessor loading-screen)
                 (%queue :accessor queue
                         :initform (make-queue))
                 (%queue-joiner :accessor queue-joiner
@@ -26,7 +27,9 @@
       (push (set-main-window-for-threads raptor-picker)
        (post-init-callbacks raptor-picker))
       (setf (config-widget-constructor raptor-picker)
-            (lambda () (make-instance 'config-widget :module raptor-picker)))))
+            (lambda () (make-instance 'config-widget :module raptor-picker))
+            (loading-screen raptor-picker)
+            (make-instance 'loading-screen :module raptor-picker))))
 
 (defun set-main-window-for-threads (raptor-picker)
   (lambda ()
