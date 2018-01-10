@@ -7,6 +7,7 @@
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
+        #:trivial-indent
         #:lparallel.queue
         #:bordeaux-threads
         #:raptor-launcher/util

@@ -22,16 +22,31 @@
 
 (define-subwidget (progress bar) (q+:make-qprogressbar)
   (q+:add-widget layout bar)
-  (setf (q+:range bar) (values 0 0)
+  (setf (q+:text-visible bar) nil
+        (q+:range bar) (values 0 0)
         (q+:maximum-height bar) 10))
 
 (defmethod update ((progress progress))
   (with-slots-bound (progress progress)
     (let ((text (format nil "~A: ~D/~D" (label-text progress)
-                        (q+:minimum bar) (q+:maximum bar))))
+                        (q+:value bar) (q+:maximum bar))))
       (setf (q+:text label) text))))
 
+(defmethod reset ((progress progress))
+  (with-slots-bound (progress progress)
+    (q+:reset bar)
+    (setf (q+:value bar) 0)
+    (update progress)))
+
 ;;; Loading screen
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *progress-types*
+    '(progress-logins progress-accounts progress-furres progress-portraits
+      progress-specitags progress-costumes progress-images)))
+
+(deftype progress-type ()
+  '#.`(member ,@*progress-types*))
 
 (defmacro define-loading-screen (name (qt-class &rest direct-superclasses)
                                  direct-slots progress-bars &rest options)
@@ -44,8 +59,7 @@
                                                  :label-text ,label-text))))
      ,@options))
 
-(trivial-indent:define-indentation define-loading-screen
-    (4 4 &rest 2))
+(define-indentation define-loading-screen (4 4 &rest 2))
 
 (define-loading-screen loading-screen (qwidget)
   ((%module :accessor module :initarg :module))
@@ -63,22 +77,62 @@
 (define-subwidget (loading-screen label) (q+:make-qlabel)
   (q+:add-widget layout label 9001))
 
+(define-qt-constructor (loading-screen)
+  (q+:add-widget (slot-value (module loading-screen) 'layout) loading-screen)
+  (let ((symbols '(progress-logins progress-accounts progress-furres
+                   progress-portraits progress-specitags
+                   ;; TODO make a variable with valid progress types, AND a type
+                   progress-costumes progress-images)))
+    (loop for symbol in symbols
+          for widget = (funcall symbol loading-screen)
+          do (q+:add-widget layout widget)))
+  (reset loading-screen))
+
 (defmethod reset ((loading-screen loading-screen))
+  ;; TODO fix, this does not reset actually
   (with-slots-bound (loading-screen loading-screen)
     (let ((symbols '(progress-logins progress-accounts progress-furres
                      progress-portraits progress-specitags
                      progress-costumes progress-images)))
       (loop for symbol in symbols
             for widget = (funcall symbol loading-screen)
-            do (update widget)))))
+            do (reset widget)))))
 
-(define-qt-constructor (loading-screen)
-  (q+:add-widget (slot-value (module loading-screen) 'layout) loading-screen)
-  (let ((symbols '(progress-logins progress-accounts progress-furres
-                   progress-portraits progress-specitags
-                   progress-costumes progress-images)))
-    (loop for symbol in symbols
-          for widget = (funcall symbol loading-screen)
-          do (q+:add-widget layout widget)))
-  (q+:hide loading-screen)
-  (reset loading-screen))
+(defmethod maximum ((screen loading-screen) progress-type)
+  (check-type progress-type progress-type)
+  (let ((progress (funcall progress-type screen)))
+    (with-slots-bound (progress progress)
+      (q+:maximum bar))))
+
+(defmethod (setf maximum) (new-value (screen loading-screen) progress-type)
+  (check-type progress-type progress-type)
+  (let ((progress (funcall progress-type screen)))
+    (with-slots-bound (progress progress)
+      (prog1 (setf (q+:maximum bar) new-value)
+        (update progress)))))
+
+(defmethod minimum ((screen loading-screen) progress-type)
+  (check-type progress-type progress-type)
+  (let ((progress (funcall progress-type screen)))
+    (with-slots-bound (progress progress)
+      (q+:minimum bar))))
+
+(defmethod (setf minimum) (new-value (screen loading-screen) progress-type)
+  (check-type progress-type progress-type)
+  (let ((progress (funcall progress-type screen)))
+    (with-slots-bound (progress progress)
+      (prog1 (setf (q+:minimum bar) new-value)
+        (update progress)))))
+
+(defmethod current ((screen loading-screen) progress-type)
+  (check-type progress-type progress-type)
+  (let ((progress (funcall progress-type screen)))
+    (with-slots-bound (progress progress)
+      (q+:value bar))))
+
+(defmethod (setf current) (new-value (screen loading-screen) progress-type)
+  (check-type progress-type progress-type)
+  (let ((progress (funcall progress-type screen)))
+    (with-slots-bound (progress progress)
+      (prog1 (setf (q+:value bar) new-value)
+        (update progress)))))

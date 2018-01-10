@@ -15,15 +15,16 @@
    #:bordeaux-threads
    #:closer-mop
    #:bordeaux-threads
+   #:trivial-indent
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config
    #:raptor-launcher.base)
   :components
   ((:file "package")
+   (:file "loading-screen")
    (:file "definition")
    (:file "furre-list")
    (:file "backend")
    (:file "config-widget")
-   (:file "loading-screen")
    (:file "module")))
