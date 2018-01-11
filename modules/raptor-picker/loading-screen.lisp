@@ -13,6 +13,9 @@
                 :initarg :label-text
                 :initform "")))
 
+(defun make-progress (label-text)
+  (make-instance 'progress :label-text label-text))
+
 (define-subwidget (progress layout) (q+:make-qvboxlayout)
   (setf (q+:layout progress) layout
         (q+:contents-margins layout) (values 0 4 0 0)))
@@ -50,14 +53,12 @@
 
 (defmacro define-loading-screen (name (qt-class &rest direct-superclasses)
                                  direct-slots progress-bars &rest options)
-  `(define-widget ,name (,qt-class ,@direct-superclasses)
-     (,@direct-slots
-      ,@(loop for (accessor label-text) in progress-bars
-              collect `(,(symbolicate "%" accessor)
-                        :accessor ,accessor
-                        :initform (make-instance 'progress
-                                                 :label-text ,label-text))))
-     ,@options))
+  (let ((bars (loop for (accessor label-text) in progress-bars
+                    collect `(,(symbolicate "%" accessor)
+                              :accessor ,accessor
+                              :initform (make-progress ,label-text)))))
+    `(define-widget ,name (,qt-class ,@direct-superclasses)
+       (,@direct-slots ,@bars) ,@options)))
 
 (define-indentation define-loading-screen (4 4 &rest 2))
 
