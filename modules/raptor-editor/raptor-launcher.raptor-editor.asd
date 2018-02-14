@@ -12,6 +12,7 @@
   (#:alexandria
    #:protest
    #:static-vectors
+   #:fox5/qt
    #:cl-furcadia.constants
    #:raptor-launcher.util
    #:raptor-launcher.protocol

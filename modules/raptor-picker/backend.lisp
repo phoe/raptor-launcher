@@ -100,7 +100,8 @@
 (define-slot (raptor-picker got-account-downloaded)
              ((email string) (nfurres int))
   (declare (connected raptor-picker (account-downloaded string int)))
-  (incf (current (loading-screen raptor-picker) 'progress-accounts)))
+  (incf (current (loading-screen raptor-picker) 'progress-accounts))
+  (incf (maximum (loading-screen raptor-picker) 'progress-furres) nfurres))
 
 ;;; Furre downloaded
 
@@ -134,6 +135,11 @@
 (define-signal (raptor-picker furre-downloaded)
                (string int int int)) ;; sname nspecitags nportraits ncostumes
 
+(define-slot (raptor-picker got-furre-downloaded)
+             ((sname string) (nspecitags int) (nportraits int) (ncostumes int))
+  (declare (connected raptor-picker (furre-downloaded string int int int)))
+  (incf (current (loading-screen raptor-picker) 'progress-furres)))
+
 ;;; Specitag downloaded
 
 (define-signal (raptor-picker specitag-downloaded) (string int)) ;; sname id
@@ -162,17 +168,18 @@
      ;;       "Synchronization failed - see logs for details.")
      )
     ((t)
+     (q+:hide (loading-screen raptor-picker))
      (q+:show furre-list)
-     (q+:show image)
-     (q+:hide (loading-screen raptor-picker)))))
+     (q+:show image))))
 
 (defun join-all-queued (picker)
   (let ((errors 0)
         (queue (queue picker)))
     (loop for thread = (try-pop-queue queue)
           while thread
-          do (note t :trace "Waiting for task ~S to complete."
-                   (thread-name thread))
+          do (when (thread-alive-p thread)
+               (note t :trace "Waiting for task ~S to complete."
+                     (thread-name thread)))
              (handler-case
                  (cond ((join-thread thread)
                         (note t :trace "Task ~S completed successfully."
