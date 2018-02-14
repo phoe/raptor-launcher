@@ -14,14 +14,6 @@
   ((module :accessor module
            :initarg :module)))
 
-(define-qt-constructor (config-widget)
-  (let ((checkedp (q+:is-checked account-number-checkbox)))
-    (signal! (module config-widget)
-             (show-account-checkbox-clicked bool) checkedp))
-  (let ((checkedp (q+:is-checked last-login-checkbox)))
-    (signal! (module config-widget)
-             (last-login-checkbox-clicked bool) checkedp)))
-
 (define-subwidget (config-widget layout) (q+:make-qgridlayout)
   (setf (q+:layout config-widget) layout))
 
@@ -107,6 +99,12 @@
              (setf (config :config :accounts n :password) password))))
 
 (define-qt-constructor (config-widget)
+  (let ((checkedp (q+:is-checked account-number-checkbox)))
+    (signal! (module config-widget)
+             (show-account-checkbox-clicked bool) checkedp))
+  (let ((checkedp (q+:is-checked last-login-checkbox)))
+    (signal! (module config-widget)
+             (last-login-checkbox-clicked bool) checkedp))
   (let ((list (loop with accounts-data = (config :config :accounts)
                     for index being the hash-keys of accounts-data
                     for email = (config :config :accounts index :email)

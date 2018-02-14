@@ -42,10 +42,6 @@
           (q+:default-section-size v-header) 24
           (q+:sort-indicator h-header 0) (q+:qt.ascending-order))
     (q+:hide v-header))
-  (insert-row furre-list "1" "Foobar" "2017-08-01 10:00")
-  (insert-row furre-list "2" "Bumblebutt" "2017-07-01 10:00")
-  (insert-row furre-list "1" "Oskar Fjötenssën" "2017-09-01 10:30")
-  (insert-row furre-list "1" "Hehehehehehe" "2017-08-01 10:20")
   (setf (q+:sorting-enabled furre-list) t))
 
 (defun insert-row (widget s1 s2 s3)
