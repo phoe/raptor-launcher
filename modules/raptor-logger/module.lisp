@@ -10,6 +10,7 @@
   (:main-window qwidget qvboxlayout
                 (log-list :accessor log-list :initform '()))
   (:selector "Logs")
+  (:priority 890)
   (:button clear-button "Clear")
   (:constructor
       ;; TODO fix this so all loggers get the information

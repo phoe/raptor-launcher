@@ -22,15 +22,12 @@
 
 (defun load-module (main-window instance)
   (with-slots-bound (main-window raptor-launcher)
-    (let ((selector (selector instance))
-          (buttons (buttons instance)))
-      (q+:add-widget left-widget-layout instance)
-      (q+:hide instance)
-      (q+:add-widget selector-layout selector)
-      (dolist (button buttons)
-        (q+:add-widget module-buttons-layout button)
-        (q+:hide button))
-      (setf (main-window instance) main-window))))
+    (q+:add-widget left-widget-layout instance)
+    (q+:hide instance)
+    (dolist (button (buttons instance))
+      (q+:add-widget module-buttons-layout button)
+      (q+:hide button))
+    (setf (main-window instance) main-window)))
 
 (defmethod load-modules ((main-window raptor-launcher)
                          &optional (instances (loaded-modules main-window)))
@@ -38,7 +35,19 @@
         for selector = (selector instance)
         do (load-module main-window instance)
            (pushnew instance (loaded-modules main-window)))
+  (insert-selectors main-window)
   (nreversef (loaded-modules main-window)))
+
+(defmethod insert-selectors ((main-window raptor-launcher))
+  (with-slots-bound (main-window raptor-launcher)
+    (let* ((modules (loaded-modules main-window))
+           (modules (sort modules #'< :key #'selector-priority))
+           (selectors (mapcar #'selector modules)))
+      (loop for module in modules
+            do (format t "~A ~D~%" module (selector-priority module)))
+      (loop for i from 0
+            for selector in selectors
+            do (q+:insert-widget selector-layout i selector)))))
 
 (defmethod hide-all-modules ((main-window raptor-launcher))
   (with-slots-bound (main-window raptor-launcher)
@@ -68,6 +77,7 @@
          (main-window-slots (cdr main-window-clause))
          (selector-clause (assoc-value-or-die clauses :selector))
          (constructor-clause (assoc-value clauses :constructor))
+         (priority (or (car (assoc-value clauses :priority)) 1000))
          (pred (lambda (x) (eq (car x) :button)))
          (button-clauses (mapcar #'cdr (remove-if-not pred clauses)))
          (widget-class (first main-window-clause))
@@ -84,6 +94,8 @@
                                       :initform nil)
           (%post-init-callbacks :accessor post-init-callbacks
                                 :initform '())
+          (%selector-priority :accessor selector-priority
+                              :initform ,priority)
           ,@main-window-slots))
        (define-subwidget (,name layout) (q+ ,layout-constructor)
          (setf (q+:layout ,name) layout

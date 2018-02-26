@@ -16,6 +16,7 @@
    #:raptor-launcher.raptor-logger
    #:raptor-launcher.raptor-config
    #:raptor-launcher.raptor-editor
-   #:raptor-launcher.raptor-picker)
+   #:raptor-launcher.raptor-picker
+   #:raptor-launcher.raptor-fusion)
   :components
   ((:file "package")))

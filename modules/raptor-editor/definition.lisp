@@ -13,6 +13,7 @@
                 (afk-description :accessor afk-description)
                 (afk-looks :accessor afk-looks))
   (:selector "Editor")
+  (:priority 200)
   (:constructor
       (mapcar (lambda (class accessor name)
                 (funcall (fdefinition `(setf ,accessor))

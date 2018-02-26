@@ -20,6 +20,7 @@
                 (%emails-accounts :accessor emails-accounts
                                   :initform (make-hash-table :test #'equal)))
   (:selector "Launcher")
+  (:priority 100)
   (:button play-button "Play!")
   (:button sync-button "Sync")
   (:constructor

@@ -20,6 +20,9 @@ buttons layout."
   (:function selector ((module module)) qpushbutton)
   "Returns an instance of QPushButton meant to be added to the module selector ~
 list."
+  (:function selector-priority ((module module)) unsigned-byte)
+  "Returns a non-negative integer stating how high on the list of all selectors
+this module's selector should be. The lower priority, the higher position."
   (:function config-widget-constructor ((module module)) (or function null))
   "Returns a zero-argument function that can be called to create an instance ~
 of this module's configuration widget. In case the module has no such widget,

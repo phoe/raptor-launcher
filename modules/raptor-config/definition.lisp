@@ -10,6 +10,7 @@
   (:main-window qwidget qhboxlayout
                 (log-list :accessor log-list :initform '()))
   (:selector "Config")
+  (:priority 900)
   (:constructor
       (note t :debug "Raptor Config starting.")
       (setf (config-widget-constructor raptor-config)
