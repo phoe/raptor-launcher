@@ -20,4 +20,5 @@
                (:file "modules/logger")
                (:file "modules/picker")
                (:file "modules/config")
-               (:file "modules/editor")))
+               (:file "modules/editor")
+               (:file "modules/fusion")))

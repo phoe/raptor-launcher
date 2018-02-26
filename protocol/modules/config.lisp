@@ -7,7 +7,8 @@
 
 (define-protocol config
     (:description "The CONFIG protocol describes Raptor Launcher modules that ~
-are meant for allowing the user to read and modify the Launcher's configuration."
+are meant for allowing the user to read and modify the Launcher's
+configuration."
      :tags (:raptor-launcher :module :config)
      :export t)
   (:class config (module) ())
