@@ -23,6 +23,9 @@ list."
   (:function selector-priority ((module module)) unsigned-byte)
   "Returns a non-negative integer stating how high on the list of all selectors
 this module's selector should be. The lower priority, the higher position."
+  (:variable *selector-priorities* list '())
+  "An alist from symbols being the name of concrete Raptor modules to their
+selector priorities, each being an unsigned-byte."
   (:function config-widget-constructor ((module module)) (or function null))
   "Returns a zero-argument function that can be called to create an instance ~
 of this module's configuration widget. In case the module has no such widget,
@@ -63,3 +66,8 @@ are bound inside this constructor body, as via DEFINE-QT-CONSTRUCTOR.")
 (defmethod config-widget-constructor ((object module))
   (declare (ignore object))
   nil)
+
+(defmethod selector-priority ((module module))
+  "The default method, checking *SELECTOR-PRIORITIES* for an alist cell ~
+matching the module's class name."
+  (assoc-value *selector-priorities* (class-name (class-of module))))

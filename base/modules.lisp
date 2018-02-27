@@ -94,9 +94,8 @@
                                       :initform nil)
           (%post-init-callbacks :accessor post-init-callbacks
                                 :initform '())
-          (%selector-priority :accessor selector-priority
-                              :initform ,priority)
           ,@main-window-slots))
+       (setf (assoc-value *selector-priorities* ',name) ,priority)
        (define-subwidget (,name layout) (q+ ,layout-constructor)
          (setf (q+:layout ,name) layout
                (q+:margin layout) 0))
