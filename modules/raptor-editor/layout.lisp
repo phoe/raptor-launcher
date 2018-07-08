@@ -46,7 +46,8 @@
 (define-subwidget (raptor-editor rating-dropdown) (q+:make-qcombobox)
   (q+:add-widget misc-layout rating-dropdown 1)
   (setf (q+:minimum-contents-length rating-dropdown) 4)
-  (q+:add-items rating-dropdown '("T+" "M16+" "AOC" "A18+" "AO")))
+  (q+:add-items rating-dropdown (mapcar (compose #'symbol-name #'cdr)
+                                        (cdr *desc-standards*))))
 
 (define-subwidget (raptor-editor tabs) (q+:make-qtabwidget)
   (q+:add-widget layout tabs 5 0 1 3))
