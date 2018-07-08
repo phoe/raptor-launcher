@@ -15,19 +15,19 @@
         (q+:column-stretch advanced-config-layout 1) 100
         (q+:column-stretch advanced-config-layout 2) 1))
 
-(define-subwidget (raptor-config advanced-config-entry-path)
+(define-subwidget (raptor-config advanced-config-entry-key)
     (q+:make-qlineedit)
-  (q+:add-widget advanced-config-layout advanced-config-entry-path 0 0)
-  (setf (q+:placeholder-text advanced-config-entry-path) "Configuration path"))
+  (q+:add-widget advanced-config-layout advanced-config-entry-key 0 0)
+  (setf (q+:placeholder-text advanced-config-entry-key) "Configuration path"))
 
 (define-subwidget (raptor-config advanced-config-entry-value)
     (q+:make-qlineedit)
   (q+:add-widget advanced-config-layout advanced-config-entry-value 0 1)
   (setf (q+:placeholder-text advanced-config-entry-value) "Value"))
 
-(define-subwidget (raptor-config advanced-config-label)
+(define-subwidget (raptor-config advanced-config-set-button)
     (q+:make-qpushbutton "Set")
-  (q+:add-widget advanced-config-layout advanced-config-label 0 2))
+  (q+:add-widget advanced-config-layout advanced-config-set-button 0 2))
 
 (define-subwidget (raptor-config advanced-config-table)
     (q+:make-qtablewidget 0 2)
@@ -38,8 +38,10 @@
         (q+:qabstractitemview.scroll-per-pixel)
         (q+:horizontal-scroll-mode advanced-config-table)
         (q+:qabstractitemview.scroll-per-pixel)
+        (q+:selection-mode advanced-config-table)
+        (q+:qabstractitemview.single-selection)
         (q+:selection-behavior advanced-config-table)
-        (q+:qabstractitemview.select-items))
+        (q+:qabstractitemview.select-rows))
   (let ((h-header (q+:horizontal-header advanced-config-table))
         (v-header (q+:vertical-header advanced-config-table)))
     (setf (q+:stretch-last-section h-header) t
@@ -62,7 +64,7 @@
           do (q+:insert-row advanced-config-table i)
              (with-signals-blocked (advanced-config-table)
                (setf (table-text advanced-config-table i 0) string-key
-                     (table-text advanced-config-table i 1 t) string-value)))))
+                     (table-text advanced-config-table i 1) string-value)))))
 
 (define-slot (raptor-config tab-clicked) ((tab int))
   (declare (connected config-tabs (current-changed int)))
@@ -81,16 +83,14 @@
   "Error of type ~S while setting the new config value ~S for path ~S provided ~
 in the editor: ~A")
 
-(define-slot (raptor-config update-config) ((item "QTableWidgetItem *" t))
-  (declare (connected advanced-config-table
-                      (item-changed "QTableWidgetItem *")))
-  (let* ((row (q+:row item))
-         (text (q+:text item))
-         (key (q+:text (q+:item advanced-config-table row 0)))
-         (path (read-from-string (uiop:strcat "(" key ")")))
-         (old-value (apply #'config path)))
+(define-slot (raptor-config update-config) ()
+  (declare (connected advanced-config-set-button (clicked)))
+  (let* ((key (q+:text advanced-config-entry-key))
+         (value (q+:text advanced-config-entry-value)))
     (handler-case
-        (let* ((new-value (read-from-string text))
+        (let* ((path (read-from-string (uiop:strcat "(" key ")")))
+               (old-value (apply #'config path))
+               (new-value (read-from-string value))
                (log-value (if (eq (lastcar path) :password)
                               (witty-password) new-value)))
           (apply #'(setf config) new-value path)
@@ -99,3 +99,13 @@ in the editor: ~A")
         (note t :error *config-set-error* (type-of e) text path e)
         (apply #'(setf config) old-value path)))
     (redisplay-config advanced-config-table)))
+
+(define-slot (raptor-config set-config) ()
+  (declare (connected advanced-config-table (item-selection-changed)))
+  (when-let* ((model (q+:selection-model advanced-config-table))
+              (rows (q+:selected-rows model)))
+    (let* ((row (q+:row (first rows)))
+           (key (q+:text (q+:item advanced-config-table row 0)))
+           (value (q+:text (q+:item advanced-config-table row 1))))
+      (setf (q+:text advanced-config-entry-key) key
+            (q+:text advanced-config-entry-value) value))))
