@@ -6,7 +6,7 @@
 (in-package :raptor-launcher/protocol)
 
 (define-protocol module
-    (:description "The MODULE protocol describes objects representing the ~
+    (:documentation "The MODULE protocol describes objects representing the ~
 Raptor Launcher modules, displayable in the main window of the Raptor Launcher.
 Modules are expected to be defined using the DEFINE-RAPTOR-MODULE macro."
      :tags (:raptor-launcher :module)
@@ -17,7 +17,7 @@ this protocol class."
   (:function buttons ((module module)) list)
   "Returns a list of QPushButton instances meant to be shown in the module ~
 buttons layout."
-  (:function selector ((module module)) qpushbutton)
+  (:function selector ((module module)) t)
   "Returns an instance of QPushButton meant to be added to the module selector ~
 list."
   (:function selector-priority ((module module)) unsigned-byte)
@@ -34,7 +34,7 @@ behavior is provided."
   (:function main-window ((module module)) (or widget null))
   "Returns the main window the module is loaded into, or NIL if the module is ~
 not loaded."
-  (:function layout ((module module)) qlayout)
+  (:function layout ((module module)) t)
   "Returns the layout of the module, into which it is possible to embed ~
 Qt widgets."
   (:function show-module ((module module)) t)
@@ -62,6 +62,8 @@ it.
 \(:CONSTRUCTOR FUNCTION) - optional, one permitted. The body of this clause ~
 will be called after the module instance is constructed. All Qt slot values ~
 are bound inside this constructor body, as via DEFINE-QT-CONSTRUCTOR.")
+
+(execute-protocol module)
 
 (defmethod config-widget-constructor ((object module))
   (declare (ignore object))

@@ -14,10 +14,8 @@
          :initform "Looks")
    (palette :accessor palette
             :initarg :palette)
-   (nbuttons :accessor nbuttons
-             :initform 0)
    (buttons-per-row :accessor buttons-per-row
-                    :initform 7)))
+                    :initform 6)))
 
 (define-subwidget (looks layout) (q+:make-qvboxlayout)
   (setf (q+:layout looks) layout))
@@ -40,13 +38,13 @@
        (selectors (mapcar #'selector instances)))
     (loop for palette in instances
           for selector in selectors
+          for nbuttons from 0
           for row = (floor nbuttons buttons-per-row)
           for column = (mod nbuttons buttons-per-row)
           do (q+:add-widget palettes palette)
              (setf (q+:size-policy selector) (values (q+:qsizepolicy.expanding)
                                                      (q+:qsizepolicy.fixed)))
-             (q+:add-widget buttons selector row column)
-             (incf nbuttons))))
+             (q+:add-widget buttons selector row column))))
 
 #|
 (progn

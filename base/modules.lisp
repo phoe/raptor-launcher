@@ -11,13 +11,10 @@
                                 &optional (modules *available-modules*))
   (assert (null (loaded-modules main-window)))
   ;; TODO better ordering here, loggers should go always first
-  ;; (loop for class in classes
-  ;;       nconc (loop for instance in instances
-  ;;                   when (instancep instance class) collect instance))
   (let ((modules (reverse modules)))
     (loop for module in modules
-          do (push (make-instance module :main-window main-window)
-                   (loaded-modules main-window)))
+          for instance = (make-instance module :main-window main-window)
+          do (push instance (loaded-modules main-window)))
     (note t :trace "Modules loaded: ~{~A~^, ~}" modules)))
 
 (defun load-module (main-window instance)
@@ -43,8 +40,8 @@
     (let* ((modules (loaded-modules main-window))
            (modules (sort modules #'< :key #'selector-priority))
            (selectors (mapcar #'selector modules)))
-      (loop for module in modules
-            do (format t "~A ~D~%" module (selector-priority module)))
+      ;; (loop for module in modules
+      ;;       do (format t "~A ~D~%" module (selector-priority module)))
       (loop for i from 0
             for selector in selectors
             do (q+:insert-widget selector-layout i selector)))))

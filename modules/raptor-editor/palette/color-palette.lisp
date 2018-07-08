@@ -8,31 +8,31 @@
 
 ;;; TODO fix all DEFINE-WIDGETS so they have %s in slot names(?)
 (define-widget color-palette (qwidget palette)
-  ((%selector :accessor selector
-              :initarg :selector)
-   (%color-type :accessor color-type
-                :initarg :color-type)
-   (%stacked-widget :accessor stacked-widget
-                    :initarg :stacked-widget)))
+  ((selector :accessor selector
+             :initarg :selector)
+   (color-type :accessor color-type
+               :initarg :color-type)
+   (stacked-widget :accessor stacked-widget
+                   :initarg :stacked-widget)))
 
 (define-qt-constructor (color-palette name)
   (unless name (error "Must provide NAME."))
-  (unless (slot-boundp color-palette '%color-type)
+  (unless (slot-boundp color-palette 'color-type)
     (error "Must provide COLOR-TYPE."))
-  (check-type (color-type color-palette) color)
-  (setf (selector color-palette) (make-text-qtoolbutton name))
+  (check-type color-type color)
+  (setf selector (make-text-qtoolbutton name))
   (connect! (selector color-palette) (clicked) color-palette (show-widget))
   (add-color-pickers color-palette))
 
 (define-slot (color-palette show-widget) ()
-  (let ((widget (stacked-widget color-palette)))
+  (let ((widget stacked-widget))
     (setf (q+:current-widget widget) color-palette)))
 
 (define-subwidget (color-palette layout) (q+:make-qgridlayout)
   (setf (q+:layout color-palette) layout
         (q+:contents-margins layout) (values 0 0 0 0)))
 
-(define-subwidget (color-palette label) (q+:make-qlabel)
+(define-subwidget (color-palette label) (q+:make-qlabel " ")
   (q+:add-widget layout label 0 1 1 1)
   (setf (q+:style-sheet label) "font-weight: bold;"
         (q+:alignment label) (q+:qt.align-center)))
@@ -52,13 +52,13 @@
 
 (defun add-color-pickers (color-palette)
   (with-all-slots-bound (color-palette color-palette)
-    (loop with color-type = (color-type color-palette)
-          for color-name in (gethash color-type *color-names*)
+    (loop for color-name in (gethash color-type *color-names*)
           for key = (list color-type color-name)
           for gradient = (gethash key *gradients*)
-          for color-picker = (make-instance 'color-picker :palette color-palette
-                                                          :widget gradient
-                                                          :color-type color-type
-                                                          :color-name color-name
-                                                          :vector gradient)
+          for color-picker = (make-instance 'color-picker
+                                            :palette color-palette
+                                            :widget gradient
+                                            :color-type color-type
+                                            :color-name color-name
+                                            :vector gradient)
           do (qui:add-widget color-picker picker))))

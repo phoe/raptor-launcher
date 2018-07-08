@@ -18,7 +18,7 @@
    (%widget :accessor gradient-widget
             :initarg :widget)
    (%size :accessor size ;;; TODO make this configurable
-          :initform 64)))
+          :initform 54)))
 
 (define-qt-constructor (color-picker)
   (let* ((size (size color-picker))

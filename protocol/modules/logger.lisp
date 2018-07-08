@@ -6,8 +6,8 @@
 (in-package :raptor-launcher/protocol)
 
 (define-protocol logger
-    (:description "The LOGGER protocol describes Raptor Launcher modules that ~
-are meant for logging debug and diagnostic information."
+    (:documentation "The LOGGER protocol describes Raptor Launcher modules ~
+that are meant for logging debug and diagnostic information."
      :tags (:raptor-launcher :module :logger)
      :export t)
   (:class logger (module) ())
@@ -45,6 +45,8 @@ denoting a RGB color.
 \
 This configuration value is expected to be defined for all types mentioned in ~
 *LOG-LEVELS*, with the default values are to be taken from the list.")
+
+(execute-protocol logger)
 
 (defmethod note ((logger (eql 't)) type message &rest args)
   (when *main-window*

@@ -10,6 +10,9 @@
         #:alexandria
         #:protest)
   (:shadowing-import-from
+   #:protest/protocol
+   #:superclasses)
+  (:shadowing-import-from
    #:closer-mop
    #:standard-generic-function
    #:defmethod

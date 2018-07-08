@@ -6,7 +6,7 @@
 (in-package :raptor-launcher/protocol)
 
 (define-protocol main-window
-    (:description "The MAIN-WINDOW protocol describes main windows of the ~
+    (:documentation "The MAIN-WINDOW protocol describes main windows of the ~
 Raptor Launcher, each capable of loading and displaying modules."
      :tags (:raptor-launcher :main-window)
      :export t)
@@ -31,3 +31,5 @@ list of modules loaded in the provided main window."
 window."
   (:function hide-all-modules ((main-window main-window)) t)
   "Hides all modules inside the provided main window.")
+
+(execute-protocol main-window)

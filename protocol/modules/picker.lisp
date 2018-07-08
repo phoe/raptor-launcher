@@ -6,8 +6,8 @@
 (in-package :raptor-launcher/protocol)
 
 (define-protocol picker
-    (:description "The PICKER protocol describes Raptor Launcher modules that ~
-are used for selecting, viewing and launching individual Furcadia furres."
+    (:documentation "The PICKER protocol describes Raptor Launcher modules ~
+that are used for selecting, viewing and launching individual Furcadia furres."
      :tags (:raptor-launcher :module :picker)
      :export t)
   (:class picker (module) ())
@@ -31,9 +31,11 @@ found."
   "Selects the provided furre in the picker and selects the picker on the ~
 Raptor Launcher to be the active widget. The furre designator can be a furre ~
 object or a shortname. Signals an error if the provided furre cannot be found."
-  (:config :picker :show-account-number)
+  (:config (:picker :show-account-number))
   "The configuration value stating if the character list should display ~
 account numbers for each displayed furre."
-  (:config :picker :show-last-login)
+  (:config (:picker :show-last-login))
   "The configuration value stating if the character list should display ~
 last login dates for each displayed furre.")
+
+(execute-protocol picker)

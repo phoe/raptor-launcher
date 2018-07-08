@@ -24,3 +24,13 @@
 (define-subwidget (raptor-config simple-config-layout) (q+:make-qvboxlayout)
   (setf (q+:layout contents) simple-config-layout
         (q+:contents-margins simple-config-layout) (values 0 0 0 0)))
+
+(defun refresh-simple-config (raptor-config)
+  (with-slots-bound (raptor-config raptor-config)
+    (do ((layout-item (q+:take-at simple-config-layout 0)
+                      (q+:take-at simple-config-layout 0)))
+        ((null-qobject-p layout-item))
+      (describe layout-item)
+      (finalize (q+:widget layout-item))
+      (finalize layout-item))
+    (funcall (make-callback raptor-config))))
