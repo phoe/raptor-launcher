@@ -79,8 +79,8 @@
     (when (= tab 0) (refresh-simple-config raptor-config))
     (when (= tab 1) (redisplay-config advanced-config-table))))
 
-(defvar *config-set-error*
-  "Error of type ~S while setting the new config value ~S for path ~S provided ~
+(defparameter *config-set-error*
+  "Error of type ~S while setting the config value ~S for path ~S provided ~
 in the editor: ~A")
 
 (define-slot (raptor-config update-config) ()
@@ -88,16 +88,20 @@ in the editor: ~A")
   (let* ((key (q+:text advanced-config-entry-key))
          (value (q+:text advanced-config-entry-value)))
     (handler-case
-        (let* ((path (read-from-string (uiop:strcat "(" key ")")))
-               (old-value (apply #'config path))
-               (new-value (read-from-string value))
-               (log-value (if (eq (lastcar path) :password)
-                              (witty-password) new-value)))
-          (apply #'(setf config) new-value path)
-          (note t :trace "Set config path ~S to value ~S." path log-value))
+        (let* ((path (read-from-string (uiop:strcat "(" key ")"))))
+          (if (string/= "" value)
+              (let* ((new-value (read-from-string value))
+                     (log-value (if (eq (lastcar path) :password)
+                                    (witty-password) new-value)))
+                (apply #'(setf config) new-value path)
+                (note t :trace "Set config path ~S to value ~S."
+                      path log-value))
+              (progn
+                (apply #'remconfig path)
+                (note t :trace "Removed the value from config path ~S."
+                      path))))
       (error (e)
-        (note t :error *config-set-error* (type-of e) text path e)
-        (apply #'(setf config) old-value path)))
+        (note t :error *config-set-error* (type-of e) value key e)))
     (redisplay-config advanced-config-table)))
 
 (define-slot (raptor-config set-config) ()
