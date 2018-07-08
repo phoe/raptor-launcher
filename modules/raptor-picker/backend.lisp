@@ -51,7 +51,7 @@
           (error "Invalid credentials for email ~A." email))
         (with-lock-held ((lock picker))
           (setf (gethash email (emails-cookie-jars picker)) cookie-jar))
-        (note t :info "Login as ~A succeeded." email)
+        (note t :debug "Login as ~A succeeded." email)
         (let* ((queue (queue picker))
                (fn (curry #'worker-account picker cookie-jar email))
                (name (format nil "RL account thread: ~A" email))
@@ -86,7 +86,7 @@
             (cl-furcadia/ws:fetch-account cookie-jar)
           (with-lock-held ((lock picker))
             (setf (gethash email (emails-accounts picker)) account))
-          (note t :info "Fetching account ~A succeeded." email)
+          (note t :debug "Fetching account ~A succeeded." email)
           (spawn picker account snames last-logins cookie-jar)
           (signal! picker (account-downloaded string int) email (length snames))
           t)
@@ -108,9 +108,17 @@
 (defun worker-furre (picker sname last-login account cookie-jar)
   (note t :debug "Fetching furre ~A." sname)
   (flet ((spawn (picker furre cookie-jar)
-           (declare (ignore picker furre cookie-jar))
-           ;; TODO
-           ))
+           (let ((queue (queue picker))
+                 (costumes (remove-if #'listp (cl-furcadia:costumes furre)))
+                 (lists (delete-if-not #'listp (cl-furcadia:costumes furre))))
+             (setf (cl-furcadia:costumes furre) costumes)
+             (loop for list in lists
+                   for (n cid cname) = list
+                   for fn = (curry #'worker-costume picker furre
+                                   cid cookie-jar)
+                   for name = (format nil "RL costume fetcher: ~A, ~A (~A)"
+                                      sname cname cid)
+                   do (push-queue (make-thread fn :name name) queue)))))
     (handler-case
         (multiple-value-bind (furre unknowns)
             (cl-furcadia/ws:fetch-furre sname cookie-jar)
@@ -120,11 +128,11 @@
           (setf (cl-furcadia:last-login furre) last-login)
           (with-lock-held ((lock picker))
             (push furre (cl-furcadia:furres account)))
-          (note t :info "Fetching furre ~A succeeded." sname)
-          (spawn picker furre cookie-jar)
+          (note t :debug "Fetching furre ~A succeeded." sname)
           (let ((nspecitags (length (cl-furcadia:specitags furre)))
                 (nportraits (length (cl-furcadia:portraits furre)))
                 (ncostumes (length (cl-furcadia:costumes furre))))
+            (spawn picker furre cookie-jar)
             (signal! picker (furre-downloaded string int int int)
                      sname nspecitags nportraits ncostumes)
             t))
@@ -138,7 +146,39 @@
 (define-slot (raptor-picker got-furre-downloaded)
              ((sname string) (nspecitags int) (nportraits int) (ncostumes int))
   (declare (connected raptor-picker (furre-downloaded string int int int)))
-  (incf (current (loading-screen raptor-picker) 'progress-furres)))
+  (incf (current (loading-screen raptor-picker) 'progress-furres))
+  (incf (current (loading-screen raptor-picker) 'progress-costumes))
+  (incf (maximum (loading-screen raptor-picker) 'progress-costumes) ncostumes))
+
+;;; Costume downloaded
+
+(defun worker-costume (picker furre cid cookie-jar)
+  (let ((sname (cl-furcadia:shortname furre)))
+    (note t :debug "Fetching costume ~A for furre ~A." cid sname)
+    (handler-case
+        (multiple-value-bind (costume unknowns)
+            (cl-furcadia/ws:fetch-costume cid cookie-jar)
+          (when unknowns
+            (note t :warn "Unknown keywords in costume response (bug?): ~A"
+                  unknowns))
+          (setf (cl-furcadia:furre costume) furre)
+          (with-lock-held ((lock picker))
+            (push costume (cl-furcadia:costumes furre)))
+          (note t :debug "Fetching costume ~A for furre ~A succeeded."
+                cid sname)
+          (signal! picker (costume-downloaded string int) sname cid)
+          t)
+      (error (e)
+        (note t :error "Failed to fetch costume ~A for furre ~A: ~A"
+              cid sname e)
+        (error e)))))
+
+(define-signal (raptor-picker costume-downloaded) (string int)) ;; sname id
+
+(define-slot (raptor-picker got-costume-downloaded)
+             ((sname string) (nspecitags int))
+  (declare (connected raptor-picker (costume-downloaded string int)))
+  (incf (current (loading-screen raptor-picker) 'progress-costumes)))
 
 ;;; Specitag downloaded
 
@@ -148,24 +188,19 @@
 
 (define-signal (raptor-picker portrait-downloaded) (string int)) ;; sname id
 
-;;; Costume downloaded
-
-(define-signal (raptor-picker costume-downloaded) (string int)) ;; sname id
-
 ;;; Image downloaded
 
 (define-signal (raptor-picker image-downloaded) (string)) ;; sname
 
 ;;; Join all threads and complete synchronization
 
-(define-signal (raptor-picker sync-complete) (bool)) ;; successp errormsg
+(define-signal (raptor-picker sync-complete) (bool)) ;; successp
 
 (define-slot (raptor-picker got-sync-complete) ((successp bool))
   (declare (connected raptor-picker (sync-complete bool)))
   (case successp
     ((nil)
-     ;; (setf (q+:text (loading-screen raptor-picker)) TODO
-     ;;       "Synchronization failed - see logs for details.")
+     ;; TODO
      )
     ((t)
      (q+:hide (loading-screen raptor-picker))

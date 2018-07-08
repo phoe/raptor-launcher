@@ -38,7 +38,8 @@
 (defmethod reset ((progress progress))
   (with-slots-bound (progress progress)
     (q+:reset bar)
-    (setf (q+:value bar) 0)
+    (setf (q+:value bar) 0
+          (q+:maximum bar) 0)
     (update progress)))
 
 ;;; Loading screen
@@ -90,7 +91,6 @@
   (reset loading-screen))
 
 (defmethod reset ((loading-screen loading-screen))
-  ;; TODO fix, this does not reset actually
   (with-slots-bound (loading-screen loading-screen)
     (let ((symbols '(progress-logins progress-accounts progress-furres
                      progress-portraits progress-specitags
