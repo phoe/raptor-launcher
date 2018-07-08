@@ -16,6 +16,7 @@
 
 (define-qt-constructor (description)
   (with-slots (tabs) module
+    (note t :trace "Raptor Editor: ~A instantiated." name)
     (q+:add-tab tabs description name)))
 
 (define-subwidget (description scroll-layout) (q+:make-qgridlayout)

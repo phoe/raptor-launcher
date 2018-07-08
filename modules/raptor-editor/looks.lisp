@@ -28,6 +28,7 @@
 
 (define-qt-constructor (looks)
   (with-slots (tabs) module
+    (note t :trace "Raptor Editor: ~A instantiated." name)
     (q+:add-tab tabs looks name))
   (let*
       ((color-types *color-types*)

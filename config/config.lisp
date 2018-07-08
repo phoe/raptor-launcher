@@ -28,6 +28,8 @@
 first is the retrieved value, or NIL if it was not found; the second is true if
 the value was found in the configuration."
   (let ((*storage-pathname* *config-path*))
+    ;; TODO in case it's not found: search protocols for a configuration entry
+    ;; with a matching name, set its default, and return it
     (apply #'value path)))
 
 (defun default-config (default &rest path)

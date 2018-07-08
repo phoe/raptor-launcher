@@ -48,7 +48,7 @@ This configuration value is expected to be defined for all types mentioned in ~
 
 (execute-protocol logger)
 
-(defmethod note ((logger (eql 't)) type message &rest args)
+(defmethod note ((logger (eql 't)) (type symbol) message &rest args)
   (when *main-window*
     (let* ((modules (loaded-modules *main-window*))
            (loggers (remove-if-not (rcurry #'subclassp 'logger) modules
@@ -56,5 +56,5 @@ This configuration value is expected to be defined for all types mentioned in ~
       (mapc (lambda (x) (apply #'note x type message args)) loggers)
       (values))))
 
-(defmethod note ((logger (eql 'nil)) type message &rest args)
+(defmethod note ((logger (eql 'nil)) (type symbol) message &rest args)
   (list type (apply #'format nil message args)))

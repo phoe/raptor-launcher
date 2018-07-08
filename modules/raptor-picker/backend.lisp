@@ -115,7 +115,7 @@
         (multiple-value-bind (furre unknowns)
             (cl-furcadia/ws:fetch-furre sname cookie-jar)
           (when unknowns
-            (note t :warn " Unknown keywords in furre response (bug?): ~A"
+            (note t :warn "Unknown keywords in furre response (bug?): ~A"
                   unknowns))
           (setf (cl-furcadia:last-login furre) last-login)
           (with-lock-held ((lock picker))
