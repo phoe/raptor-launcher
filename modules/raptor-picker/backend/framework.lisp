@@ -6,33 +6,33 @@
 (in-package :raptor-launcher/raptor-picker)
 (in-readtable :qtools)
 
-(defclass sync-step ()
+(defclass step ()
   ((%name :accessor name
           :initarg :name
           :initform (error "Must provide NAME."))
    ;; Must be a symbol
-   (%download-fn :accessor download-fn
-                 :initarg :download-fn
-                 :initform #'identity)
-   ;; Returns downloaded data that must be accepted by MERGE-FN and SPAWN-FN
-   (%merge-fn :accessor merge-fn
-              :initarg :merge-fn
-              :initform #'identity)
+   (%fetch :accessor fetch
+           :initarg :fetch
+           :initform #'identity)
+   ;; Returns downloaded data that must be accepted by MERGE and SPAWN
+   (%merge :accessor merge
+           :initarg :merge
+           :initform #'identity)
    ;; Returns if any data was merged
-   (%spawn-fn :accessor spawn-fn
-              :initarg :spawn-fn
-              :initform #'identity)
+   (%spawn :accessor spawn
+           :initarg :spawn
+           :initform #'identity)
    ;; Returns the amount of spawned threads
-   (%done-fn :accessor done-fn
-             :initarg :done-fn
-             :initform (constantly nil))
+   (%done :accessor done
+          :initarg :done
+          :initform (constantly nil))
    ;; Return value is ignored
    ))
 
-(defun make-sync-step (name download-fn merge-fn spawn-fn done-fn)
-  (make-instance 'sync-step :name name
-                            :download-fn download-fn :merge-fn merge-fn
-                            :spawn-fn spawn-fn :done-fn done-fn))
+(defun make-step (name fetch merge spawn done)
+  (make-instance 'step :name name
+                       :fetch fetch :merge merge
+                       :spawn spawn :done done))
 
 (defvar *step-format* "~@[~A~] ~A~@[ for ~A]: ~A.")
 
@@ -49,17 +49,17 @@ is set to NIL.")
                (note t :debug *step-format* *step-type*
                      name (first initial-data) message)))
         (debug "begin")
-        (let ((data (apply (download-fn step) initial-data)))
-          (debug "downloaded")
-          (when (apply (merge-fn step) data)
+        (let ((data (apply (fetch step) initial-data)))
+          (debug "fetched")
+          (when (apply (merge step) data)
             (debug "merged"))
           (loop with format-spawn = "~D tasks spawned for step ~A"
                 with steps = (next-steps step)
                 for step in steps
-                for n = (apply (spawn-fn step) step data)
+                for n = (apply (spawn step) step data)
                 unless (= 0 n)
                   do (debug (format nil format-spawn n step)))
-          (apply (done-fn step) data)
+          (apply (done step) data)
           (debug "done")))))
   (:method :around (step &rest initial-data)
     (let ((name (name step)))
@@ -75,8 +75,56 @@ is set to NIL.")
 
 (defvar *current-flow* nil)
 
-;; TODO
-(define-flow synchronize (picker accounts)
+(defun run-flow (flow-name &rest initial-data)
+  (let* ((*current-flow* flow-name)
+         (*step-type* "Synchronization step")
+         (step (gethash *flow-steps* flow-name)))
+    ))
+
+
+
+
+
+
+
+
+
+
+(defclass flow ()
+  ((%name :accessor name
+          :initarg :name
+          :initform (error "Must provide NAME."))
+   (%prepare-fn :accessor prepare-fn
+                :initarg :prepare-fn
+                :initform (lambda (&rest x) x))
+   (%waves :accessor waves
+           :initarg :waves
+           :initform (make-hash-table))
+   (%first-wave :accessor first-wave
+                :initarg :first-wave
+                :initform nil)
+   (%next-waves :accessor next-waves
+                :initarg :next-waves
+                :initform (make-hash-table))))
+
+(defun make-flow (name prepare-fn first-wave next-waves)
+  (make-instance 'flow :name name :prepare-fn prepare-fn
+                       :first-wave first-wave :next-waves next-waves))
+
+(defvar *flows* (make-hash-table))
+
+(defvar *current-flow*)
+
+(defmacro define-flow (name prepare-fn &body forms)
+  (let ((first-wave (caar forms))
+        (next-waves (mapcar (curry #'remove '->) forms)))
+    (with-gensyms (instance)
+      `(let ((,instance (make-flow ',name ,prepare-fn
+                                   ',first-wave ',next-waves)))
+         (setf (gethash ',name *flows*) ,instance)
+         ',name))))
+
+(define-flow synchronize 'synchronize-prepare
   (login            -> download-account)
   (download-account -> download-furres
                     -> download-images)
@@ -84,31 +132,33 @@ is set to NIL.")
                     -> download-portraits
                     -> download-specitags))
 
-(defun run-flow (flow-name &rest initial-data)
-  (let* ((*current-flow* flow-name)
-         (*step-type* "Synchronization step")
-         (step (gethash *flow-steps* flow-name)))
-    ))
+(defun synchronize-prepare (picker emails-and-passwords)
+  (mapcar (lambda (x) (list (first x) (second x) picker))
+          emails-and-passwords))
 
-(define-step (synchronize login) (email password picker)
-  (make-sync-step
-   'login
-   (lambda (email password picker)
-     (let ((cookie-jar (cl-furcadia/ws:login email password)))
-       (unless cookie-jar (error "Invalid credentials for email ~A." email))
-       (list email cookie-jar picker)))
-   (lambda (email cookie-jar picker)
-     (with-lock-held ((lock picker))
-       (setf (gethash email (emails-cookie-jars picker)) cookie-jar)
-       t))
-   (lambda (step email cookie-jar picker)
-     (loop with queue = (queue picker)
-           with steps = (next-steps step)
-           for step in steps
-           for fn = (curry #'call-sync-step step email cookie-jar picker)
-           for name = (format nil "RL account thread: ~A" email)
-           for thread = (make-thread fn :name name)
-           do (push-queue thread queue)
-           finally (return (length steps))))
-   (lambda (email cookie-jar picker)
-     (signal! picker (login-completed string) email))))
+(define-step (synchronize login)
+  :fetch #'login-fetch
+  :merge #'login-merge
+  :spawn #'login-spawn
+  :done #'login-done)
+
+(defun login-fetch (email password picker)
+  (let ((cookie-jar (cl-furcadia/ws:login email password)))
+    (unless cookie-jar
+      (error "Invalid credentials for amail ~A." email))
+    `((,email ,cookie-jar ,picker))))
+
+(defun login-merge (email cookie-jar picker)
+  (with-lock-held ((lock picker))
+    (setf (gethash email (emails-cookie-jars picker)) cookie-jar)
+    t))
+
+(defun login-spawn (step email cookie-jar picker)
+  (let ((fn (curry #'call-step step email cookie-jar picker))
+        (name (format nil "RL account thread: ~A" email)))
+    (push-queue (make-thread fn :name name) (queue picker))
+    1))
+
+(defun login-done (email cookie-jar picker)
+  (declare (ignore cookie-jar picker))
+  (signal! picker (login-completed string) email))
