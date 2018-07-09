@@ -149,6 +149,7 @@
   (declare (connected raptor-picker (furre-downloaded string int int int)))
   (incf (current (loading-screen raptor-picker) 'progress-furres))
   (incf (current (loading-screen raptor-picker) 'progress-costumes))
+  (incf (maximum (loading-screen raptor-picker) 'progress-portraits) nportraits)
   (incf (maximum (loading-screen raptor-picker) 'progress-costumes) ncostumes))
 
 ;;; Costume downloaded
@@ -195,19 +196,6 @@
 
 ;;; Join all threads and complete synchronization
 
-(define-signal (raptor-picker sync-complete) (bool)) ;; successp
-
-(define-slot (raptor-picker got-sync-complete) ((successp bool))
-  (declare (connected raptor-picker (sync-complete bool)))
-  (case successp
-    ((nil)
-     ;; TODO
-     )
-    ((t)
-     (q+:hide (loading-screen raptor-picker))
-     (q+:show furre-list)
-     (q+:show image))))
-
 (defun join-all-queued (picker)
   (let ((errors 0)
         (queue (queue picker)))
@@ -234,6 +222,19 @@
       (t
        (note t :warn "Synchronization complete, but errors have occurred.")
        (signal! picker (sync-complete bool) nil)))))
+
+(define-signal (raptor-picker sync-complete) (bool)) ;; successp
+
+(define-slot (raptor-picker got-sync-complete) ((successp bool))
+  (declare (connected raptor-picker (sync-complete bool)))
+  (case successp
+    ((nil)
+     ;; TODO
+     )
+    ((t)
+     (q+:hide (loading-screen raptor-picker))
+     (q+:show furre-list)
+     (q+:show image))))
 
 ;;; Fetch accounts from available config widgets TODO move to utils of some sort
 
