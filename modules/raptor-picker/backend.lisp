@@ -138,7 +138,8 @@
             t))
       (error (e)
         (note t :error "Failed to fetch character ~A: ~A" sname e)
-        (error e)))))
+        (error e) ;; TODO remove these from release versions
+        ))))
 
 (define-signal (raptor-picker furre-downloaded)
                (string int int int)) ;; sname nspecitags nportraits ncostumes
