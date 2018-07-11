@@ -115,8 +115,9 @@ is set to NIL.")
 
 (defvar *current-flow*)
 
-(defmacro define-flow (name prepare-fn &body forms)
+(defmacro define-flow (name options &body forms)
   (let ((first-wave (caar forms))
+        (prepare-fn (getf options :prepare-fn))
         (next-waves (mapcar (curry #'remove '->) forms)))
     (with-gensyms (instance)
       `(let ((,instance (make-flow ',name ,prepare-fn
@@ -124,7 +125,7 @@ is set to NIL.")
          (setf (gethash ',name *flows*) ,instance)
          ',name))))
 
-(define-flow synchronize 'synchronize-prepare
+(define-flow synchronize (:prepare-fn 'synchronize-prepare)
   (login            -> download-account)
   (download-account -> download-furres
                     -> download-images)
