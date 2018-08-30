@@ -30,9 +30,9 @@
                           (q+:point-size font) 8
                           (q+:font button) font)
                     (q+:add-widget buttons-layout button))))
-    (add "IC" "IC/OOC" "OOC" "Mixed")
+    (add "Mark Read" "Logs" "Justify")
     (q+:add-stretch buttons-layout 9001)
-    (add "Mark Read" "Logs" "Timestamps off" "Spellchecker" "Dictionary")))
+    (add "Timestamps off" "Spellchecker" "Dictionary")))
 
 (define-subwidget (chat-window description-button-right)
     (make-text-qtoolbutton "Description")
@@ -73,8 +73,9 @@
     (make-placeholder-text-edit "No IC chat yet." 1.25)
   (q+:add-widget ic ic-output)
   (setf (q+:read-only ic-output) t
-        (q+:minimum-height ic-output) 200
-        (q+:stretch-factor ic 0) 3))
+        (q+:minimum-height ic-output) 100
+        (q+:stretch-factor ic 0) 3)
+  (setf (q+:html ic-output) (read-file-into-string "/tmp/ic.txt")))
 
 (define-subwidget (chat-window ic-input)
     (make-placeholder-text-edit "Type your IC here!")
@@ -86,8 +87,9 @@
     (make-placeholder-text-edit "[No OOC chat yet.]" 1.25)
   (q+:add-widget ooc ooc-output)
   (setf (q+:read-only ooc-output) t
-        (q+:minimum-height ooc-output) 200
-        (q+:stretch-factor ooc 0) 3))
+        (q+:minimum-height ooc-output) 100
+        (q+:stretch-factor ooc 0) 3)
+  (setf (q+:html ooc-output) (read-file-into-string "/tmp/ooc.txt")))
 
 (define-subwidget (chat-window ooc-input)
     (make-placeholder-text-edit "[Type your OOC here!]")
