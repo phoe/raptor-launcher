@@ -1,10 +1,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; RAPTOR-LAUNCHER
 ;;;; © Michał "phoe" Herda 2017
-;;;; raptor-launcher.raptor-config.asd
+;;;; raptor-launcher.raptor-chat.asd
 
-(asdf:defsystem #:raptor-launcher.raptor-config
-  :description "Configuration manager for Raptor Launcher"
+(asdf:defsystem #:raptor-launcher.raptor-chat
+  :description "Chat window for Raptor Launcher"
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
   :serial t
@@ -18,7 +18,4 @@
   :components
   ((:file "package")
    (:file "definition")
-   (:file "config-widget")
-   (:file "simple-config")
-   (:file "advanced-config")
-   (:file "tabs-callbacks")))
+   (:file "chat")))

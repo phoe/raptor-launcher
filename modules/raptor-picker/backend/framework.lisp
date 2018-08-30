@@ -34,19 +34,21 @@
                        :fetch fetch :merge merge
                        :spawn spawn :done done))
 
-(defvar *step-format* "~@[~A~] ~A~@[ for ~A]: ~A.")
+(defvar *wave-format* "~@[~A~] ~A~@[ for ~A]: ~A.")
 
-(defvar *step-type* "Step")
+(defvar *wave-type* "Wave")
 
-(defgeneric call-sync-step (step &rest initial-data)
-  (:documentation "Executes the synchronization step and all of its functions.
+(defvar *log-callback* (constantly nil))
+
+(defgeneric call-step (step &rest initial-data)
+  (:documentation "Executes the step and all of its functions.
 \
 The first element of INITIAL-DATA will be pretty-printed in the logs, unless it
 is set to NIL.")
   (:method (step &rest initial-data)
     (let ((name (name step)))
       (flet ((debug (message)
-               (note t :debug *step-format* *step-type*
+               (note t :debug *wave-format* *wave-type*
                      name (first initial-data) message)))
         (debug "begin")
         (let ((data (apply (fetch step) initial-data)))
@@ -65,7 +67,7 @@ is set to NIL.")
     (let ((name (name step)))
       (handler-case (progn (call-next-method) t)
         (error (e)
-          (note t :error *step-format* *step-type*
+          (note t :error *wave-format* *wave-type*
                 name (first initial-data) e)
           nil)))))
 
@@ -89,41 +91,6 @@ is set to NIL.")
 
 
 
-
-(defclass flow ()
-  ((%name :accessor name
-          :initarg :name
-          :initform (error "Must provide NAME."))
-   (%prepare-fn :accessor prepare-fn
-                :initarg :prepare-fn
-                :initform (lambda (&rest x) x))
-   (%waves :accessor waves
-           :initarg :waves
-           :initform (make-hash-table))
-   (%first-wave :accessor first-wave
-                :initarg :first-wave
-                :initform nil)
-   (%next-waves :accessor next-waves
-                :initarg :next-waves
-                :initform (make-hash-table))))
-
-(defun make-flow (name prepare-fn first-wave next-waves)
-  (make-instance 'flow :name name :prepare-fn prepare-fn
-                       :first-wave first-wave :next-waves next-waves))
-
-(defvar *flows* (make-hash-table))
-
-(defvar *current-flow*)
-
-(defmacro define-flow (name options &body forms)
-  (let ((first-wave (caar forms))
-        (prepare-fn (getf options :prepare-fn))
-        (next-waves (mapcar (curry #'remove '->) forms)))
-    (with-gensyms (instance)
-      `(let ((,instance (make-flow ',name ,prepare-fn
-                                   ',first-wave ',next-waves)))
-         (setf (gethash ',name *flows*) ,instance)
-         ',name))))
 
 (define-flow synchronize (:prepare-fn 'synchronize-prepare)
   (login            -> download-account)
