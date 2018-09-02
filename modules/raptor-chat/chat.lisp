@@ -24,15 +24,22 @@
   (q+:add-layout layout buttons-layout 0 1)
   (flet ((add (&rest strings)
            (loop for string in strings
-                 for button = (make-text-qtoolbutton string)
-                 for font = (q+:make-qfont)
-                 do (setf (q+:checkable button) t
-                          (q+:point-size font) 8
-                          (q+:font button) font)
-                    (q+:add-widget buttons-layout button))))
+                 for button = (make-chat-button string)
+                 do (q+:add-widget buttons-layout button))))
     (add "Mark Read" "Logs" "Justify")
     (q+:add-stretch buttons-layout 9001)
-    (add "Timestamps off" "Spellchecker" "Dictionary")))
+    (add "Timestamps off" "Dictionary" "Thesaurus")))
+
+(define-subwidget (chat-window spellchecker-button)
+    (make-chat-button "Spellchecker")
+  (q+:add-widget buttons-layout spellchecker-button))
+
+(defun make-chat-button (string)
+  (let ((button (make-text-qtoolbutton string))
+        (font (q+:make-qfont)))
+    (setf (q+:point-size font) 8
+          (q+:font button) font)
+    button))
 
 (define-subwidget (chat-window description-button-right)
     (make-text-qtoolbutton "Description")
@@ -45,7 +52,9 @@
 
 (define-subwidget (chat-window image-left) (q+:make-qlabel)
   (q+:add-widget layout image-left 1 0)
-  (setf (q+:pixmap image-left) (q+:make-qpixmap "/home/phoe/undies.png")))
+  (setf (q+:pixmap image-left)
+        (q+:make-qpixmap
+         "/home/phoe/Projects/Qt Designer/raptor-chat/undies.png")))
 
 (define-subwidget (chat-window splitter)
     (q+:make-qsplitter (q+:qt.horizontal))
@@ -53,7 +62,9 @@
 
 (define-subwidget (chat-window image-right) (q+:make-qlabel)
   (q+:add-widget layout image-right 1 2)
-  (setf (q+:pixmap image-right) (q+:make-qpixmap "/home/phoe/sha.png")))
+  (setf (q+:pixmap image-right)
+        (q+:make-qpixmap
+         "/home/phoe/Projects/Qt Designer/raptor-chat/sha.png")))
 
 ;;; IC/OOC
 
@@ -75,13 +86,17 @@
   (setf (q+:read-only ic-output) t
         (q+:minimum-height ic-output) 100
         (q+:stretch-factor ic 0) 3)
-  (setf (q+:html ic-output) (read-file-into-string "/tmp/ic.txt")))
+  (setf (q+:html ic-output)
+        (read-file-into-string
+         "/home/phoe/Projects/Qt Designer/raptor-chat/ic.txt")))
 
 (define-subwidget (chat-window ic-input)
     (make-placeholder-text-edit "Type your IC here!")
   (q+:add-widget ic ic-input)
   (setf (q+:minimum-height ic-input) 100
-        (q+:stretch-factor ic 1) 1))
+        (q+:stretch-factor ic 1) 1
+        (q+:text ic-input)
+        "Hello world! This, as yyou can see, jjkhdssdfs ain't no joke."))
 
 (define-subwidget (chat-window ooc-output)
     (make-placeholder-text-edit "[No OOC chat yet.]" 1.25)
@@ -89,7 +104,9 @@
   (setf (q+:read-only ooc-output) t
         (q+:minimum-height ooc-output) 100
         (q+:stretch-factor ooc 0) 3)
-  (setf (q+:html ooc-output) (read-file-into-string "/tmp/ooc.txt")))
+  (setf (q+:html ooc-output)
+        (read-file-into-string
+         "/home/phoe/Projects/Qt Designer/raptor-chat/ooc.txt")))
 
 (define-subwidget (chat-window ooc-input)
     (make-placeholder-text-edit "[Type your OOC here!]")
@@ -128,6 +145,15 @@
                 (q+:font painter) old-font)))))
   (call-next-qmethod))
 
+(define-widget placechecked-text-edit
+      (qtextedit placeholder-text-edit spellchecked-text-edit) ())
+
 (defun make-placeholder-text-edit (placeholder &optional font-size)
-  (make-instance 'placeholder-text-edit :placeholder placeholder
-                                        :font-size font-size))
+  (make-instance 'placechecked-text-edit :placeholder placeholder
+                                         :font-size font-size))
+
+(define-slot (chat-window spellchecker-button-clicked) ()
+  (declare (connected spellchecker-button (clicked)))
+  (let ((position (with-finalizing ((cursor (q+:text-cursor ic-input)))
+                    (q+:position cursor))))
+    (spellcheck ic-input position)))

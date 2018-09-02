@@ -9,13 +9,14 @@
   :license "GPLv3"
   :serial t
   :depends-on
-  (#:plump
-   #:local-time
-   #:split-sequence
+  (#:spell/simple
+   #:wordnet
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.base)
   :components
   ((:file "package")
    (:file "definition")
-   (:file "chat")))
+   (:file "spellchecked-text-edit")
+   (:file "chat")
+   (:file "dictionary")))

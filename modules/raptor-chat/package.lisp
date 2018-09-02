@@ -3,7 +3,7 @@
 ;;;; © Michał "phoe" Herda 2018
 ;;;; package.lisp
 
-(defpackage :raptor-launcher/raptor-chat
+(defpackage #:raptor-launcher/raptor-chat
   (:use #:cl+qt
         #:alexandria
         #:phoe-toolbox
