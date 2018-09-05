@@ -39,7 +39,7 @@
           (select-next-word text-edit cursor)
           (let* ((word (q+:selected-text cursor)))
             (when (string/= "" word)
-              (unless (spell:lookup word)
+              (unless (spell:english-lookup word)
                 (setf done t)
                 (setf (q+:text-cursor text-edit) cursor)))
             (q+:move-position cursor (q+:qtextcursor.next-character))
@@ -82,7 +82,7 @@
                           (q+:qtextcursor.keep-anchor))
         (let* ((selection (q+:selected-text cursor))
                (word (remove-if predicate selection)))
-          (unless (spell:lookup word)
+          (unless (spell:english-lookup word)
             (let ((selection (print (q+:make-qtextedit-extraselection)))
                   (old-position nil))
               (setf (q+:cursor selection) cursor

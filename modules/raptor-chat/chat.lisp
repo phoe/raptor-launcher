@@ -28,7 +28,23 @@
                  do (q+:add-widget buttons-layout button))))
     (add "Mark Read" "Logs" "Justify")
     (q+:add-stretch buttons-layout 9001)
-    (add "Timestamps off" "Dictionary" "Thesaurus")))
+    (add "Timestamps")))
+
+#|
+(define-chat-buttons chat-window ()
+  ((timestamps-button "Timestamps")
+   (mark-read-button "Mark Read")
+   (logs-button "Logs")
+   (justify-button "Justify")
+   (spellchecker-button "Spellchecker"))
+  ((ooc-button "OOC" :checkable t)
+   (dictionary-button "Dictionary" :checkable t)))
+|#
+
+(define-subwidget (chat-window dictionary-button)
+    (make-chat-button "Dictionary")
+  (q+:add-widget buttons-layout dictionary-button)
+  (setf (q+:checkable dictionary-button) t))
 
 (define-subwidget (chat-window spellchecker-button)
     (make-chat-button "Spellchecker")
@@ -54,7 +70,9 @@
   (q+:add-widget layout image-left 1 0)
   (setf (q+:pixmap image-left)
         (q+:make-qpixmap
-         "/home/phoe/Projects/Qt Designer/raptor-chat/undies.png")))
+         (uiop:native-namestring
+          (merge-pathnames "Projects/Raptor Chat/undies.png"
+                           (user-homedir-pathname))))))
 
 (define-subwidget (chat-window splitter)
     (q+:make-qsplitter (q+:qt.horizontal))
@@ -64,7 +82,9 @@
   (q+:add-widget layout image-right 1 2)
   (setf (q+:pixmap image-right)
         (q+:make-qpixmap
-         "/home/phoe/Projects/Qt Designer/raptor-chat/sha.png")))
+         (uiop:native-namestring
+          (merge-pathnames "Projects/Raptor Chat/sha.png"
+                           (user-homedir-pathname))))))
 
 ;;; IC/OOC
 
@@ -80,6 +100,11 @@
         (q+:children-collapsible ooc) nil
         (q+:stretch-factor splitter 1) 1))
 
+(define-subwidget (chat-window dictionary) (make-instance 'dictionary)
+  (q+:add-widget splitter dictionary)
+  (setf (q+:stretch-factor splitter 2) 1)
+  (q+:hide dictionary))
+
 (define-subwidget (chat-window ic-output)
     (make-placeholder-text-edit "No IC chat yet." 1.25)
   (q+:add-widget ic ic-output)
@@ -88,7 +113,7 @@
         (q+:stretch-factor ic 0) 3)
   (setf (q+:html ic-output)
         (read-file-into-string
-         "/home/phoe/Projects/Qt Designer/raptor-chat/ic.txt")))
+         "~/Projects/Raptor Chat/ic.txt")))
 
 (define-subwidget (chat-window ic-input)
     (make-placeholder-text-edit "Type your IC here!")
@@ -106,7 +131,7 @@
         (q+:stretch-factor ooc 0) 3)
   (setf (q+:html ooc-output)
         (read-file-into-string
-         "/home/phoe/Projects/Qt Designer/raptor-chat/ooc.txt")))
+         "~/Projects/Raptor Chat/ooc.txt")))
 
 (define-subwidget (chat-window ooc-input)
     (make-placeholder-text-edit "[Type your OOC here!]")
@@ -157,3 +182,19 @@
   (let ((position (with-finalizing ((cursor (q+:text-cursor ic-input)))
                     (q+:position cursor))))
     (spellcheck ic-input position)))
+
+(define-slot (chat-window dictionary-button-clicked) ()
+  (declare (connected dictionary-button (clicked)))
+  (let ((checkedp (q+:is-checked dictionary-button)))
+    (cond (checkedp (q+:hide ooc)
+                    (q+:show dictionary))
+          (t (q+:hide dictionary)
+             (q+:show ooc)))))
+
+(define-slot (chat-window dictionary-text-selection) ()
+  (declare (connected ic-input (selection-changed)))
+  (with-finalizing ((cursor (q+:text-cursor ic-input)))
+    (when (q+:is-visible dictionary)
+      (let ((selection (q+:selected-text cursor)))
+        (when (string/= selection "")
+          (setf (q+:text (slot-value dictionary 'input)) selection))))))
