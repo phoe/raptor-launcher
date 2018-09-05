@@ -18,5 +18,5 @@
   ((:file "package")
    (:file "definition")
    (:file "spellchecked-text-edit")
-   (:file "chat")
-   (:file "dictionary")))
+   (:file "dictionary")
+   (:file "chat")))
