@@ -28,7 +28,23 @@
                  do (q+:add-widget buttons-layout button))))
     (add "Mark Read" "Logs" "Justify")
     (q+:add-stretch buttons-layout 9001)
-    (add "Timestamps off" "Dictionary" "Thesaurus")))
+    (add "Timestamps")))
+
+#|
+(define-chat-buttons chat-window ()
+  ((timestamps-button "Timestamps")
+   (mark-read-button "Mark Read")
+   (logs-button "Logs")
+   (justify-button "Justify")
+   (spellchecker-button "Spellchecker"))
+  ((ooc-button "OOC" :checkable t)
+   (dictionary-button "Dictionary" :checkable t)))
+|#
+
+(define-subwidget (chat-window dictionary-button)
+    (make-chat-button "Dictionary")
+  (q+:add-widget buttons-layout dictionary-button)
+  (setf (q+:checkable dictionary-button) t))
 
 (define-subwidget (chat-window spellchecker-button)
     (make-chat-button "Spellchecker")
@@ -83,6 +99,11 @@
   (setf (q+:minimum-width ooc) 100
         (q+:children-collapsible ooc) nil
         (q+:stretch-factor splitter 1) 1))
+
+(define-subwidget (chat-window dictionary) (make-instance 'dictionary)
+  (q+:add-widget splitter dictionary)
+  (setf (q+:stretch-factor splitter 2) 1)
+  (q+:hide dictionary))
 
 (define-subwidget (chat-window ic-output)
     (make-placeholder-text-edit "No IC chat yet." 1.25)
@@ -161,3 +182,19 @@
   (let ((position (with-finalizing ((cursor (q+:text-cursor ic-input)))
                     (q+:position cursor))))
     (spellcheck ic-input position)))
+
+(define-slot (chat-window dictionary-button-clicked) ()
+  (declare (connected dictionary-button (clicked)))
+  (let ((checkedp (q+:is-checked dictionary-button)))
+    (cond (checkedp (q+:hide ooc)
+                    (q+:show dictionary))
+          (t (q+:hide dictionary)
+             (q+:show ooc)))))
+
+(define-slot (chat-window dictionary-text-selection) ()
+  (declare (connected ic-input (selection-changed)))
+  (with-finalizing ((cursor (q+:text-cursor ic-input)))
+    (when (q+:is-visible dictionary)
+      (let ((selection (q+:selected-text cursor)))
+        (when (string/= selection "")
+          (setf (q+:text (slot-value dictionary 'input)) selection))))))
