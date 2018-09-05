@@ -21,17 +21,22 @@
   (q+:add-widget layout description-button-left 0 0))
 
 (define-subwidget (chat-window buttons-layout) (q+:make-qhboxlayout)
-  (q+:add-layout layout buttons-layout 0 1)
-  (flet ((add (&rest strings)
-           (loop for string in strings
-                 for button = (make-chat-button string)
-                 do (q+:add-widget buttons-layout button))))
-    (add "Mark Read" "Logs" "Justify")
-    (q+:add-stretch buttons-layout 9001)
-    (add "Timestamps")))
+  (q+:add-layout layout buttons-layout 0 1))
 
-#|
-(define-chat-buttons chat-window ()
+(defmacro define-chat-buttons (widget left-buttons right-buttons)
+  (flet ((make-button (subwidget string &key checkable)
+           `(define-subwidget (,widget ,subwidget) (make-chat-button ,string)
+              (q+:add-widget buttons-layout ,subwidget)
+              ,@(when checkable `((setf (q+:checkable ,subwidget) t))))))
+    `(progn
+       ,@(mapcar (curry #'apply #'make-button) left-buttons)
+       (define-subwidget (,widget buttons-stretch)
+           (q+:add-stretch buttons-layout 9001))
+       ,@(mapcar (curry #'apply #'make-button) right-buttons))))
+
+(trivial-indent:define-indentation define-chat-buttons (4 2 2))
+
+(define-chat-buttons chat-window
   ((timestamps-button "Timestamps")
    (mark-read-button "Mark Read")
    (logs-button "Logs")
@@ -39,7 +44,6 @@
    (spellchecker-button "Spellchecker"))
   ((ooc-button "OOC" :checkable t)
    (dictionary-button "Dictionary" :checkable t)))
-|#
 
 (define-subwidget (chat-window dictionary-button)
     (make-chat-button "Dictionary")

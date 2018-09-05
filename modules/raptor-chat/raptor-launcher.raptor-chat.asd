@@ -11,6 +11,7 @@
   :depends-on
   (#:spell/simple
    #:wordnet
+   #:trivial-indent
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.base)
