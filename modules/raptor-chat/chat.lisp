@@ -14,14 +14,18 @@
 ;;; Upper row
 
 (define-subwidget (chat-window description-button-left)
-    (make-text-qtoolbutton "Description")
-  (let ((font (q+:make-qfont)))
-    (setf (q+:point-size font) 8
-          (q+:font description-button-left) font))
+    (make-chat-button "Description")
   (q+:add-widget layout description-button-left 0 0))
 
 (define-subwidget (chat-window buttons-layout) (q+:make-qhboxlayout)
   (q+:add-layout layout buttons-layout 0 1))
+
+(defun make-chat-button (string)
+  (let ((button (make-text-qtoolbutton string))
+        (font (q+:make-qfont)))
+    (setf (q+:point-size font) 8
+          (q+:font button) font)
+    button))
 
 (defmacro define-chat-buttons (widget left-buttons right-buttons)
   (flet ((make-button (subwidget string &key checkable)
@@ -37,35 +41,17 @@
 (trivial-indent:define-indentation define-chat-buttons (4 2 2))
 
 (define-chat-buttons chat-window
-  ((timestamps-button "Timestamps")
+  ((timestamps-button "Timestamps" :checkable t)
+   (names-button "Names" :checkable t)
    (mark-read-button "Mark Read")
    (logs-button "Logs")
-   (justify-button "Justify")
-   (spellchecker-button "Spellchecker"))
+   (justify-button "Justify" :checkable t)
+   (spellchecker-button "Spelling"))
   ((ooc-button "OOC" :checkable t)
    (dictionary-button "Dictionary" :checkable t)))
 
-(define-subwidget (chat-window dictionary-button)
-    (make-chat-button "Dictionary")
-  (q+:add-widget buttons-layout dictionary-button)
-  (setf (q+:checkable dictionary-button) t))
-
-(define-subwidget (chat-window spellchecker-button)
-    (make-chat-button "Spellchecker")
-  (q+:add-widget buttons-layout spellchecker-button))
-
-(defun make-chat-button (string)
-  (let ((button (make-text-qtoolbutton string))
-        (font (q+:make-qfont)))
-    (setf (q+:point-size font) 8
-          (q+:font button) font)
-    button))
-
 (define-subwidget (chat-window description-button-right)
-    (make-text-qtoolbutton "Description")
-  (let ((font (q+:make-qfont)))
-    (setf (q+:point-size font) 8
-          (q+:font description-button-right) font))
+    (make-chat-button "Description")
   (q+:add-widget layout description-button-right 0 2 2))
 
 ;;; Bottom row
