@@ -39,7 +39,7 @@
           (select-next-word text-edit cursor)
           (let* ((word (q+:selected-text cursor)))
             (when (string/= "" word)
-              (unless (spell:english:lookup word)
+              (unless (spell:english-lookup word)
                 (setf done t)
                 (setf (q+:text-cursor text-edit) cursor)))
             (q+:move-position cursor (q+:qtextcursor.next-character))

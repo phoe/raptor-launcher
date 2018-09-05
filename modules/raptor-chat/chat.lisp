@@ -54,7 +54,9 @@
   (q+:add-widget layout image-left 1 0)
   (setf (q+:pixmap image-left)
         (q+:make-qpixmap
-         "/home/phoe/Projects/Qt Designer/raptor-chat/undies.png")))
+         (uiop:native-namestring
+          (merge-pathnames "Projects/Raptor Chat/undies.png"
+                           (user-homedir-pathname))))))
 
 (define-subwidget (chat-window splitter)
     (q+:make-qsplitter (q+:qt.horizontal))
@@ -64,7 +66,9 @@
   (q+:add-widget layout image-right 1 2)
   (setf (q+:pixmap image-right)
         (q+:make-qpixmap
-         "/home/phoe/Projects/Qt Designer/raptor-chat/sha.png")))
+         (uiop:native-namestring
+          (merge-pathnames "Projects/Raptor Chat/sha.png"
+                           (user-homedir-pathname))))))
 
 ;;; IC/OOC
 
@@ -88,7 +92,7 @@
         (q+:stretch-factor ic 0) 3)
   (setf (q+:html ic-output)
         (read-file-into-string
-         "/home/phoe/Projects/Qt Designer/raptor-chat/ic.txt")))
+         "~/Projects/Raptor Chat/ic.txt")))
 
 (define-subwidget (chat-window ic-input)
     (make-placeholder-text-edit "Type your IC here!")
@@ -106,7 +110,7 @@
         (q+:stretch-factor ooc 0) 3)
   (setf (q+:html ooc-output)
         (read-file-into-string
-         "/home/phoe/Projects/Qt Designer/raptor-chat/ooc.txt")))
+         "~/Projects/Raptor Chat/ooc.txt")))
 
 (define-subwidget (chat-window ooc-input)
     (make-placeholder-text-edit "[Type your OOC here!]")
