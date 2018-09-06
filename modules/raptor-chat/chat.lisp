@@ -28,15 +28,22 @@
     button))
 
 (defmacro define-chat-buttons (widget left-buttons right-buttons)
-  (flet ((make-button (subwidget string &key checkable)
-           `(define-subwidget (,widget ,subwidget) (make-chat-button ,string)
-              (q+:add-widget buttons-layout ,subwidget)
-              ,@(when checkable `((setf (q+:checkable ,subwidget) t))))))
+  (flet ((make-button (name string &key checkable subwidget)
+           (declare (ignore subwidget))
+           `(define-subwidget (,widget ,name) (make-chat-button ,string)
+              (q+:add-widget buttons-layout ,name)
+              ,@(when checkable `((setf (q+:checkable ,name) t)))))
+         (make-slot (name subwidget)
+           (let ((slot-name (symbolicate name "-CLICKED")))
+             `(define-slot (,widget ,slot-name) ()
+                (declare (connected ,name (clicked)))))))
     `(progn
        ,@(mapcar (curry #'apply #'make-button) left-buttons)
        (define-subwidget (,widget buttons-stretch)
            (q+:add-stretch buttons-layout 9001))
-       ,@(mapcar (curry #'apply #'make-button) right-buttons))))
+       ,@(mapcar (curry #'apply #'make-button) right-buttons)
+       (defparameter *right-chat-buttons*
+         ',(mapcar #'car right-buttons)))))
 
 (trivial-indent:define-indentation define-chat-buttons (4 2 2))
 
@@ -47,8 +54,8 @@
    (logs-button "Logs")
    (justify-button "Justify" :checkable t)
    (spellchecker-button "Spelling"))
-  ((ooc-button "OOC" :checkable t)
-   (dictionary-button "Dictionary" :checkable t)))
+  ((ooc-button "OOC" :checkable t :subwidget ooc)
+   (dictionary-button "Dictionary" :checkable t :subwidget dictionary)))
 
 (define-subwidget (chat-window description-button-right)
     (make-chat-button "Description")
