@@ -86,16 +86,24 @@
   (setf (q+:stretch-factor splitter 1) 1)
   (q+:hide dictionary))
 
-(define-subwidget (chat-window description-left) (q+:make-qtextedit)
+(define-subwidget (chat-window description-left)
+    (make-instance 'placeholder-text-edit)
   (q+:add-widget splitter description-left)
   (setf (q+:stretch-factor splitter 2) 1)
-  (q+:hide description-left))
+  (q+:hide description-left)
+  (setf (q+:html description-left)
+        (format nil "<h1>Undies</h1>~%~A"
+                (read-file-into-string "~/Projects/Raptor Chat/undies.txt"))))
 
-(define-subwidget (chat-window description-right) (q+:make-qtextedit)
+(define-subwidget (chat-window description-right)
+    (make-instance 'placeholder-text-edit)
   (q+:add-widget splitter description-right)
   (setf (q+:stretch-factor splitter 3) 1
         (q+:stretch-factor splitter 4) 1)
-  (q+:hide description-right))
+  (q+:hide description-right)
+  (setf (q+:html description-right)
+        (format nil "<h1>Sashasa</h1>~%~A"
+                (read-file-into-string "~/Projects/Raptor Chat/sha.txt"))))
 
 ;;; PLACEHOLDER-TEXT-EDIT
 
@@ -106,6 +114,13 @@
 
 (defmethod initialize-instance :after
     ((object placeholder-text-edit) &key font-size)
+  (let* ((palette (q+:palette object))
+         (color (q+:color palette (q+:background-role object))))
+    (when (and (< (q+:red color) 80)
+               (< (q+:blue color) 80)
+               (< (q+:green color) 80))
+      (setf (q+:default-style-sheet (q+:document object))
+            "a { color: #8888ff; }")))
   (with-accessors ((font font)) object
     (setf (q+:italic font) t)
     (when font-size
@@ -177,6 +192,7 @@
     (setf (q+:point-size font) 8
           (q+:font button) font)
     button))
+
 #|
 (define-subwidget (chat-window description-button-left)
     (make-chat-button "Description")
@@ -186,6 +202,7 @@
     (make-chat-button "Description")
   (q+:add-widget layout description-button-right 0 2))
 |#
+
 (defmacro define-chat-buttons
     (widget (far-left-button) left-buttons right-buttons (far-right-button))
   `(progn
@@ -229,7 +246,7 @@
     :layout nil :checkable t
     :subwidget description-right
     :init-forms
-    ((q+:add-widget layout description-button-right 0 2)))))
+    ((q+:add-widget layout description-button-right 0 2 (q+:qt.align-right))))))
 
 (define-slot (chat-window dictionary-text-selection) ()
   (declare (connected ic-input (selection-changed)))
@@ -241,3 +258,6 @@
 
 ;; TODO hyperlink style
 ;; TODO descriptions
+
+(defun chat ()
+  (with-main-window (chat-window 'chat-window)))

@@ -66,6 +66,15 @@
   ((clicked-anchor :accessor clicked-anchor :initform "")
    (dictionary :accessor dictionary :initarg :dictionary)))
 
+(defmethod initialize-instance :after ((object browser) &key)
+  (let* ((palette (q+:palette object))
+         (color (q+:color palette (q+:background-role object))))
+    (when (and (< (q+:red color) 80)
+               (< (q+:blue color) 80)
+               (< (q+:green color) 80))
+      (setf (q+:default-style-sheet (q+:document object))
+            "a { color: #8888ff; }"))))
+
 (define-override (browser mouse-press-event) (event)
   (setf clicked-anchor
         (if (= (enum-value (q+:button event)) (q+:qt.left-button))
