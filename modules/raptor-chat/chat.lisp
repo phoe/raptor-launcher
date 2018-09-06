@@ -18,7 +18,7 @@
   (setf (q+:pixmap image-left)
         (q+:make-qpixmap
          (uiop:native-namestring
-          (merge-pathnames "Projects/Raptor Chat/undies.png"
+          (merge-pathnames "Projects/Raptor Chat/sha.png"
                            (user-homedir-pathname))))))
 
 (define-subwidget (chat-window splitter)
@@ -30,7 +30,7 @@
   (setf (q+:pixmap image-right)
         (q+:make-qpixmap
          (uiop:native-namestring
-          (merge-pathnames "Projects/Raptor Chat/sha.png"
+          (merge-pathnames "Projects/Raptor Chat/undies.png"
                            (user-homedir-pathname))))))
 
 ;;; IC/OOC/WIDGETS
@@ -92,8 +92,8 @@
   (setf (q+:stretch-factor splitter 2) 1)
   (q+:hide description-left)
   (setf (q+:html description-left)
-        (format nil "<h1>Undies</h1>~%~A"
-                (read-file-into-string "~/Projects/Raptor Chat/undies.txt"))))
+        (format nil "<h3>Sashasa</h3>~%~A"
+                (read-file-into-string "~/Projects/Raptor Chat/sha.txt"))))
 
 (define-subwidget (chat-window description-right)
     (make-instance 'placeholder-text-edit)
@@ -102,8 +102,8 @@
         (q+:stretch-factor splitter 4) 1)
   (q+:hide description-right)
   (setf (q+:html description-right)
-        (format nil "<h1>Sashasa</h1>~%~A"
-                (read-file-into-string "~/Projects/Raptor Chat/sha.txt"))))
+        (format nil "<h3>Undies</h3>~%~A"
+                (read-file-into-string "~/Projects/Raptor Chat/undies.txt"))))
 
 ;;; PLACEHOLDER-TEXT-EDIT
 
@@ -247,6 +247,13 @@
     :subwidget description-right
     :init-forms
     ((q+:add-widget layout description-button-right 0 2 (q+:qt.align-right))))))
+
+(define-slot (chat-window spellchecker-button-clicked) ()
+  (declare (connected spellchecker-button (clicked)))
+  (let ((position (with-finalizing ((cursor (q+:text-cursor ic-input)))
+                    (q+:position cursor))))
+    (spellcheck ic-input position)))
+
 
 (define-slot (chat-window dictionary-text-selection) ()
   (declare (connected ic-input (selection-changed)))
