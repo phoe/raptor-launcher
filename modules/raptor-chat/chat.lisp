@@ -11,56 +11,6 @@
 (define-subwidget (chat-window layout) (q+:make-qgridlayout)
   (setf (q+:layout chat-window) layout))
 
-;;; Upper row
-
-(define-subwidget (chat-window description-button-left)
-    (make-chat-button "Description")
-  (q+:add-widget layout description-button-left 0 0))
-
-(define-subwidget (chat-window buttons-layout) (q+:make-qhboxlayout)
-  (q+:add-layout layout buttons-layout 0 1))
-
-(defun make-chat-button (string)
-  (let ((button (make-text-qtoolbutton string))
-        (font (q+:make-qfont)))
-    (setf (q+:point-size font) 8
-          (q+:font button) font)
-    button))
-
-(defmacro define-chat-buttons (widget left-buttons right-buttons)
-  (flet ((make-button (name string &key checkable subwidget)
-           (declare (ignore subwidget))
-           `(define-subwidget (,widget ,name) (make-chat-button ,string)
-              (q+:add-widget buttons-layout ,name)
-              ,@(when checkable `((setf (q+:checkable ,name) t)))))
-         (make-slot (name subwidget)
-           (let ((slot-name (symbolicate name "-CLICKED")))
-             `(define-slot (,widget ,slot-name) ()
-                (declare (connected ,name (clicked)))))))
-    `(progn
-       ,@(mapcar (curry #'apply #'make-button) left-buttons)
-       (define-subwidget (,widget buttons-stretch)
-           (q+:add-stretch buttons-layout 9001))
-       ,@(mapcar (curry #'apply #'make-button) right-buttons)
-       (defparameter *right-chat-buttons*
-         ',(mapcar #'car right-buttons)))))
-
-(trivial-indent:define-indentation define-chat-buttons (4 2 2))
-
-(define-chat-buttons chat-window
-  ((timestamps-button "Timestamps" :checkable t)
-   (names-button "Names" :checkable t)
-   (mark-read-button "Mark Read")
-   (logs-button "Logs")
-   (justify-button "Justify" :checkable t)
-   (spellchecker-button "Spelling"))
-  ((ooc-button "OOC" :checkable t :subwidget ooc)
-   (dictionary-button "Dictionary" :checkable t :subwidget dictionary)))
-
-(define-subwidget (chat-window description-button-right)
-    (make-chat-button "Description")
-  (q+:add-widget layout description-button-right 0 2 2))
-
 ;;; Bottom row
 
 (define-subwidget (chat-window image-left) (q+:make-qlabel)
@@ -83,7 +33,7 @@
           (merge-pathnames "Projects/Raptor Chat/sha.png"
                            (user-homedir-pathname))))))
 
-;;; IC/OOC
+;;; IC/OOC/WIDGETS
 
 (define-subwidget (chat-window ic) (q+:make-qsplitter (q+:qt.vertical))
   (q+:add-widget splitter ic)
@@ -96,11 +46,6 @@
   (setf (q+:minimum-width ooc) 100
         (q+:children-collapsible ooc) nil
         (q+:stretch-factor splitter 1) 1))
-
-(define-subwidget (chat-window dictionary) (make-instance 'dictionary)
-  (q+:add-widget splitter dictionary)
-  (setf (q+:stretch-factor splitter 2) 1)
-  (q+:hide dictionary))
 
 (define-subwidget (chat-window ic-output)
     (make-placeholder-text-edit "No IC chat yet." 1.25)
@@ -135,6 +80,22 @@
   (q+:add-widget ooc ooc-input)
   (setf (q+:minimum-height ooc-input) 100
         (q+:stretch-factor ooc 1) 1))
+
+(define-subwidget (chat-window dictionary) (make-instance 'dictionary)
+  (q+:add-widget splitter dictionary)
+  (setf (q+:stretch-factor splitter 1) 1)
+  (q+:hide dictionary))
+
+(define-subwidget (chat-window description-left) (q+:make-qtextedit)
+  (q+:add-widget splitter description-left)
+  (setf (q+:stretch-factor splitter 2) 1)
+  (q+:hide description-left))
+
+(define-subwidget (chat-window description-right) (q+:make-qtextedit)
+  (q+:add-widget splitter description-right)
+  (setf (q+:stretch-factor splitter 3) 1
+        (q+:stretch-factor splitter 4) 1)
+  (q+:hide description-right))
 
 ;;; PLACEHOLDER-TEXT-EDIT
 
@@ -174,19 +135,101 @@
   (make-instance 'placechecked-text-edit :placeholder placeholder
                                          :font-size font-size))
 
-(define-slot (chat-window spellchecker-button-clicked) ()
-  (declare (connected spellchecker-button (clicked)))
-  (let ((position (with-finalizing ((cursor (q+:text-cursor ic-input)))
-                    (q+:position cursor))))
-    (spellcheck ic-input position)))
+;;; BUTTONS
 
-(define-slot (chat-window dictionary-button-clicked) ()
-  (declare (connected dictionary-button (clicked)))
-  (let ((checkedp (q+:is-checked dictionary-button)))
-    (cond (checkedp (q+:hide ooc)
-                    (q+:show dictionary))
-          (t (q+:hide dictionary)
-             (q+:show ooc)))))
+;;; Upper row
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun forms-subwidgets (forms)
+    (loop for tail in (mapcar #'cddr forms)
+          for subwidget = (getf tail :subwidget)
+          when subwidget collect it))
+  (defun make-button (widget name string
+                      &key checkable (layout 'buttons-layout) default init-forms
+                      &allow-other-keys)
+    `(define-subwidget (,widget ,name) (make-chat-button ,string)
+       ,@(when layout `((q+:add-widget ,layout ,name)))
+       ,@(when checkable `((setf (q+:checkable ,name) t)))
+       ,@(when default `((setf (q+:checked ,name) t)))
+       ,@init-forms))
+  (defun make-slot (widget name string &key subwidget &allow-other-keys)
+    (declare (ignore string))
+    (let ((slot-name (symbolicate name "-CLICKED"))
+          (state (gensym)) (symbol (gensym)))
+      `(define-slot (,widget ,slot-name) ()
+         (declare (connected ,name (clicked)))
+         (let ((,state (q+:save-state splitter)))
+           (dolist (,symbol *right-chat-widgets*)
+             (q+:hide (slot-value ,widget ,symbol)))
+           (q+:show ,subwidget)
+           (q+:insert-widget splitter 1 ,subwidget)
+           (dolist (,symbol *right-chat-buttons*)
+             (setf (q+:checked (slot-value ,widget ,symbol)) nil))
+           (setf (q+:checked ,name) t)
+           (q+:restore-state splitter ,state))))))
+
+(define-subwidget (chat-window buttons-layout) (q+:make-qhboxlayout)
+  (q+:add-layout layout buttons-layout 0 1))
+
+(defun make-chat-button (string)
+  (let ((button (make-text-qtoolbutton string))
+        (font (q+:make-qfont)))
+    (setf (q+:point-size font) 8
+          (q+:font button) font)
+    button))
+#|
+(define-subwidget (chat-window description-button-left)
+    (make-chat-button "Description")
+  (q+:add-widget layout description-button-left 0 0))
+
+(define-subwidget (chat-window description-button-right)
+    (make-chat-button "Description")
+  (q+:add-widget layout description-button-right 0 2))
+|#
+(defmacro define-chat-buttons
+    (widget (far-left-button) left-buttons right-buttons (far-right-button))
+  `(progn
+     ,@(mapcar (curry #'apply #'make-button widget) left-buttons)
+     (define-subwidget (,widget buttons-stretch)
+         (q+:add-stretch buttons-layout 9001))
+     ,@(mapcar (curry #'apply #'make-button widget) right-buttons)
+     (defparameter *right-chat-buttons*
+       ',(list* (car far-left-button)
+                (car far-right-button)
+                (mapcar #'car right-buttons)))
+     (defparameter *right-chat-widgets*
+       ',(list* 'description-left
+                'description-right
+                (forms-subwidgets right-buttons)))
+     ,@(mapcar (curry #'apply #'make-slot widget) right-buttons)
+     ,(apply #'make-button widget far-left-button)
+     ,(apply #'make-slot widget far-left-button)
+     ,(apply #'make-button widget far-right-button)
+     ,(apply #'make-slot widget far-right-button)))
+
+(trivial-indent:define-indentation define-chat-buttons (4 2 2))
+
+(define-chat-buttons chat-window
+  ((description-button-left
+    "Description"
+    :layout nil :checkable t
+    :subwidget description-left
+    :init-forms
+    ((q+:add-widget layout description-button-left 0 0))))
+  ((timestamps-button "Timestamps" :checkable t)
+   (names-button "Names" :checkable t)
+   (mark-read-button "Mark Read")
+   (logs-button "Logs")
+   (justify-button "Justify" :checkable t)
+   (spellchecker-button "Spelling"))
+  ((ooc-button "OOC" :checkable t :subwidget ooc :default t)
+   (dictionary-button "Dictionary" :checkable t :subwidget dictionary))
+  ((description-button-right
+    "Description"
+    :layout nil :checkable t
+    :subwidget description-right
+    :init-forms
+    ((q+:add-widget layout description-button-right 0 2)))))
 
 (define-slot (chat-window dictionary-text-selection) ()
   (declare (connected ic-input (selection-changed)))
@@ -195,3 +238,6 @@
       (let ((selection (q+:selected-text cursor)))
         (when (string/= selection "")
           (setf (q+:text (slot-value dictionary 'input)) selection))))))
+
+;; TODO hyperlink style
+;; TODO descriptions
