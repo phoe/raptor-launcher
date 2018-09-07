@@ -12,6 +12,8 @@
   (#:spell/simple
    #:wordnet
    #:trivial-indent
+   #:cl-opengl
+   #:qtopengl
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.base)

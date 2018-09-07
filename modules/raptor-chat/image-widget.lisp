@@ -6,7 +6,7 @@
 (in-package :raptor-launcher/raptor-chat)
 (in-readtable :qtools)
 
-(define-widget image-widget (qlabel)
+(define-widget image-widget (qglwidget)
   ((foreground-path :accessor foreground-path :initarg :foreground-path)
    (shadow-path :accessor shadow-path :initarg :shadow-path)
    (background-path :accessor background-path :initarg :background-path)
@@ -21,7 +21,9 @@
     (q+:make-qpixmap (foreground-path image-widget)))
 
 (define-subwidget (image-widget shadow)
-    (q+:make-qpixmap (shadow-path image-widget)))
+    (q+:make-qpixmap (if shadow-path
+                         (shadow-path image-widget)
+                         "")))
 
 (define-subwidget (image-widget background)
     (q+:make-qpixmap (background-path image-widget))
@@ -60,12 +62,15 @@ qpainter and use fillrech (or what)
 
 (define-override (image-widget paint-event) (ev)
   (with-finalizing ((painter (q+:make-qpainter image-widget)))
+    (setf (q+:render-hint painter) (q+:qpainter.antialiasing))
     (q+:draw-tiled-pixmap painter (q+:rect image-widget) background)
     (let ((box (q+:rect image-widget))
           (height (q+:height image-widget))
           (width (q+:width image-widget))
           (foreground-height (q+:height foreground))
           result)
+      (gl:enable :blend)
+      (gl:blend-func :src-alpha :one-minus-src-alpha)
       (q+:draw-pixmap
        painter box shadow
        (q+:make-qrect 0 (- (q+:height shadow) height) width height))
@@ -80,10 +85,11 @@ qpainter and use fillrech (or what)
 
 (defun image ()
   (with-main-window (image1 (image1))
-    (q+:resize image1 150 700)
-    (let ((image2 (image2)))
-      (q+:show image2)
-      (q+:resize image2 150 700))))
+    (q+:resize image1 150 800)
+    ;; (let ((image2 (image2)))
+    ;;   (q+:show image2)
+    ;;   (q+:resize image2 150 800))
+    ))
 
 (defun image1 ()
   (make-instance
