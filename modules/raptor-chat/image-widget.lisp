@@ -61,22 +61,19 @@ qpainter and use fillrech (or what)
 (define-override (image-widget paint-event) (ev)
   (with-finalizing ((painter (q+:make-qpainter image-widget)))
     (q+:draw-tiled-pixmap painter (q+:rect image-widget) background)
-    (q+:draw-pixmap painter (q+:rect image-widget) shadow
-                    (q+:make-qrect 0 (- (q+:height shadow)
-                                        (q+:height (q+:rect image-widget)))
-                                   width (q+:height (q+:rect image-widget)))
-                    ;; (q+:rect image-widget)
-                    )
-    (let ((foreground-height (q+:height foreground))
+    (let ((box (q+:rect image-widget))
           (height (q+:height image-widget))
           (width (q+:width image-widget))
-          (box (q+:rect image-widget))
+          (foreground-height (q+:height foreground))
           result)
+      (q+:draw-pixmap painter box shadow
+                      (q+:make-qrect 0 (- (q+:height shadow) height)
+                                     width height))
       (if (<= foreground-height height)
           (let ((box (q+:rect image-widget)))
             (setf result (q+:make-qrect 0 (- foreground-height height)
                                         width (q+:height box))))
-          (let* ((percentage (sqrt (/ height foreground-height)))
+          (let* ((percentage (expt (/ height foreground-height) 0.1))
                  (y (truncate (- eye-level (* eye-level percentage)))))
             (setf result (q+:make-qrect 0 y width height))))
       (q+:draw-pixmap painter box foreground result))))
@@ -91,7 +88,7 @@ qpainter and use fillrech (or what)
 (defun image1 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 100 :background-hue 30
+   :width 150 :eye-level 100 :background-hue 120
    :background-path (homepath "tile.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "scaletail.png")))
@@ -99,7 +96,7 @@ qpainter and use fillrech (or what)
 (defun image2 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 80 :background-hue 30
+   :width 150 :eye-level 80 :background-hue -90
    :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "erchembod.png")))
