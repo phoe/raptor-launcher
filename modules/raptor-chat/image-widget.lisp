@@ -33,7 +33,7 @@
                                                     (ldb (byte 8 8) rgb)
                                                     (ldb (byte 8 0) rgb))))
             (let ((hue (q+:hue color)))
-              (setf (q+:hsv color) (values (+ hue background-hue)
+              (setf (q+:hsv color) (values (mod (+ hue background-hue) 256)
                                            (q+:saturation color)
                                            (q+:value color)
                                            (q+:alpha color)))
@@ -60,8 +60,8 @@
           (let ((box (q+:rect image-widget)))
             (setf result (q+:make-qrect 0 (- foreground-height height)
                                         width (q+:height box))))
-          (let ((y (truncate (- eye-level
-                                (* eye-level (/ height foreground-height))))))
+          (let* ((percentage (sqrt (/ height foreground-height)))
+                 (y (truncate (- eye-level (* eye-level percentage)))))
             (setf result (q+:make-qrect 0 y width height))))
       (q+:draw-pixmap painter box foreground result))))
 
@@ -69,8 +69,16 @@
   (with-main-window
       (image (make-instance
               'image-widget
-              :width 150 :eye-level 77 :background-hue 180
-              :background-path "/home/phoe/Projects/Raptor Chat/tile.png"
-              :shadow-path "/home/phoe/Projects/Raptor Chat/shadow.png"
-              :foreground-path "/home/phoe/Projects/Raptor Chat/erchembod.png"
-              ))))
+              :width 150 :eye-level 100 :background-hue -60
+              :background-path (homepath "tile2.png")
+              :shadow-path (homepath "shadow.png")
+              :foreground-path (homepath "scaletail.png")))
+    (let ((image2 (make-instance
+                   'image-widget
+                   :width 150 :eye-level 80 :background-hue 0
+                   :background-path (homepath "tile2.png")
+                   :shadow-path (homepath "shadow.png")
+                   :foreground-path (homepath "erchembod.png"))))
+      (q+:show image2)
+      (q+:resize image 150 700)
+      (q+:resize image2 150 700))))

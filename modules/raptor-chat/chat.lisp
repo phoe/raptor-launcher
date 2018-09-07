@@ -6,6 +6,16 @@
 (in-package :raptor-launcher/raptor-chat)
 (in-readtable :qtools)
 
+;;; Util
+
+(defun homepath (filename)
+  (uiop:native-namestring
+   (merge-pathnames
+    (merge-pathnames "Projects/Raptor Chat/" filename)
+    (user-homedir-pathname))))
+
+;;; Main widget
+
 (define-widget chat-window (qwidget) ())
 
 (define-subwidget (chat-window layout) (q+:make-qgridlayout)
@@ -16,10 +26,7 @@
 (define-subwidget (chat-window image-left) (q+:make-qlabel)
   (q+:add-widget layout image-left 1 0)
   (setf (q+:pixmap image-left)
-        (q+:make-qpixmap
-         (uiop:native-namestring
-          (merge-pathnames "Projects/Raptor Chat/sha.png"
-                           (user-homedir-pathname))))))
+        (q+:make-qpixmap (homepath "sha.png"))))
 
 (define-subwidget (chat-window splitter)
     (q+:make-qsplitter (q+:qt.horizontal))
@@ -28,10 +35,7 @@
 (define-subwidget (chat-window image-right) (q+:make-qlabel)
   (q+:add-widget layout image-right 1 2)
   (setf (q+:pixmap image-right)
-        (q+:make-qpixmap
-         (uiop:native-namestring
-          (merge-pathnames "Projects/Raptor Chat/undies.png"
-                           (user-homedir-pathname))))))
+        (q+:make-qpixmap (homepath "undies.png"))))
 
 ;;; IC/OOC/WIDGETS
 
