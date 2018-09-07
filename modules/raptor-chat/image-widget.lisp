@@ -66,14 +66,14 @@ qpainter and use fillrech (or what)
           (width (q+:width image-widget))
           (foreground-height (q+:height foreground))
           result)
-      (q+:draw-pixmap painter box shadow
-                      (q+:make-qrect 0 (- (q+:height shadow) height)
-                                     width height))
+      (q+:draw-pixmap
+       painter box shadow
+       (q+:make-qrect 0 (- (q+:height shadow) height) width height))
       (if (<= foreground-height height)
           (let ((box (q+:rect image-widget)))
             (setf result (q+:make-qrect 0 (- foreground-height height)
                                         width (q+:height box))))
-          (let* ((percentage (expt (/ height foreground-height) 0.1))
+          (let* ((percentage (/ height foreground-height))
                  (y (truncate (- eye-level (* eye-level percentage)))))
             (setf result (q+:make-qrect 0 y width height))))
       (q+:draw-pixmap painter box foreground result))))
@@ -88,7 +88,7 @@ qpainter and use fillrech (or what)
 (defun image1 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 100 :background-hue 120
+   :width 150 :eye-level 90 :background-hue 120
    :background-path (homepath "tile.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "scaletail.png")))
@@ -96,7 +96,7 @@ qpainter and use fillrech (or what)
 (defun image2 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 80 :background-hue -90
+   :width 150 :eye-level 74 :background-hue -90
    :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "erchembod.png")))
