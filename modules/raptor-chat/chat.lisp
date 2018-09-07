@@ -23,19 +23,21 @@
 
 ;;; Bottom row
 
-(define-subwidget (chat-window image-left) (q+:make-qlabel)
+(define-subwidget (chat-window image-left) (image1) ;; (q+:make-qlabel)
   (q+:add-widget layout image-left 1 0)
-  (setf (q+:pixmap image-left)
-        (q+:make-qpixmap (homepath "sha.png"))))
+  ;; (setf (q+:pixmap image-left)
+  ;;       (q+:make-qpixmap (homepath "sha.png")))
+  )
 
 (define-subwidget (chat-window splitter)
     (q+:make-qsplitter (q+:qt.horizontal))
   (q+:add-widget layout splitter 1 1))
 
-(define-subwidget (chat-window image-right) (q+:make-qlabel)
+(define-subwidget (chat-window image-right) (image2) ;; (q+:make-qlabel)
   (q+:add-widget layout image-right 1 2)
-  (setf (q+:pixmap image-right)
-        (q+:make-qpixmap (homepath "undies.png"))))
+  ;; (setf (q+:pixmap image-right)
+  ;;       (q+:make-qpixmap (homepath "undies.png")))
+  )
 
 ;;; IC/OOC/WIDGETS
 

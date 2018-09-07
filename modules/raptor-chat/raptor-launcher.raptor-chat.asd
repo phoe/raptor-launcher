@@ -20,4 +20,5 @@
    (:file "definition")
    (:file "spellchecked-text-edit")
    (:file "dictionary")
+   (:file "image-widget")
    (:file "chat")))
