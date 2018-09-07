@@ -9,7 +9,10 @@
 
 (define-subwidget (dictionary browser)
     (make-instance 'browser :dictionary dictionary)
-  (q+:add-widget layout browser 0 0 1 2))
+  (q+:add-widget layout browser 0 0 1 2)
+  (setf (q+:html browser)
+        "<i><p align=center>Select text in the IC window or type your query
+below and hit Search.</p></i>"))
 
 (define-subwidget (dictionary input) (q+:make-qlineedit)
   (q+:add-widget layout input 1 0))
@@ -21,13 +24,14 @@
 (define-slot (dictionary search) ()
   (declare (connected button (clicked)))
   (declare (connected input (return-pressed)))
-  (let ((text (q+:text input)))
+  (let ((text (trim-whitespace (q+:text input))))
     (when (string/= "" text)
-      (setf text (trim-whitespace text)
-            (q+:html browser)
-            (htmlize-wordnet (wordnet:wordnet-describe* text)))
-      ;; (print (multiple-value-list (wordnet:wordnet-describe* text)))
-      )))
+      (let ((response (htmlize-wordnet (wordnet:wordnet-describe* text))))
+        (if (string/= "" response)
+            (setf (q+:html browser) response)
+            (setf (q+:html browser)
+                  (format nil "<i><p align=center>The entry for \"~A\" was
+not found.</p><i>" text)))))))
 
 (define-slot (dictionary set-focus-from-browser set-focus-from-browser)
              ((old "QWidget*") (new "QWidget*"))
