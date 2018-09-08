@@ -36,9 +36,9 @@
           (let* ((color (cffi:mem-aref pointer :unsigned-int i))
                  (rgb (make-array 3 :element-type '(unsigned-byte 8)
                                     :initial-contents
-                                    (list (ldb (byte 8 16) color)
+                                    (list (ldb (byte 8 0) color)
                                           (ldb (byte 8 8) color)
-                                          (ldb (byte 8 0) color))))
+                                          (ldb (byte 8 16) color))))
                  (rgb2 (the (simple-array (unsigned-byte 8) (3))
                             (simple-rgb:rotate-rgb rgb background-hue)))
                  (result (+ (aref rgb2 0)
@@ -73,26 +73,38 @@
             (setf result (q+:make-qrect 0 y width height))))
       (q+:draw-image painter box foreground result))))
 
-(defun image ()
-  (with-main-window (image1 (image1))
-    (q+:resize image1 150 800)
-    ;; (let ((image2 (image2)))
-    ;;   (q+:show image2)
-    ;;   (q+:resize image2 150 800))
-    ))
-
 (defun image1 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 90 :background-hue 90
-   :background-path (homepath "tile.png")
+   :width 150 :eye-level 74 :background-hue -60
+   :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
-   :foreground-path (homepath "scaletail.png")))
+   :foreground-path (homepath "erchembod.png")))
 
 (defun image2 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 74 :background-hue -60
+   :width 150 :eye-level 74 :background-hue 80
+   :background-path (homepath "tile.png")
+   :shadow-path (homepath "shadow.png")
+   :foreground-path (homepath "scaletail.png")))
+
+(defun image ()
+  (with-main-window (widget (q+:make-qwidget))
+    (let ((layout (q+:make-qhboxlayout)))
+      (setf (q+:layout widget) layout)
+      (q+:add-widget layout (%image 0))
+      (q+:add-widget layout (%image 60))
+      (q+:add-widget layout (%image 120))
+      (q+:add-widget layout (%image 180))
+      (q+:add-widget layout (%image 240))
+      (q+:add-widget layout (%image 300))
+      (q+:resize widget 1 1000))))
+
+(defun %%image (&optional (hue 0))
+  (make-instance
+   'image-widget
+   :width 150 :eye-level 74 :background-hue hue
    :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "erchembod.png")))

@@ -389,7 +389,7 @@
 (defun chat ()
   (with-main-window (chat-window 'chat-window)
     (with-slots-bound (chat-window chat-window)
-      (setf colors '(("jacula" . "#FF33BB") ("xiaohui" . "#88FFBB"))
+      (setf colors '(("jacula" . "#CC33FF") ("xiaohui" . "#EEFF88"))
             ic-posts (make-posts-from-file)
             ooc-posts (make-posts-from-file))
       (update-outputs chat-window))))
