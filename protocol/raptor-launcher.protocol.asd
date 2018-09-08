@@ -11,7 +11,8 @@
   :depends-on (#:closer-mop
                #:moptilities
                #:alexandria
-               #:protest)
+               #:protest/protocol
+               #:cl-furcadia.protocol)
   :components ((:file "package")
                ;; base
                (:file "module")
@@ -21,4 +22,5 @@
                (:file "modules/picker")
                (:file "modules/config")
                (:file "modules/editor")
-               (:file "modules/fusion")))
+               (:file "modules/fusion")
+               (:file "modules/chat")))

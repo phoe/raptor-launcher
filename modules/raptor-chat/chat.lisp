@@ -16,10 +16,69 @@
 
 ;;; Main widget
 
-(define-widget chat-window (qwidget) ())
+(define-widget chat-window (qwidget chat)
+  ((ic-posts :reader ic-posts :initarg :ic-posts :initform '())
+   (ooc-posts :reader ooc-posts :initarg :ooc-posts :initform '())
+   (colors :accessor colors :initarg :colors)
+   ;; TODO remove, store colors on characters instead
+   ))
 
 (define-subwidget (chat-window layout) (q+:make-qgridlayout)
   (setf (q+:layout chat-window) layout))
+
+(defmethod (setf ic-posts) (new-value (chat-window chat-window))
+  (setf (slot-value chat-window 'ic-posts) new-value)
+  (update-ic-output chat-window))
+
+(defmethod (setf ooc-posts) (new-value (chat-window chat-window))
+  (setf (slot-value chat-window 'ooc-posts) new-value)
+  (update-ooc-output chat-window))
+
+(defmethod add-ic-post
+    ((chat-window chat-window) (post cl-furcadia/protocol:post))
+  (appendf (slot-value chat-window 'ic-posts) post)
+  (with-slots-bound (chat-window chat-window)
+    (q+:append ic-output (posts-html chat-window (list post)))))
+
+(defmethod add-ooc-post
+    ((chat-window chat-window) (post cl-furcadia/protocol:post))
+  (appendf (slot-value chat-window 'ooc-posts) post)
+  (with-slots-bound (chat-window chat-window)
+    (q+:append ooc-output (posts-html chat-window (list post)))))
+
+;;; update-outputs
+
+(defun posts-html (chat-window posts)
+  (with-slots-bound (chat-window chat-window)
+    (generate-html posts colors
+                   :print-names-p (q+:is-checked names-button)
+                   :print-times-p (q+:is-checked timestamps-button)
+                   :justifyp (q+:is-checked justify-button))))
+
+(defun update-output (chat-window output posts)
+  (let* ((scrollbar (q+:vertical-scroll-bar output))
+         (value (q+:value scrollbar))
+         (maximum (q+:maximum scrollbar)))
+    (setf (q+:html output) (posts-html chat-window posts))
+    (unless (= maximum 0)
+      (let ((percentage (/ value maximum)))
+        (if (= value maximum)
+            (setf (q+:value scrollbar) (q+:maximum scrollbar))
+            (setf (q+:value scrollbar)
+                  (round (* percentage maximum))))))))
+
+(defun update-outputs (chat-window)
+  (with-slots-bound (chat-window chat-window)
+    (update-output chat-window ic-output ic-posts)
+    (update-output chat-window ooc-output ooc-posts)))
+
+(defun update-ic-output (chat-window)
+  (with-slots-bound (chat-window chat-window)
+    (update-output chat-window ic-output ic-posts)))
+
+(defun update-ooc-output (chat-window)
+  (with-slots-bound (chat-window chat-window)
+    (update-output chat-window ooc-output ooc-posts)))
 
 ;;; Bottom row
 
@@ -210,10 +269,16 @@
 |#
 
 (defmacro define-chat-buttons
-    (widget (far-left-button) left-buttons right-buttons (far-right-button))
+    (widget
+     (far-left-button)
+     left-buttons middle-buttons right-buttons
+     (far-right-button))
   `(progn
      ,@(mapcar (curry #'apply #'make-button widget) left-buttons)
-     (define-subwidget (,widget buttons-stretch)
+     (define-subwidget (,widget buttons-stretch-left)
+         (q+:add-stretch buttons-layout 9001))
+     ,@(mapcar (curry #'apply #'make-button widget) middle-buttons)
+     (define-subwidget (,widget buttons-stretch-right)
          (q+:add-stretch buttons-layout 9001))
      ,@(mapcar (curry #'apply #'make-button widget) right-buttons)
      (defparameter *right-chat-buttons*
@@ -241,10 +306,10 @@
     ((q+:add-widget layout description-button-left 0 0))))
   ((timestamps-button "Timestamps" :checkable t)
    (names-button "Names" :checkable t)
+   (justify-button "Justify" :checkable t))
+  ((spellchecker-button "Spelling")
    (mark-read-button "Mark Read")
-   (logs-button "Logs")
-   (justify-button "Justify" :checkable t)
-   (spellchecker-button "Spelling"))
+   (logs-button "Logs"))
   ((ooc-button "OOC" :checkable t :subwidget ooc :default t)
    (dictionary-button "Dictionary" :checkable t :subwidget dictionary))
   ((description-button-right
@@ -253,6 +318,12 @@
     :subwidget description-right
     :init-forms
     ((q+:add-widget layout description-button-right 0 2 (q+:qt.align-right))))))
+
+(define-slot (chat-window buttons-update-outputs) ()
+  (declare (connected timestamps-button (clicked))
+           (connected names-button (clicked))
+           (connected justify-button (clicked)))
+  (update-outputs chat-window))
 
 (define-slot (chat-window spellchecker-button-clicked) ()
   (declare (connected spellchecker-button (clicked)))
@@ -294,7 +365,7 @@
                    :contents line))))
 
 (defun generate-html
-    (posts names-and-colors &key print-names-p justifyp print-times-p)
+    (posts names-and-colors &key print-names-p print-times-p justifyp)
   (with-output-to-string (*standard-output*)
     (loop
       for post in posts
@@ -308,21 +379,17 @@
            (multiple-value-bind (ns ss mm hh day month year dow dstp tzo tza)
                (local-time:decode-timestamp date)
              (declare (ignore ns day month year dow dstp tzo tza))
-             (format t "<b>(~2D:~2D:~2D)</b> " hh mm ss)))
+             (format t "<b>(~2,'0D:~2,'0D:~2,'0D)</b> " hh mm ss)))
          (if print-names-p
              (format t "<b>~A:</b> " (string-capitalize name))
              (princ "<b>&gt;</b> "))
          (princ contents)
          (format t "</p>~%"))))
 
-(defun make-sample-ic-html ()
-  (generate-html (make-posts-from-file)
-                 '(("jacula" . "#FF33BB") ("xiaohui" . "#88FFBB"))
-                 :print-names-p nil
-                 :justifyp t
-                 :print-times-p nil))
-
 (defun chat ()
   (with-main-window (chat-window 'chat-window)
     (with-slots-bound (chat-window chat-window)
-      (setf (q+:html ic-output) (make-sample-ic-html)))))
+      (setf colors '(("jacula" . "#FF33BB") ("xiaohui" . "#88FFBB"))
+            ic-posts (make-posts-from-file)
+            ooc-posts (make-posts-from-file))
+      (update-outputs chat-window))))

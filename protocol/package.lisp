@@ -8,7 +8,8 @@
         #:closer-mop
         #:moptilities
         #:alexandria
-        #:protest)
+        #:protest/protocol
+        #:cl-furcadia/protocol)
   (:shadowing-import-from
    #:protest/protocol
    #:superclasses)
