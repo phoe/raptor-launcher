@@ -26,60 +26,6 @@
 (define-subwidget (chat-window layout) (q+:make-qgridlayout)
   (setf (q+:layout chat-window) layout))
 
-(defmethod (setf ic-posts) (new-value (chat-window chat-window))
-  (setf (slot-value chat-window 'ic-posts) new-value)
-  (update-ic-output chat-window))
-
-(defmethod (setf ooc-posts) (new-value (chat-window chat-window))
-  (setf (slot-value chat-window 'ooc-posts) new-value)
-  (update-ooc-output chat-window))
-
-(defmethod add-ic-post
-    ((chat-window chat-window) (post cl-furcadia/protocol:post))
-  (appendf (slot-value chat-window 'ic-posts) post)
-  (with-slots-bound (chat-window chat-window)
-    (q+:append ic-output (posts-html chat-window (list post)))))
-
-(defmethod add-ooc-post
-    ((chat-window chat-window) (post cl-furcadia/protocol:post))
-  (appendf (slot-value chat-window 'ooc-posts) post)
-  (with-slots-bound (chat-window chat-window)
-    (q+:append ooc-output (posts-html chat-window (list post)))))
-
-;;; update-outputs
-
-(defun posts-html (chat-window posts)
-  (with-slots-bound (chat-window chat-window)
-    (generate-html posts colors
-                   :print-names-p (q+:is-checked names-button)
-                   :print-times-p (q+:is-checked timestamps-button)
-                   :justifyp (q+:is-checked justify-button))))
-
-(defun update-output (chat-window output posts)
-  (let* ((scrollbar (q+:vertical-scroll-bar output))
-         (value (q+:value scrollbar))
-         (maximum (q+:maximum scrollbar)))
-    (setf (q+:html output) (posts-html chat-window posts))
-    (unless (= maximum 0)
-      (let ((percentage (/ value maximum)))
-        (if (= value maximum)
-            (setf (q+:value scrollbar) (q+:maximum scrollbar))
-            (setf (q+:value scrollbar)
-                  (round (* percentage maximum))))))))
-
-(defun update-outputs (chat-window)
-  (with-slots-bound (chat-window chat-window)
-    (update-output chat-window ic-output ic-posts)
-    (update-output chat-window ooc-output ooc-posts)))
-
-(defun update-ic-output (chat-window)
-  (with-slots-bound (chat-window chat-window)
-    (update-output chat-window ic-output ic-posts)))
-
-(defun update-ooc-output (chat-window)
-  (with-slots-bound (chat-window chat-window)
-    (update-output chat-window ooc-output ooc-posts)))
-
 ;;; Bottom row
 
 (define-subwidget (chat-window image-left) (image1) ;; (q+:make-qlabel)
@@ -385,6 +331,62 @@
              (princ "<b>&gt;</b> "))
          (princ contents)
          (format t "</p>~%"))))
+
+;;; update-outputs
+
+(defmethod (setf ic-posts) (new-value (chat-window chat-window))
+  (setf (slot-value chat-window 'ic-posts) new-value)
+  (update-ic-output chat-window))
+
+(defmethod (setf ooc-posts) (new-value (chat-window chat-window))
+  (setf (slot-value chat-window 'ooc-posts) new-value)
+  (update-ooc-output chat-window))
+
+(defmethod add-ic-post
+    ((chat-window chat-window) (post cl-furcadia/protocol:post))
+  (appendf (slot-value chat-window 'ic-posts) post)
+  (with-slots-bound (chat-window chat-window)
+    (q+:append ic-output (posts-html chat-window (list post)))))
+
+(defmethod add-ooc-post
+    ((chat-window chat-window) (post cl-furcadia/protocol:post))
+  (appendf (slot-value chat-window 'ooc-posts) post)
+  (with-slots-bound (chat-window chat-window)
+    (q+:append ooc-output (posts-html chat-window (list post)))))
+
+(defun posts-html (chat-window posts)
+  (with-slots-bound (chat-window chat-window)
+    (generate-html posts colors
+                   :print-names-p (q+:is-checked names-button)
+                   :print-times-p (q+:is-checked timestamps-button)
+                   :justifyp (q+:is-checked justify-button))))
+
+(defun update-output (chat-window output posts)
+  (let* ((scrollbar (q+:vertical-scroll-bar output))
+         (value (q+:value scrollbar))
+         (maximum (q+:maximum scrollbar)))
+    (setf (q+:html output) (posts-html chat-window posts))
+    (unless (= maximum 0)
+      (let ((percentage (/ value maximum)))
+        (if (= value maximum)
+            (setf (q+:value scrollbar) (q+:maximum scrollbar))
+            (setf (q+:value scrollbar)
+                  (round (* percentage maximum))))))))
+
+(defun update-outputs (chat-window)
+  (with-slots-bound (chat-window chat-window)
+    (update-output chat-window ic-output ic-posts)
+    (update-output chat-window ooc-output ooc-posts)))
+
+(defun update-ic-output (chat-window)
+  (with-slots-bound (chat-window chat-window)
+    (update-output chat-window ic-output ic-posts)))
+
+(defun update-ooc-output (chat-window)
+  (with-slots-bound (chat-window chat-window)
+    (update-output chat-window ooc-output ooc-posts)))
+
+;;; main
 
 (defun chat ()
   (with-main-window (chat-window 'chat-window)

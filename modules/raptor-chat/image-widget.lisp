@@ -28,24 +28,28 @@
 (define-subwidget (image-widget background)
     (q+:make-qimage (background-path image-widget))
   (when (and background-hue (/= 0 background-hue))
-    (locally (declare (optimize speed))
-      (let ((pointer (q+:bits background))
-            (total-size (* (the (unsigned-byte 16) (q+:width background))
-                           (the (unsigned-byte 16) (q+:height background)))))
-        (dotimes (i total-size)
-          (let* ((color (cffi:mem-aref pointer :unsigned-int i))
-                 (rgb (make-array 3 :element-type '(unsigned-byte 8)
-                                    :initial-contents
-                                    (list (ldb (byte 8 0) color)
-                                          (ldb (byte 8 8) color)
-                                          (ldb (byte 8 16) color))))
-                 (rgb2 (the (simple-array (unsigned-byte 8) (3))
-                            (simple-rgb:rotate-rgb rgb background-hue)))
-                 (result (+ (aref rgb2 0)
-                            (ash (aref rgb2 1) 8)
-                            (ash (aref rgb2 2) 16)
-                            (ash 255 24))))
-            (setf (cffi:mem-aref pointer :unsigned-int i) result)))))))
+    (hue-shift background background-hue)))
+
+(defun hue-shift (background background-hue)
+  (declare (optimize speed))
+  (assert (= (the fixnum (qt:enum-value (q+:format background)))
+             (the fixnum (q+:qimage.format_argb32))))
+  (let ((pointer (q+:bits background))
+        (total-size (* (the (unsigned-byte 16) (q+:width background))
+                       (the (unsigned-byte 16) (q+:height background)))))
+    (dotimes (i total-size)
+      (let* ((color (cffi:mem-aref pointer :unsigned-int i))
+             (rgb (make-array 3 :element-type '(unsigned-byte 8)
+                                :initial-contents
+                                (list (ldb (byte 8 0) color)
+                                      (ldb (byte 8 8) color)
+                                      (ldb (byte 8 16) color))))
+             (rgb2 (rotate-rgb rgb background-hue))
+             (result (+ (aref rgb2 0)
+                        (ash (aref rgb2 1) 8)
+                        (ash (aref rgb2 2) 16)
+                        (ash 255 24))))
+        (setf (cffi:mem-aref pointer :unsigned-int i) result)))))
 
 (defmethod initialize-instance :after ((object image-widget) &key)
   (with-slots-bound (object image-widget)
@@ -76,7 +80,7 @@
 (defun image1 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 74 :background-hue -60
+   :width 150 :eye-level 74 :background-hue 300
    :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "erchembod.png")))
@@ -101,7 +105,7 @@
       (q+:add-widget layout (%image 300))
       (q+:resize widget 1 1000))))
 
-(defun %%image (&optional (hue 0))
+(defun %image (&optional (hue 0))
   (make-instance
    'image-widget
    :width 150 :eye-level 74 :background-hue hue

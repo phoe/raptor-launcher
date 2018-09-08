@@ -15,4 +15,5 @@
                #:qtools)
   :components ((:file "package")
                (:file "util")
+               (:file "rgb")
                (:file "witty-lines")))

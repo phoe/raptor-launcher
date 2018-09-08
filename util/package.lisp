@@ -8,6 +8,7 @@
         #:alexandria
         #:phoe-toolbox)
   (:export
+   #:rotate-rgb
    #:witty-line
    #:witty-password
    #:rgba-argb
