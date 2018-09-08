@@ -12,8 +12,9 @@
   (#:spell/simple
    #:wordnet
    #:trivial-indent
-   #:cl-opengl
-   #:qtopengl
+   #:simple-rgb
+   #:cl-furcadia.protocol
+   #:cl-furcadia.clos
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.base)

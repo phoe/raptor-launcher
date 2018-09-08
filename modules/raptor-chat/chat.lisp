@@ -43,13 +43,13 @@
 
 (define-subwidget (chat-window ic) (q+:make-qsplitter (q+:qt.vertical))
   (q+:add-widget splitter ic)
-  (setf (q+:minimum-width ic) 100
+  (setf (q+:minimum-width ic) 200
         (q+:children-collapsible ic) nil
         (q+:stretch-factor splitter 0) 2))
 
 (define-subwidget (chat-window ooc) (q+:make-qsplitter (q+:qt.vertical))
   (q+:add-widget splitter ooc)
-  (setf (q+:minimum-width ooc) 100
+  (setf (q+:minimum-width ooc) 200
         (q+:children-collapsible ooc) nil
         (q+:stretch-factor splitter 1) 1))
 
@@ -272,5 +272,57 @@
 ;; TODO hyperlink style
 ;; TODO descriptions
 
+;;; Random post generation
+
+(defun make-lorem-ipsum-posts (n author-names)
+  (loop repeat n
+        for name = (random-elt author-names)
+          then (random-elt (remove name author-names :test #'string=))
+        collect (make-instance
+                 'cl-furcadia/clos:standard-post
+                 :author-shortname name
+                 :contents (lorem-ipsum:paragraph :prologue nil))))
+
+(defun make-posts-from-file (&optional (filename (homepath "posts.txt")))
+  (with-open-file (stream filename)
+    (loop for line = (read-line stream nil stream)
+          until (eq line stream)
+          collect (make-instance
+                   'cl-furcadia/clos:standard-post
+                   :author-shortname
+                   (if (eql #\J (aref line 0)) "jacula" "xiaohui")
+                   :contents line))))
+
+(defun generate-html
+    (posts names-and-colors &key print-names-p justifyp print-times-p)
+  (with-output-to-string (*standard-output*)
+    (loop
+      for post in posts
+      for name = (cl-furcadia/protocol:author-shortname post)
+      for date = (cl-furcadia/protocol:date post)
+      for contents = (cl-furcadia/protocol:contents post)
+      do (format t "<p style=\"color: ~A;\"~A>"
+                 (assoc-value names-and-colors name :test #'string=)
+                 (if justifyp " align=justify" ""))
+         (when print-times-p
+           (multiple-value-bind (ns ss mm hh day month year dow dstp tzo tza)
+               (local-time:decode-timestamp date)
+             (declare (ignore ns day month year dow dstp tzo tza))
+             (format t "<b>(~2D:~2D:~2D)</b> " hh mm ss)))
+         (if print-names-p
+             (format t "<b>~A:</b> " (string-capitalize name))
+             (princ "<b>&gt;</b> "))
+         (princ contents)
+         (format t "</p>~%"))))
+
+(defun make-sample-ic-html ()
+  (generate-html (make-posts-from-file)
+                 '(("jacula" . "#FF33BB") ("xiaohui" . "#88FFBB"))
+                 :print-names-p nil
+                 :justifyp t
+                 :print-times-p nil))
+
 (defun chat ()
-  (with-main-window (chat-window 'chat-window)))
+  (with-main-window (chat-window 'chat-window)
+    (with-slots-bound (chat-window chat-window)
+      (setf (q+:html ic-output) (make-sample-ic-html)))))

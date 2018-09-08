@@ -6,7 +6,7 @@
 (in-package :raptor-launcher/raptor-chat)
 (in-readtable :qtools)
 
-(define-widget image-widget (qglwidget)
+(define-widget image-widget (qwidget)
   ((foreground-path :accessor foreground-path :initarg :foreground-path)
    (shadow-path :accessor shadow-path :initarg :shadow-path)
    (background-path :accessor background-path :initarg :background-path)
@@ -18,36 +18,34 @@
                      :eye-level nil :width nil :background-hue nil))
 
 (define-subwidget (image-widget foreground)
-    (q+:make-qpixmap (foreground-path image-widget)))
+    (q+:make-qimage (foreground-path image-widget)))
 
 (define-subwidget (image-widget shadow)
-    (q+:make-qpixmap (if shadow-path
-                         (shadow-path image-widget)
-                         "")))
+    (q+:make-qimage (if shadow-path
+                        (shadow-path image-widget)
+                        "")))
 
 (define-subwidget (image-widget background)
-    (q+:make-qpixmap (background-path image-widget))
+    (q+:make-qimage (background-path image-widget))
   (when (and background-hue (/= 0 background-hue))
-    (with-finalizing ((image (q+:to-image background)))
-      (dotimes (x (q+:width background))
-        (dotimes (y (q+:height background))
-          (with-finalizing* ((rgb ;; (fast-call (pixel QImage int int ) image x y)
-                              (q+:pixel image x y)
-                              )
-                             (color (q+:make-qcolor (ldb (byte 8 16) rgb)
-                                                    (ldb (byte 8 8) rgb)
-                                                    (ldb (byte 8 0) rgb))))
-            (let ((hue (q+:hsv-hue color)))
-              ;; remember to pull newest qtools!
-              (fast-call (set-hsv QColor int int int nil)
-                         color
-                         (mod (+ hue background-hue) 360)
-                         (q+:hsv-saturation color)
-                         (q+:value color))
-              (setf (q+:pixel image x y) (q+:rgb color))))))
-      (let ((old-background background))
-        (setf background (q+:qpixmap-from-image image))
-        (finalize old-background)))))
+    (time (locally (declare (optimize speed))
+            (let* ((pointer (q+:bits background))
+                   (total-size (* (the (unsigned-byte 16) (q+:width background))
+                                  (the (unsigned-byte 16) (q+:height background)))))
+              (dotimes (i total-size)
+                (let* ((color (cffi:mem-aref pointer :unsigned-int i))
+                       (r (ldb (byte 8 16) color))
+                       (g (ldb (byte 8 8) color))
+                       (b (ldb (byte 8 0) color))
+                       (rgb (make-array 3 :element-type '(unsigned-byte 8)
+                                          :initial-contents (list r g b)))
+                       (rgb2 (the (simple-array (unsigned-byte 8) (3))
+                                  (simple-rgb:rotate-rgb rgb background-hue)))
+                       (result (+ (aref rgb2 0)
+                                  (ash (aref rgb2 1) 8)
+                                  (ash (aref rgb2 2) 16)
+                                  (ash 255 24))))
+                  (setf (cffi:mem-aref pointer :unsigned-int i) result))))))))
 
 #| TODO operate on the whole vector in Lisp to speed this up
 https://github.com/wmannis/simple-rgb/blob/master/rgb.lisp
@@ -63,15 +61,14 @@ qpainter and use fillrech (or what)
 (define-override (image-widget paint-event) (ev)
   (with-finalizing ((painter (q+:make-qpainter image-widget)))
     (setf (q+:render-hint painter) (q+:qpainter.antialiasing))
-    (q+:draw-tiled-pixmap painter (q+:rect image-widget) background)
+    (q+:draw-tiled-pixmap painter (q+:rect image-widget)
+                          (q+:qpixmap-from-image background))
     (let ((box (q+:rect image-widget))
           (height (q+:height image-widget))
           (width (q+:width image-widget))
           (foreground-height (q+:height foreground))
           result)
-      (gl:enable :blend)
-      (gl:blend-func :src-alpha :one-minus-src-alpha)
-      (q+:draw-pixmap
+      (q+:draw-image
        painter box shadow
        (q+:make-qrect 0 (- (q+:height shadow) height) width height))
       (if (<= foreground-height height)
@@ -81,7 +78,7 @@ qpainter and use fillrech (or what)
           (let* ((percentage (/ height foreground-height))
                  (y (truncate (- eye-level (* eye-level percentage)))))
             (setf result (q+:make-qrect 0 y width height))))
-      (q+:draw-pixmap painter box foreground result))))
+      (q+:draw-image painter box foreground result))))
 
 (defun image ()
   (with-main-window (image1 (image1))
@@ -94,7 +91,7 @@ qpainter and use fillrech (or what)
 (defun image1 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 90 :background-hue 120
+   :width 150 :eye-level 90 :background-hue 90
    :background-path (homepath "tile.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "scaletail.png")))
@@ -102,7 +99,7 @@ qpainter and use fillrech (or what)
 (defun image2 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 74 :background-hue -90
+   :width 150 :eye-level 74 :background-hue -60
    :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "erchembod.png")))
