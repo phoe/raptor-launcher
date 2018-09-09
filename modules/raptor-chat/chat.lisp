@@ -310,7 +310,7 @@
                    (if (eql #\J (aref line 0)) "jacula" "xiaohui")
                    :contents line))))
 
-(defun generate-html
+(defun generate-html ;; TODO s/posts/post and mapcar on top of it
     (posts names-and-colors &key print-names-p print-times-p justifyp)
   (with-output-to-string (*standard-output*)
     (loop
@@ -333,6 +333,8 @@
          (format t "</p>~%"))))
 
 ;;; update-outputs
+
+;;; TODO these should call signals to make this thread-safe
 
 (defmethod (setf ic-posts) (new-value (chat-window chat-window))
   (setf (slot-value chat-window 'ic-posts) new-value)
