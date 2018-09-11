@@ -10,8 +10,9 @@
 
 (defun homepath (filename)
   (uiop:native-namestring
-   (merge-pathnames
-    (merge-pathnames "Projects/Raptor Chat/" filename)
+   (uiop:nest
+    (merge-pathnames filename)
+    (merge-pathnames "Projects/Raptor Chat/")
     (user-homedir-pathname))))
 
 ;;; Main widget
