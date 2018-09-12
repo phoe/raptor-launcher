@@ -17,43 +17,16 @@
                      :shadow-path (homepath "shadow.png")
                      :eye-level nil :width nil :background-hue nil))
 
-(define-subwidget (image-widget foreground)
-    (q+:make-qimage (foreground-path image-widget)))
+(define-subwidget (image-widget foreground) (q+:make-qimage foreground-path))
 
-(define-subwidget (image-widget shadow)
-    (q+:make-qimage (if shadow-path
-                        (shadow-path image-widget)
-                        "")))
+(define-subwidget (image-widget shadow) (q+:make-qimage shadow-path))
 
-(define-subwidget (image-widget background)
-    (q+:make-qimage (background-path image-widget))
-  (when (and background-hue (/= 0 background-hue))
-    (hue-shift background background-hue)))
+(define-subwidget (image-widget background) (q+:make-qimage background-path)
+  (when (and background-hue (/= 0.0 background-hue))
+    (qcom:hue-shift background background-hue)))
 
-(defun hue-shift (image hue)
-  (declare (optimize speed))
-  (assert (= (the fixnum (qt:enum-value (q+:format image)))
-             (the fixnum (q+:qimage.format_argb32))))
-  (let ((pointer (q+:bits image))
-        (total-size (* (the (unsigned-byte 16) (q+:width image))
-                       (the (unsigned-byte 16) (q+:height image)))))
-    (dotimes (i total-size)
-      (let* ((color (cffi:mem-aref pointer :unsigned-int i))
-             (rgb (make-array 3 :element-type '(unsigned-byte 8)
-                                :initial-contents
-                                (list (ldb (byte 8 0) color)
-                                      (ldb (byte 8 8) color)
-                                      (ldb (byte 8 16) color))))
-             (rgb2 (rotate-rgb rgb hue))
-             (result (+ (aref rgb2 0)
-                        (ash (aref rgb2 1) 8)
-                        (ash (aref rgb2 2) 16)
-                        (ash 255 24))))
-        (setf (cffi:mem-aref pointer :unsigned-int i) result)))))
-
-(defmethod initialize-instance :after ((object image-widget) &key)
-  (with-slots-bound (object image-widget)
-    (when width (setf (q+:minimum-width object) width))))
+(define-qt-constructor (image-widget)
+  (when width (setf (q+:minimum-width image-widget) width)))
 
 (define-override (image-widget paint-event) (ev)
   (with-finalizing ((painter (q+:make-qpainter image-widget)))
@@ -80,7 +53,7 @@
 (defun image1 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 74 :background-hue 300
+   :width 150 :eye-level 74 :background-hue 300.0
    :background-path (homepath "tile2.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "erchembod.png")))
@@ -88,7 +61,7 @@
 (defun image2 ()
   (make-instance
    'image-widget
-   :width 150 :eye-level 74 :background-hue 80
+   :width 150 :eye-level 74 :background-hue 80.0
    :background-path (homepath "tile.png")
    :shadow-path (homepath "shadow.png")
    :foreground-path (homepath "scaletail.png")))
@@ -97,15 +70,15 @@
   (with-main-window (widget (q+:make-qwidget))
     (let ((layout (q+:make-qhboxlayout)))
       (setf (q+:layout widget) layout)
-      (q+:add-widget layout (%image 0))
-      (q+:add-widget layout (%image 60))
-      (q+:add-widget layout (%image 120))
-      (q+:add-widget layout (%image 180))
-      (q+:add-widget layout (%image 240))
-      (q+:add-widget layout (%image 300))
+      (q+:add-widget layout (%image 0.0))
+      (q+:add-widget layout (%image 60.0))
+      (q+:add-widget layout (%image 120.0))
+      (q+:add-widget layout (%image 180.0))
+      (q+:add-widget layout (%image 240.0))
+      (q+:add-widget layout (%image 300.0))
       (q+:resize widget 1 1000))))
 
-(defun %image (&optional (hue 0))
+(defun %image (&optional (hue 0.0))
   (make-instance
    'image-widget
    :width 150 :eye-level 74 :background-hue hue

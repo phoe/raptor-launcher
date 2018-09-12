@@ -12,6 +12,7 @@
   (#:spell/simple
    #:wordnet
    #:trivial-indent
+   #:qtools-commons
    #:cl-furcadia.protocol
    #:cl-furcadia.clos
    #:raptor-launcher.util

@@ -8,12 +8,11 @@
   :author "Michał \"phoe\" Herda <phoe@openmailbox.org>"
   :license "GPLv3"
   :serial t
-  :depends-on (;; utils
-               #:alexandria
-               #:phoe-toolbox
-               ;; Qt
-               #:qtools)
-  :components ((:file "package")
-               (:file "util")
-               (:file "rgb")
-               (:file "witty-lines")))
+  :depends-on
+  (#:alexandria
+   #:phoe-toolbox
+   #:qtools)
+  :components
+  ((:file "package")
+   (:file "util")
+   (:file "witty-lines")))

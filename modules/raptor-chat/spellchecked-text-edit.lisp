@@ -24,14 +24,14 @@
 ;;   ;; TODO start from current cursor position
 ;;   (spellcheck spellchecked-text-edit))
 
-(defgeneric spellcheck (text-exit &optional start)
+(defgeneric spellcheck (text-edit &optional start)
   (:method ((text-edit spellchecked-text-edit) &optional (start 0))
     (%spellcheck text-edit start)))
 
 (defun %spellcheck (text-edit start)
   (with-slots-bound (text-edit spellchecked-text-edit)
     (with-finalizing ((cursor (q+:text-cursor text-edit)))
-      (let* ((done nil))
+      (let ((done nil))
         (setf (q+:position cursor) start)
         (when (q+:at-end cursor) (setf (q+:position cursor) 0))
         (do ((gone-over nil))

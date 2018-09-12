@@ -57,8 +57,8 @@
           for gradient = (gethash key *gradients*)
           for color-picker = (make-instance 'color-picker
                                             :palette color-palette
-                                            :widget gradient
+                                            :widget gradient ;; TODO collision
                                             :color-type color-type
                                             :color-name color-name
-                                            :vector gradient)
+                                            :vector gradient);; TODO collision
           do (qui:add-widget color-picker picker))))

@@ -17,6 +17,7 @@
 
 (declaim (inline rgba-argb))
 
+;; TODO all gradients in fox5 should be pre-modified like that
 (defun rgba-argb (vector)
   (declare (optimize speed))
   (declare (type (simple-array (unsigned-byte 8) (*)) vector))
