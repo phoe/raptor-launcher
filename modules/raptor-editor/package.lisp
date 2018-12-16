@@ -13,4 +13,5 @@
         #:raptor-launcher/protocol
         #:raptor-launcher/config
         #:raptor-launcher/base)
+  (:shadowing-import-from #:phoe-toolbox #:split)
   (:export #:raptor-editor))

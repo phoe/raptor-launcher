@@ -15,4 +15,5 @@
         #:raptor-launcher/config
         #:raptor-launcher/base)
   (:import-from #:closer-mop #:subclassp)
+  (:shadowing-import-from #:phoe-toolbox #:split)
   (:export #:raptor-picker))

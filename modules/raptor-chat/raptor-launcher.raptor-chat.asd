@@ -15,6 +15,7 @@
    #:qtools-commons
    #:cl-furcadia.protocol
    #:cl-furcadia.clos
+   #:raptor-launcher.config
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.base)

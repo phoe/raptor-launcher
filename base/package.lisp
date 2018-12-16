@@ -11,6 +11,7 @@
         #:protest
         #:raptor-launcher/util
         #:raptor-launcher/protocol)
+  (:shadowing-import-from #:phoe-toolbox #:split)
   (:export
    ;; utils
    #:table-text
