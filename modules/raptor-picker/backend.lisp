@@ -9,6 +9,21 @@
 ;;; TODO specify somewhere that all workers must return non-NIL if they were
 ;;; successful. Somewhere better than this comment, that is.
 
+;;; Fetch accounts from available config widgets TODO move to utils of some sort
+
+(defvar *no-configs*
+  "No configuration modules found to fetch account information from.")
+
+(defvar *multiple-configs*
+  "Multiple configuration modules found: ~{~A~^, }. Using the first one.")
+
+(defun configs-accounts (configs)
+  (case (length configs)
+    (0 (note t :severe *no-configs*) '())
+    (1 (accounts (first configs)))
+    (t (note t :warn *multiple-configs* (mapcar #'class-of configs))
+     (accounts (first configs)))))
+
 ;;; Sync
 
 (defmethod sync ((picker raptor-picker))
@@ -27,18 +42,21 @@
     (let* ((naccounts (length (hash-table-keys (config :config :accounts)))))
       (setf (maximum loading-screen 'progress-logins) naccounts
             (maximum loading-screen 'progress-accounts) naccounts)))
+  (worker-sync raptor-picker))
+
+(defun worker-sync (picker)
   (let* ((modules (loaded-modules *main-window*))
          (configs (remove-if-not (rcurry #'subclassp 'config) modules
                                  :key #'class-of))
          (accounts (configs-accounts configs))
-         (queue (queue raptor-picker)))
+         (queue (queue picker)))
     (loop for (email password) in accounts
-          for fn = (curry #'worker-login raptor-picker email password)
+          for fn = (curry #'worker-login picker email password)
           for name = (format nil "RL login thread: ~A" email)
           for thread = (make-thread fn :name name)
           do (push-queue thread queue))
-    (setf (queue-joiner raptor-picker)
-          (make-thread (curry #'join-all-queued raptor-picker)
+    (setf (queue-joiner picker)
+          (make-thread (curry #'join-all-queued picker)
                        :name "RL joiner"))))
 
 ;;; Login
@@ -235,18 +253,3 @@
      (q+:hide (loading-screen raptor-picker))
      (q+:show furre-list)
      (q+:show image))))
-
-;;; Fetch accounts from available config widgets TODO move to utils of some sort
-
-(defvar *no-configs*
-  "No configuration modules found to fetch account information from.")
-
-(defvar *multiple-configs*
-  "Multiple configuration modules found: ~{~A~^, }. Using the first one.")
-
-(defun configs-accounts (configs)
-  (case (length configs)
-    (0 (note t :severe *no-configs*) '())
-    (1 (accounts (first configs)))
-    (t (note t :warn *multiple-configs* (mapcar #'class-of configs))
-     (accounts (first configs)))))

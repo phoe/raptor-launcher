@@ -81,23 +81,16 @@
 
 (define-qt-constructor (loading-screen)
   (q+:add-widget (slot-value (module loading-screen) 'layout) loading-screen)
-  (let ((symbols '(progress-logins progress-accounts progress-furres
-                   progress-portraits progress-specitags
-                   ;; TODO make a variable with valid progress types, AND a type
-                   progress-costumes progress-images)))
-    (loop for symbol in symbols
-          for widget = (funcall symbol loading-screen)
-          do (q+:add-widget layout widget)))
+  (loop for symbol in *progress-types*
+        for widget = (funcall symbol loading-screen)
+        do (q+:add-widget layout widget))
   (reset loading-screen))
 
 (defmethod reset ((loading-screen loading-screen))
   (with-slots-bound (loading-screen loading-screen)
-    (let ((symbols '(progress-logins progress-accounts progress-furres
-                     progress-portraits progress-specitags
-                     progress-costumes progress-images)))
-      (loop for symbol in symbols
-            for widget = (funcall symbol loading-screen)
-            do (reset widget)))))
+    (loop for symbol in *progress-types*
+          for widget = (funcall symbol loading-screen)
+          do (reset widget))))
 
 (defmethod maximum ((screen loading-screen) progress-type)
   (check-type progress-type progress-type)
