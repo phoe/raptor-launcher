@@ -198,7 +198,7 @@
 (define-signal (raptor-picker costume-downloaded) (string int)) ;; sname id
 
 (define-slot (raptor-picker got-costume-downloaded)
-             ((sname string) (nspecitags int))
+             ((sname string) (ncostumes int))
   (declare (connected raptor-picker (costume-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-costumes)))
 
@@ -206,13 +206,28 @@
 
 (define-signal (raptor-picker specitag-downloaded) (string int)) ;; sname id
 
+(define-slot (raptor-picker got-specitag-downloaded)
+             ((sname string) (nspecitags int))
+  (declare (connected raptor-picker (specitag-downloaded string int)))
+  (incf (current (loading-screen raptor-picker) 'progress-specitags)))
+
 ;;; Portrait downloaded
 
 (define-signal (raptor-picker portrait-downloaded) (string int)) ;; sname id
 
+(define-slot (raptor-picker got-portrait-downloaded)
+             ((sname string) (nportraits int))
+  (declare (connected raptor-picker (portrait-downloaded string int)))
+  (incf (current (loading-screen raptor-picker) 'progress-portraits)))
+
 ;;; Image downloaded
 
 (define-signal (raptor-picker image-downloaded) (string)) ;; sname
+
+(define-slot (raptor-picker got-image-downloaded)
+             ((sname string) (nimages int))
+  (declare (connected raptor-picker (image-downloaded string int)))
+  (incf (current (loading-screen raptor-picker) 'progress-images)))
 
 ;;; Join all threads and complete synchronization
 
