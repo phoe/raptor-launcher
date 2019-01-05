@@ -49,12 +49,16 @@ This configuration value is expected to be defined for all types mentioned in ~
 (execute-protocol logger)
 
 (defmethod note ((logger (eql 't)) (type symbol) message &rest args)
-  (when *main-window*
-    (let* ((modules (loaded-modules *main-window*))
-           (loggers (remove-if-not (rcurry #'subclassp 'logger) modules
-                                   :key #'class-of)))
-      (mapc (lambda (x) (apply #'note x type message args)) loggers)
-      (values))))
+  (cond (*main-window*
+         (let* ((modules (loaded-modules *main-window*))
+                (loggers (remove-if-not (rcurry #'subclassp 'logger) modules
+                                        :key #'class-of)))
+           (cond
+             (loggers
+              (mapc (lambda (x) (apply #'note x type message args)) loggers))
+             (t (apply #'format t message args) (terpri)))))
+        (t (apply #'format t message args) (terpri)))
+  (values))
 
 (defmethod note ((logger (eql 'nil)) (type symbol) message &rest args)
   (list type (apply #'format nil message args)))

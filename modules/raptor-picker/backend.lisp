@@ -9,7 +9,10 @@
 ;;; TODO specify somewhere that all workers must return non-NIL if they were
 ;;; successful. Somewhere better than this comment, that is.
 
-;;; Fetch accounts from available config widgets TODO move to utils of some sort
+;;; Fetch accounts from available config widgets
+;;; TODO move to utils of some sort
+;;; TODO move to config protocol
+;;; TODO generify?, there is more than #'accounts to be called
 
 (defvar *no-configs*
   "No configuration modules found to fetch account information from.")
@@ -99,18 +102,17 @@
                                  last-login account cookie-jar)
                  for name = (format nil "RL furre fetcher: ~A" sname)
                  do (push-queue (make-thread fn :name name) queue))))
-    (handler-case
-        (multiple-value-bind (account snames last-logins)
-            (cl-furcadia/ws:fetch-account cookie-jar)
-          (with-lock-held ((lock picker))
-            (setf (gethash email (emails-accounts picker)) account))
-          (note t :debug "Fetching account ~A succeeded." email)
-          (spawn picker account snames last-logins cookie-jar)
-          (signal! picker (account-downloaded string int) email (length snames))
-          t)
-      (error (e)
-        (note t :error "Failed to fetch account ~A: ~A" email e)
-        (error e)))))
+    (handler-bind
+        ((error (lambda (e)
+                  (note t :error "Failed to fetch account ~A: ~A" email e))))
+      (multiple-value-bind (account snames last-logins)
+          (cl-furcadia/ws:fetch-account cookie-jar)
+        (with-lock-held ((lock picker))
+          (setf (gethash email (emails-accounts picker)) account))
+        (note t :debug "Fetching account ~A succeeded." email)
+        (spawn picker account snames last-logins cookie-jar)
+        (signal! picker (account-downloaded string int) email (length snames))
+        t))))
 
 (define-signal (raptor-picker account-downloaded)
                (string int)) ;; email nfurres

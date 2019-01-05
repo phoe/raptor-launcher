@@ -16,6 +16,8 @@
    #:closer-mop
    #:bordeaux-threads
    #:trivial-indent
+   #:petri
+   #:petri/threaded
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config

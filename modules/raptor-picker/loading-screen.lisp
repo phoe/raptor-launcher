@@ -80,7 +80,6 @@
   (q+:add-widget layout label 9001))
 
 (define-qt-constructor (loading-screen)
-  (q+:add-widget (slot-value (module loading-screen) 'layout) loading-screen)
   (loop for symbol in *progress-types*
         for widget = (funcall symbol loading-screen)
         do (q+:add-widget layout widget))

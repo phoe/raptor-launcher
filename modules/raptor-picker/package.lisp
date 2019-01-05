@@ -10,6 +10,8 @@
         #:trivial-indent
         #:lparallel.queue
         #:bordeaux-threads
+        #:petri
+        #:petri/threaded
         #:raptor-launcher/util
         #:raptor-launcher/protocol
         #:raptor-launcher/config
