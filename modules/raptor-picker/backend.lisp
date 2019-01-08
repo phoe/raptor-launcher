@@ -6,9 +6,6 @@
 (in-package :raptor-launcher/raptor-picker)
 (in-readtable :qtools)
 
-;;; TODO specify somewhere that all workers must return non-NIL if they were
-;;; successful. Somewhere better than this comment, that is.
-
 ;;; Fetch accounts from available config widgets
 ;;; TODO move to utils of some sort
 ;;; TODO move to config protocol

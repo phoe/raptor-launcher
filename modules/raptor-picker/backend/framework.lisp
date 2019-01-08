@@ -18,7 +18,7 @@
     ;; (furres-images -> #'dl-image -> images)
     (furres-costumes -> #'dl-costume -> costumes)
     (furres-portraits -> #'dl-portrait -> portraits)
-    ;; (furres-specitags -> #'dl-specitag -> specitags)
+    (furres-specitags -> #'dl-specitag -> specitags)
     ))
 
 (defun test-petri ()
@@ -182,4 +182,20 @@ furre ~A." cid costume-name sname))
           (when-let ((picker (raptor-picker)))
             (signal! picker (portrait-downloaded string int)
                      sname pid)))))))
-;; 234534
+
+;;; DL-SPECITAG
+
+(defun dl-specitag (input output)
+  (destructuring-bind (furre sid) (pop (gethash 'furres-specitags input))
+    (let ((sname (cl-furcadia:shortname furre)))
+      (with-log-on-error (e "Failed to fetch specitag ~A for furre ~A: ~A"
+                            sid sname e)
+        (note t :debug "Fetching specitag ~A for furre ~A." sid sname)
+        (let ((specitag (cl-furcadia/ws:fetch-specitag sid)))
+          (note t :debug "Successfully fetched specitag ~A for furre ~A."
+                sid sname)
+          (setf (cl-furcadia:furre specitag) furre)
+          (push specitag (gethash 'specitags output))
+          (when-let ((picker (raptor-picker)))
+            (signal! picker (specitag-downloaded string int)
+                     sname sid)))))))

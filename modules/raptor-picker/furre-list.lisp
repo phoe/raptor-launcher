@@ -6,9 +6,8 @@
 (in-package :raptor-launcher/raptor-picker)
 (in-readtable :qtools)
 
-(defvar *character-image-empty* "No Character Image
-150x400+
-\(click here to add)")
+(defvar *character-image-empty*
+  (format nil "No Character Image~%150x400+~%\(click here to add)"))
 
 (define-subwidget (raptor-picker image)
     (q+:make-qpushbutton *character-image-empty*)

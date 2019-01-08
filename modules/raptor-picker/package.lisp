@@ -15,7 +15,8 @@
         #:raptor-launcher/util
         #:raptor-launcher/protocol
         #:raptor-launcher/config
-        #:raptor-launcher/base)
+        #:raptor-launcher/base
+        #:raptor-launcher/ui)
   (:import-from #:closer-mop #:subclassp)
   (:shadowing-import-from #:phoe-toolbox #:split)
   (:export #:raptor-picker))

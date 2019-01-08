@@ -21,10 +21,10 @@
    #:raptor-launcher.util
    #:raptor-launcher.protocol
    #:raptor-launcher.config
-   #:raptor-launcher.base)
+   #:raptor-launcher.base
+   #:raptor-launcher.ui)
   :components
   ((:file "package")
-   (:file "loading-screen")
    (:file "definition")
    (:file "furre-list")
    (:file "backend")

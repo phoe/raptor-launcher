@@ -3,15 +3,18 @@
 ;;;; © Michał "phoe" Herda 2017
 ;;;; loading-screen.lisp
 
-(in-package :raptor-launcher/raptor-picker)
+(in-package :raptor-launcher/ui)
 (in-readtable :qtools)
 
 ;;; Progress
 
 (define-widget progress (qwidget)
-  ((%label-text :accessor label-text
-                :initarg :label-text
-                :initform "")))
+  ((label-text :accessor label-text
+               :initarg :label-text
+               :initform "")))
+
+(defmethod (setf label-text) :after (new-value (progress progress))
+  (update progress))
 
 (defun make-progress (label-text)
   (make-instance 'progress :label-text label-text))
@@ -29,7 +32,7 @@
         (q+:range bar) (values 0 0)
         (q+:maximum-height bar) 10))
 
-(defmethod update ((progress progress))
+(defun update (progress)
   (with-slots-bound (progress progress)
     (let ((text (format nil "~A: ~D/~D" (label-text progress)
                         (q+:value bar) (q+:maximum bar))))
@@ -38,9 +41,38 @@
 (defmethod reset ((progress progress))
   (with-slots-bound (progress progress)
     (q+:reset bar)
-    (setf (q+:value bar) 0
+    (setf (q+:minimum bar) 0
+          (q+:value bar) 0
           (q+:maximum bar) 0)
-    (update progress)))
+    (update progress)
+    nil))
+
+(defun progress-maximum (progress)
+  (with-slots-bound (progress progress)
+    (q+:maximum bar)))
+
+(defun (setf progress-maximum) (new-value progress)
+  (with-slots-bound (progress progress)
+    (prog1 (setf (q+:maximum bar) new-value)
+      (update progress))))
+
+(defun progress-minimum (progress)
+  (with-slots-bound (progress progress)
+    (q+:minimum bar)))
+
+(defun (setf progress-minimum) (new-value progress)
+  (with-slots-bound (progress progress)
+    (prog1 (setf (q+:minimum bar) new-value)
+      (update progress))))
+
+(defun progress-current (progress)
+  (with-slots-bound (progress progress)
+    (q+:value bar)))
+
+(defun (setf progress-current) (new-value progress)
+  (with-slots-bound (progress progress)
+    (prog1 (setf (q+:value bar) new-value)
+      (update progress))))
 
 ;;; Loading screen
 
@@ -61,10 +93,7 @@
     `(define-widget ,name (,qt-class ,@direct-superclasses)
        (,@direct-slots ,@bars) ,@options)))
 
-(define-indentation define-loading-screen (4 4 &rest 2))
-
-(define-loading-screen loading-screen (qwidget)
-  ((%module :accessor module :initarg :module))
+(define-loading-screen loading-screen (qwidget) ()
   ((progress-logins "Accounts logged in")
    (progress-accounts "Accounts downloaded")
    (progress-furres "Furres downloaded")
@@ -79,11 +108,13 @@
 (define-subwidget (loading-screen label) (q+:make-qlabel)
   (q+:add-widget layout label 9001))
 
-(define-qt-constructor (loading-screen)
-  (loop for symbol in *progress-types*
-        for widget = (funcall symbol loading-screen)
-        do (q+:add-widget layout widget))
-  (reset loading-screen))
+(defmethod initialize-instance :after
+    ((loading-screen loading-screen) &key &allow-other-keys)
+  (with-slots-bound (loading-screen loading-screen)
+    (loop for symbol in *progress-types*
+          for widget = (funcall symbol loading-screen)
+          do (q+:add-widget layout widget))
+    (reset loading-screen)))
 
 (defmethod reset ((loading-screen loading-screen))
   (with-slots-bound (loading-screen loading-screen)
@@ -94,38 +125,29 @@
 (defmethod maximum ((screen loading-screen) progress-type)
   (check-type progress-type progress-type)
   (let ((progress (funcall progress-type screen)))
-    (with-slots-bound (progress progress)
-      (q+:maximum bar))))
+    (progress-maximum progress)))
 
 (defmethod (setf maximum) (new-value (screen loading-screen) progress-type)
   (check-type progress-type progress-type)
   (let ((progress (funcall progress-type screen)))
-    (with-slots-bound (progress progress)
-      (prog1 (setf (q+:maximum bar) new-value)
-        (update progress)))))
+    (setf (progress-maximum progress) new-value)))
 
 (defmethod minimum ((screen loading-screen) progress-type)
   (check-type progress-type progress-type)
   (let ((progress (funcall progress-type screen)))
-    (with-slots-bound (progress progress)
-      (q+:minimum bar))))
+    (progress-minimum progress)))
 
 (defmethod (setf minimum) (new-value (screen loading-screen) progress-type)
   (check-type progress-type progress-type)
   (let ((progress (funcall progress-type screen)))
-    (with-slots-bound (progress progress)
-      (prog1 (setf (q+:minimum bar) new-value)
-        (update progress)))))
+    (setf (progress-minimum progress) new-value)))
 
 (defmethod current ((screen loading-screen) progress-type)
   (check-type progress-type progress-type)
   (let ((progress (funcall progress-type screen)))
-    (with-slots-bound (progress progress)
-      (q+:value bar))))
+    (progress-current progress)))
 
 (defmethod (setf current) (new-value (screen loading-screen) progress-type)
   (check-type progress-type progress-type)
   (let ((progress (funcall progress-type screen)))
-    (with-slots-bound (progress progress)
-      (prog1 (setf (q+:value bar) new-value)
-        (update progress)))))
+    (setf (progress-current progress) new-value)))
