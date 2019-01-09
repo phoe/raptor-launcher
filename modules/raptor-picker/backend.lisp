@@ -217,9 +217,19 @@
   (declare (connected raptor-picker (portrait-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-portraits)))
 
+;;; Image list downloaded
+
+(define-signal (raptor-picker image-list-downloaded)
+               (string int)) ;; sname nimages
+
+(define-slot (raptor-picker got-image-list-downloaded)
+             ((sname string) (nimages int))
+  (declare (connected raptor-picker (image-list-downloaded string int)))
+  (incf (maximum (loading-screen raptor-picker) 'progress-images) nimages))
+
 ;;; Image downloaded
 
-(define-signal (raptor-picker image-downloaded) (string)) ;; sname
+(define-signal (raptor-picker image-downloaded) (string int)) ;; sname id
 
 (define-slot (raptor-picker got-image-downloaded)
              ((sname string) (nimages int))

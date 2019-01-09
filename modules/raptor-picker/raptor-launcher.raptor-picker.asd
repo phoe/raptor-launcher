@@ -27,6 +27,7 @@
   ((:file "package")
    (:file "definition")
    (:file "furre-list")
+   (:file "petri")
    (:file "backend")
    (:file "config-widget")
    (:file "module")))

@@ -15,11 +15,11 @@
                      (furres-costumes *)
                      (furres-portraits *)
                      (furres-specitags *))
-    ;; (furres-images -> #'dl-image -> images)
     (furres-costumes -> #'dl-costume -> costumes)
     (furres-portraits -> #'dl-portrait -> portraits)
     (furres-specitags -> #'dl-specitag -> specitags)
-    ))
+    (furres-images -> #'dl-image-list -> (image-metadata *))
+    (image-metadata -> #'dl-image -> images)))
 
 (defun test-petri ()
   (let ((petri (make-picker-petri-net)))
@@ -199,3 +199,42 @@ furre ~A." cid costume-name sname))
           (when-let ((picker (raptor-picker)))
             (signal! picker (specitag-downloaded string int)
                      sname sid)))))))
+
+;;; DL-IMAGE-LIST
+
+(defun dl-image-list (input output)
+  (let* ((furre (pop (gethash 'furres-images input)))
+         (sname (cl-furcadia:shortname furre)))
+    (with-log-on-error (e "Failed to fetch image metadata for furre ~A: ~A"
+                          sname e)
+      (note t :debug "Fetching image metadata for furre ~A." sname)
+      (let ((images (cl-furcadia/ws:fetch-image-list sname)))
+        (note t :debug
+              "Successfully fetched metadata for ~D images for furre ~A."
+              (length images) sname)
+        (dolist (image images)
+          (setf (cl-furcadia:furre image) furre)
+          (push image (gethash 'image-metadata output)))
+        (when-let ((picker (raptor-picker)))
+          (signal! picker (image-list-downloaded string int)
+                   sname (length images)))))))
+
+;;; DL-IMAGE
+
+(defun dl-image (input output)
+  (let* ((image (pop (gethash 'image-metadata input)))
+         (sname (cl-furcadia:shortname (cl-furcadia:furre image))))
+    (with-log-on-error (e "Failed to fetch image for furre ~A: ~A"
+                          sname e)
+      (note t :debug "Fetching image for furre ~A." sname)
+      (let* ((stream (drakma:http-request (cl-furcadia:url image)
+                                          :want-stream t :force-binary t))
+             (png (pngload:load-stream (flex:flexi-stream-stream stream))))
+        (note t :debug
+              "Successfully fetched image ~D for furre ~A."
+              (cl-furcadia:iid image) sname)
+        (setf (cl-furcadia:data image) png)
+        (push image (gethash 'images output))
+        (when-let ((picker (raptor-picker)))
+          (signal! picker (image-downloaded string int)
+                   sname (cl-furcadia:iid image)))))))
