@@ -221,6 +221,7 @@ furre ~A." cid costume-name sname))
 
 ;;; DL-IMAGE
 
+;; TODO implement image caching somewhere based on sname, iid, and timestamp
 (defun dl-image (input output)
   (let* ((image (pop (gethash 'image-metadata input)))
          (sname (cl-furcadia:shortname (cl-furcadia:furre image))))
