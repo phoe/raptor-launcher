@@ -44,11 +44,14 @@
             (maximum loading-screen 'progress-accounts) naccounts)))
   (worker-sync raptor-picker))
 
-(defun worker-sync (picker)
+(defun get-accounts ()
   (let* ((modules (loaded-modules *main-window*))
          (configs (remove-if-not (rcurry #'subclassp 'config) modules
-                                 :key #'class-of))
-         (accounts (configs-accounts configs))
+                                 :key #'class-of)))
+    (configs-accounts configs)))
+
+(defun worker-sync (picker)
+  (let* ((accounts (get-accounts))
          (queue (queue picker)))
     (loop for (email password) in accounts
           for fn = (curry #'worker-login picker email password)

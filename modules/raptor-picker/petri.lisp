@@ -11,10 +11,11 @@
     (credentials -> #'login -> cookie-jars
                  -> #'dl-account -> accounts (accounts-furres *))
     (accounts-furres -> #'dl-furre
-                     -> furres furres-images
+                     -> furres
                      (furres-costumes *)
                      (furres-portraits *)
-                     (furres-specitags *))
+                     (furres-specitags *)
+                     furres-images)
     (furres-costumes -> #'dl-costume -> costumes)
     (furres-portraits -> #'dl-portrait -> portraits)
     (furres-specitags -> #'dl-specitag -> specitags)
