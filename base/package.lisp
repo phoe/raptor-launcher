@@ -18,4 +18,6 @@
    #:make-text-qtoolbutton
    #:with-qimage-from-vector
    ;; main window class
-   #:raptor-launcher))
+   #:raptor-launcher
+   ;; signal names
+   #:selected #:pressed))

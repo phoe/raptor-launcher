@@ -80,7 +80,16 @@
     (when (find type allowed-levels :key #'car)
       (let ((html-message (htmlize-message type now formatted-message)))
         (signal! logger (new-log string) html-message))))
+  (with-slots-bound (logger raptor-logger)
+    (when (find type (member :warn *log-levels* :key #'car) :key #'car)
+      (setf (q+:style-sheet selector) "QPushButton { font-weight: bold; }"
+            (q+:text selector) "Logs (!)")))
   (values))
+
+(define-slot (raptor-logger clear-button) ()
+  (declare (connected selector (pressed)))
+  (setf (q+:style-sheet selector) "QPushButton { font-weight: normal; }"
+        (q+:text selector) "Logs"))
 
 (defmethod logs ((logger raptor-logger) &key (severity :trace))
   (let* ((severities (mapcar #'car *log-levels*))
