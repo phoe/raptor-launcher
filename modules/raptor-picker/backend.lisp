@@ -49,11 +49,13 @@
          (accounts (get-accounts)))
     (dolist (account accounts)
       (bag-insert (bag-of petri-net 'credentials) account))
-    (make-thread (curry #'execute-sync raptor-picker petri-net)
+    (setf (petri-net-of raptor-picker) petri-net)
+    (make-thread (curry #'execute-sync raptor-picker)
                  :name "Raptor Picker Petri net thread")))
 
-(defun execute-sync (picker petri-net)
-  (let ((errorp (nth-value 1 (funcall petri-net :ignore-errors t))))
+(defun execute-sync (picker)
+  (let* ((petri-net (petri-net-of picker))
+         (errorp (nth-value 1 (funcall petri-net :ignore-errors t))))
     (if errorp
         (note t :warn "Synchronization complete, but errors have occurred.")
         (note t :info "Synchronization complete."))

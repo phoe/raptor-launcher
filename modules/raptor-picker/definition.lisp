@@ -9,16 +9,8 @@
 (define-raptor-module raptor-picker (picker)
   (:main-window qwidget qhboxlayout
                 (%loading-screen :accessor loading-screen)
-                (%queue :accessor queue
-                        :initform (make-queue))
-                (%queue-joiner :accessor queue-joiner
-                               :initform nil)
-                (%lock :accessor lock
-                       :initform (make-lock))
-                (%emails-cookie-jars :accessor emails-cookie-jars
-                                     :initform (make-hash-table :test #'equal))
-                (%emails-accounts :accessor emails-accounts
-                                  :initform (make-hash-table :test #'equal)))
+                (%petri-net :accessor petri-net-of
+                  :initform nil))
   (:selector "Launcher")
   (:priority 100)
   (:button play-button "Play!")
