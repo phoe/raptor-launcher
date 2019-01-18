@@ -6,4 +6,9 @@
 (defpackage :raptor-launcher/ui
   (:use #:cl+qt
         #:alexandria)
-  (:export #:loading-screen #:reset #:maximum #:minimum #:current))
+  (:export
+   ;; Symbol exports
+   #:loading-screen #:reset #:maximum #:minimum #:current
+   ;; PROGRESS-TYPE
+   #:progress-logins #:progress-accounts #:progress-furres #:progress-portraits
+   #:progress-specitags #:progress-costumes #:progress-images))

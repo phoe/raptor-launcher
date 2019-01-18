@@ -17,12 +17,15 @@
 (defvar *multiple-configs*
   "Multiple configuration modules found: ~{~A~^, }. Using the first one.")
 
-(defun configs-accounts (configs)
-  (case (length configs)
-    (0 (note t :severe *no-configs*) '())
-    (1 (accounts (first configs)))
-    (t (note t :warn *multiple-configs* (mapcar #'class-of configs))
-     (accounts (first configs)))))
+(defun get-accounts (&optional (main-window *main-window*))
+  (let* ((modules (loaded-modules main-window))
+         (configs (remove-if-not (rcurry #'subclassp 'config) modules
+                                 :key #'class-of)))
+    (case (length configs)
+      (0 (note t :severe *no-configs*) nil)
+      (1 (accounts (first configs)))
+      (t (note t :warn *multiple-configs* (mapcar #'class-of configs))
+       (accounts (first configs))))))
 
 ;;; Sync
 
@@ -42,47 +45,27 @@
     (let* ((naccounts (length (hash-table-keys (config :config :accounts)))))
       (setf (maximum loading-screen 'progress-logins) naccounts
             (maximum loading-screen 'progress-accounts) naccounts)))
-  (worker-sync raptor-picker))
+  (let* ((petri-net (make-picker-petri-net))
+         (accounts (get-accounts)))
+    (dolist (account accounts)
+      (bag-insert (bag-of petri-net 'credentials) account))
+    (make-thread (curry #'execute-sync raptor-picker petri-net)
+                 :name "Raptor Picker Petri net thread")))
 
-(defun get-accounts ()
-  (let* ((modules (loaded-modules *main-window*))
-         (configs (remove-if-not (rcurry #'subclassp 'config) modules
-                                 :key #'class-of)))
-    (configs-accounts configs)))
-
-(defun worker-sync (picker)
-  (let* ((accounts (get-accounts))
-         (queue (queue picker)))
-    (loop for (email password) in accounts
-          for fn = (curry #'worker-login picker email password)
-          for name = (format nil "RL login thread: ~A" email)
-          for thread = (make-thread fn :name name)
-          do (push-queue thread queue))
-    (setf (queue-joiner picker)
-          (make-thread (curry #'join-all-queued picker)
-                       :name "RL joiner"))))
+(defun execute-sync (picker petri-net)
+  (let ((errorp (nth-value 1 (funcall petri-net :ignore-errors t))))
+    (if errorp
+        (note t :warn "Synchronization complete, but errors have occurred.")
+        (note t :info "Synchronization complete."))
+    (apply #'note t :info "Downloaded ~D accounts, ~D furres, ~D costumes, ~D ~
+portraits, ~D specitags, and ~D images."
+           (mapcar #'bag-count
+                   (mapcar (curry #'bag-of petri-net)
+                           '(accounts furres costumes
+                             portraits specitags images))))
+    (signal! picker (sync-complete bool) (not errorp))))
 
 ;;; Login
-
-(defun worker-login (picker email password)
-  (note t :debug "Attempting to log in as ~A." email)
-  (handler-case
-      (let ((cookie-jar (cl-furcadia/ws:login email password)))
-        (unless cookie-jar
-          (error "Invalid credentials for email ~A." email))
-        (with-lock-held ((lock picker))
-          (setf (gethash email (emails-cookie-jars picker)) cookie-jar))
-        (note t :debug "Login as ~A succeeded." email)
-        (let* ((queue (queue picker))
-               (fn (curry #'worker-account picker cookie-jar email))
-               (name (format nil "RL account thread: ~A" email))
-               (thread (make-thread fn :name name)))
-          (push-queue thread queue))
-        (signal! picker (login-completed string) email)
-        t)
-    (error (e)
-      (note t :error "Login as ~A failed: ~A" email e)
-      (signal e))))
 
 (define-signal (raptor-picker login-completed) (string)) ;; email
 
@@ -91,28 +74,6 @@
   (incf (current (loading-screen raptor-picker) 'progress-logins)))
 
 ;;; Account downloaded
-
-(defun worker-account (picker cookie-jar email)
-  (note t :debug "Fetching account ~A." email)
-  (flet ((spawn (picker account snames last-logins cookie-jar)
-           (loop with queue = (queue picker)
-                 for sname in snames
-                 for last-login in last-logins
-                 for fn = (curry #'worker-furre picker sname
-                                 last-login account cookie-jar)
-                 for name = (format nil "RL furre fetcher: ~A" sname)
-                 do (push-queue (make-thread fn :name name) queue))))
-    (handler-bind
-        ((error (lambda (e)
-                  (note t :error "Failed to fetch account ~A: ~A" email e))))
-      (multiple-value-bind (account snames last-logins)
-          (cl-furcadia/ws:fetch-account cookie-jar)
-        (with-lock-held ((lock picker))
-          (setf (gethash email (emails-accounts picker)) account))
-        (note t :debug "Fetching account ~A succeeded." email)
-        (spawn picker account snames last-logins cookie-jar)
-        (signal! picker (account-downloaded string int) email (length snames))
-        t))))
 
 (define-signal (raptor-picker account-downloaded)
                (string int)) ;; email nfurres
@@ -124,42 +85,6 @@
   (incf (maximum (loading-screen raptor-picker) 'progress-furres) nfurres))
 
 ;;; Furre downloaded
-
-(defun worker-furre (picker sname last-login account cookie-jar)
-  (note t :debug "Fetching furre ~A." sname)
-  (flet ((spawn (picker furre cookie-jar)
-           (let ((queue (queue picker))
-                 (costumes (remove-if #'listp (cl-furcadia:costumes furre)))
-                 (lists (delete-if-not #'listp (cl-furcadia:costumes furre))))
-             (setf (cl-furcadia:costumes furre) costumes)
-             (loop for list in lists
-                   for (n cid cname) = list
-                   for fn = (curry #'worker-costume picker furre
-                                   cid cookie-jar)
-                   for name = (format nil "RL costume fetcher: ~A, ~A (~A)"
-                                      sname cname cid)
-                   do (push-queue (make-thread fn :name name) queue)))))
-    (handler-case
-        (multiple-value-bind (furre unknowns)
-            (cl-furcadia/ws:fetch-furre sname cookie-jar)
-          (when unknowns
-            (note t :warn "Unknown keywords in furre response (bug?): ~A"
-                  unknowns))
-          (setf (cl-furcadia:last-login furre) last-login)
-          (with-lock-held ((lock picker))
-            (push furre (cl-furcadia:furres account)))
-          (note t :debug "Fetching furre ~A succeeded." sname)
-          (let ((nspecitags (length (cl-furcadia:specitags furre)))
-                (nportraits (length (cl-furcadia:portraits furre)))
-                (ncostumes (length (cl-furcadia:costumes furre))))
-            (spawn picker furre cookie-jar)
-            (signal! picker (furre-downloaded string int int int)
-                     sname nspecitags nportraits ncostumes)
-            t))
-      (error (e)
-        (note t :error "Failed to fetch character ~A: ~A" sname e)
-        (error e) ;; TODO remove these from release versions
-        ))))
 
 (define-signal (raptor-picker furre-downloaded)
                (string int int int)) ;; sname nspecitags nportraits ncostumes
@@ -173,27 +98,6 @@
   (incf (maximum (loading-screen raptor-picker) 'progress-costumes) ncostumes))
 
 ;;; Costume downloaded
-
-(defun worker-costume (picker furre cid cookie-jar)
-  (let ((sname (cl-furcadia:shortname furre)))
-    (note t :debug "Fetching costume ~A for furre ~A." cid sname)
-    (handler-case
-        (multiple-value-bind (costume unknowns)
-            (cl-furcadia/ws:fetch-costume cid cookie-jar)
-          (when unknowns
-            (note t :warn "Unknown keywords in costume response (bug?): ~A"
-                  unknowns))
-          (setf (cl-furcadia:furre costume) furre)
-          (with-lock-held ((lock picker))
-            (push costume (cl-furcadia:costumes furre)))
-          (note t :debug "Fetching costume ~A for furre ~A succeeded."
-                cid sname)
-          (signal! picker (costume-downloaded string int) sname cid)
-          t)
-      (error (e)
-        (note t :error "Failed to fetch costume ~A for furre ~A: ~A"
-              cid sname e)
-        (error e)))))
 
 (define-signal (raptor-picker costume-downloaded) (string int)) ;; sname id
 
@@ -240,33 +144,6 @@
   (incf (current (loading-screen raptor-picker) 'progress-images)))
 
 ;;; Join all threads and complete synchronization
-
-(defun join-all-queued (picker)
-  (let ((errors 0)
-        (queue (queue picker)))
-    (loop for thread = (try-pop-queue queue)
-          while thread
-          do (when (thread-alive-p thread)
-               (note t :trace "Waiting for task ~S to complete."
-                     (thread-name thread)))
-             (handler-case
-                 (cond ((join-thread thread)
-                        (note t :trace "Task ~S completed successfully."
-                              (thread-name thread)))
-                       (t (incf errors)
-                          (note t :trace "Task ~S completed unsuccessfully."
-                                (thread-name thread))))
-               (error (e)
-                 (incf errors)
-                 (note t :warn "Task ~S completed with an error: ~A."
-                       (thread-name thread) e))))
-    (case errors
-      (0
-       (note t :info "Synchronization complete.")
-       (signal! picker (sync-complete bool) t))
-      (t
-       (note t :warn "Synchronization complete, but errors have occurred.")
-       (signal! picker (sync-complete bool) nil)))))
 
 (define-signal (raptor-picker sync-complete) (bool)) ;; successp
 

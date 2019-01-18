@@ -6,28 +6,6 @@
 (in-package :raptor-launcher/raptor-picker)
 (in-readtable :qtools)
 
-(defun make-picker-petri-net ()
-  (threaded-petri-net ()
-    (credentials -> #'login -> cookie-jars
-                 -> #'dl-account -> accounts (accounts-furres *))
-    (accounts-furres -> #'dl-furre
-                     -> furres
-                     (furres-costumes *)
-                     (furres-portraits *)
-                     (furres-specitags *)
-                     furres-images)
-    (furres-costumes -> #'dl-costume -> costumes)
-    (furres-portraits -> #'dl-portrait -> portraits)
-    (furres-specitags -> #'dl-specitag -> specitags)
-    (furres-images -> #'dl-image-list -> (image-metadata *))
-    (image-metadata -> #'dl-image -> images)))
-
-(defun test-petri ()
-  (let ((petri (make-picker-petri-net)))
-    (bag-insert (bag-of petri 'credentials)
-                `(,*test-email* ,*test-password*))
-    petri))
-
 ;;; Utility
 
 (defun raptor-picker ()
@@ -45,8 +23,32 @@
        ((error (lambda (,condition-var) (note t :error ,message ,@args))))
      ,@body))
 
+;;; Petri net definition
+
+(defun make-picker-petri-net ()
+  (threaded-petri-net ()
+    (credentials -> #'login -> cookie-jars
+                 -> #'dl-account -> accounts (accounts-furres *))
+    (accounts-furres -> #'dl-furre
+                     -> furres
+                     (furres-costumes *)
+                     (furres-portraits *)
+                     (furres-specitags *)
+                     furres-images)
+    (furres-costumes -> #'dl-costume -> costumes)
+    (furres-portraits -> #'dl-portrait -> portraits)
+    (furres-specitags -> #'dl-specitag -> specitags)
+    (furres-images -> #'dl-image-list -> (image-metadata *))
+    (image-metadata -> #'dl-image -> images)))
+
 (defvar *test-email*)
 (defvar *test-password*)
+
+(defun test-petri ()
+  (let ((petri (make-picker-petri-net)))
+    (bag-insert (bag-of petri 'credentials)
+                `(,*test-email* ,*test-password*))
+    petri))
 
 ;;; LOGIN
 
@@ -122,7 +124,9 @@ keywords were encountered (possible bug?): ~A" unknowns)
                   (nportraits (length (cl-furcadia:portraits furre)))
                   (ncostumes (length (cl-furcadia:costumes furre))))
               (signal! picker (furre-downloaded string int int int)
-                       sname nspecitags nportraits ncostumes))))))))
+                       sname nspecitags nportraits ncostumes)
+              (signal! picker (costume-downloaded string int)
+                       sname 0))))))))
 
 ;; (defun test-dl-furre ()
 ;;   (let* ((input (plist-hash-table (test-dl-account)))

@@ -298,7 +298,7 @@
           then (random-elt (remove name author-names :test #'string=))
         collect (make-instance
                  'cl-furcadia/clos:standard-post
-                 :author-shortname name
+                 :shortname name
                  :contents (lorem-ipsum:paragraph :prologue nil))))
 
 (defun make-posts-from-file (&optional (filename (homepath "posts.txt")))
@@ -307,7 +307,7 @@
           until (eq line stream)
           collect (make-instance
                    'cl-furcadia/clos:standard-post
-                   :author-shortname
+                   :shortname
                    (if (eql #\J (aref line 0)) "jacula" "xiaohui")
                    :contents line))))
 
@@ -316,7 +316,7 @@
   (with-output-to-string (*standard-output*)
     (loop
       for post in posts
-      for name = (cl-furcadia/protocol:author-shortname post)
+      for name = (cl-furcadia/protocol:shortname post)
       for date = (cl-furcadia/protocol:date post)
       for contents = (cl-furcadia/protocol:contents post)
       do (format t "<p style=\"color: ~A;\"~A>"
