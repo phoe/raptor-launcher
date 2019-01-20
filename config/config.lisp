@@ -11,6 +11,9 @@
   (merge-pathnames ".raptor-launcher/" (user-homedir-pathname))
   "The home directory for Raptor Launcher.")
 
+(defparameter *digo-path* (merge-pathnames "config/digos.lisp" *home-path*)
+  "The file for storing downloaded digo data.")
+
 (defparameter *config-path* (merge-pathnames "config/config.lisp" *home-path*)
   "The file for storing Raptor Launcher configuration.")
 

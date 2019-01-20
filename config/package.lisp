@@ -10,6 +10,7 @@
         #:raptor-launcher/protocol)
   (:export
    #:*home-path*
+   #:*digo-path*
    #:*config-path*
    #:*dl-path*
    #:config

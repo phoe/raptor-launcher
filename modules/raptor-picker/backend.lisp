@@ -30,18 +30,18 @@
 (defmethod sync ((picker raptor-picker))
   (signal! picker (sync-started)))
 
-(defmacro define-picker-step
-    ((picker signal-name) (&rest slot-arguments) &body body)
-  `(progn
-     (define-signal (,picker ,signal-name) ,(mapcar #'second slot-arguments))
-     (define-slot (,picker ,(symbolicate "GOT-" signal-name)) ,slot-arguments
-       (declare (connected ,picker
-                           (,signal-name ,@(mapcar #'second slot-arguments))))
-       ,@body)))
+(defmacro define-step
+    ((object signal-name) (&rest typed-bindings) &body body)
+  (let ((types (mapcar #'second typed-bindings)))
+    `(progn
+       (define-signal (,object ,signal-name) ,types)
+       (define-slot (,object ,(symbolicate "GOT-" signal-name)) ,typed-bindings
+         (declare (connected ,object (,signal-name ,@types)))
+         ,@body))))
 
 ;;; Steps
 
-(define-picker-step (raptor-picker sync-started) ()
+(define-step (raptor-picker sync-started) ()
   (note t :info "Synchronization started.")
   (let ((loading-screen (loading-screen raptor-picker)))
     (q+:hide furre-list)
@@ -63,51 +63,42 @@
          (signal! raptor-picker (sync-complete bool) (not errorp))))
      :name "Raptor Picker Petri net thread")))
 
-(define-picker-step (raptor-picker login-completed) ((email string))
-  (declare (connected raptor-picker (login-completed string)))
+(define-step (raptor-picker login-completed) ((email string))
   (incf (current (loading-screen raptor-picker) 'progress-logins)))
 
-(define-picker-step (raptor-picker account-downloaded)
+(define-step (raptor-picker account-downloaded)
     ((email string) (nfurres int))
-  (declare (connected raptor-picker (account-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-accounts))
   (incf (maximum (loading-screen raptor-picker) 'progress-furres) nfurres))
 
-(define-picker-step (raptor-picker furre-downloaded)
+(define-step (raptor-picker furre-downloaded)
     ((sname string) (nspecitags int) (nportraits int) (ncostumes int))
-  (declare (connected raptor-picker (furre-downloaded string int int int)))
   (incf (current (loading-screen raptor-picker) 'progress-furres))
   (incf (current (loading-screen raptor-picker) 'progress-costumes))
   (incf (maximum (loading-screen raptor-picker) 'progress-portraits) nportraits)
   (incf (maximum (loading-screen raptor-picker) 'progress-costumes) ncostumes))
 
-(define-picker-step (raptor-picker costume-downloaded)
+(define-step (raptor-picker costume-downloaded)
     ((sname string) (ncostumes int))
-  (declare (connected raptor-picker (costume-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-costumes)))
 
-(define-picker-step (raptor-picker specitag-downloaded)
+(define-step (raptor-picker specitag-downloaded)
     ((sname string) (nspecitags int))
-  (declare (connected raptor-picker (specitag-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-specitags)))
 
-(define-picker-step (raptor-picker portrait-downloaded)
+(define-step (raptor-picker portrait-downloaded)
     ((sname string) (nportraits int))
-  (declare (connected raptor-picker (portrait-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-portraits)))
 
-(define-picker-step (raptor-picker image-list-downloaded)
+(define-step (raptor-picker image-list-downloaded)
     ((sname string) (nimages int))
-  (declare (connected raptor-picker (image-list-downloaded string int)))
   (incf (maximum (loading-screen raptor-picker) 'progress-images) nimages))
 
-(define-picker-step (raptor-picker image-downloaded)
+(define-step (raptor-picker image-downloaded)
     ((sname string) (nimages int))
-  (declare (connected raptor-picker (image-downloaded string int)))
   (incf (current (loading-screen raptor-picker) 'progress-images)))
 
-(define-picker-step (raptor-picker sync-complete) ((successp bool))
-  (declare (connected raptor-picker (sync-complete bool)))
+(define-step (raptor-picker sync-complete) ((successp bool))
   (let ((petri-net (petri-net-of raptor-picker)))
     (if successp
         (note t :info "Synchronization complete.")

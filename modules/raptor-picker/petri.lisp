@@ -26,20 +26,27 @@
 ;;; Petri net definition
 
 (defun make-picker-petri-net ()
-  (threaded-petri-net ()
-    (credentials -> #'login -> cookie-jars
-                 -> #'dl-account -> accounts (accounts-furres *))
-    (accounts-furres -> #'dl-furre
-                     -> furres
-                     (furres-costumes *)
-                     (furres-portraits *)
-                     (furres-specitags *)
-                     furres-images)
-    (furres-costumes -> #'dl-costume -> costumes)
-    (furres-portraits -> #'dl-portrait -> portraits)
-    (furres-specitags -> #'dl-specitag -> specitags)
-    (furres-images -> #'dl-image-list -> (image-metadata *))
-    (image-metadata -> #'dl-image -> images)))
+  (let ((petri-net
+            (threaded-petri-net ()
+              (update-digo-data-p -> #'dl-digo-data -> new-digo-data-p)
+              (new-digo-data-p old-digo-data-p -> #'save-digo-data)
+              (credentials -> #'login -> cookie-jars
+                           -> #'dl-account -> accounts (accounts-furres *))
+              (accounts-furres (old-digo-data-p !)
+                               -> #'dl-furre
+                               -> furres
+                               (furres-costumes *)
+                               (furres-portraits *)
+                               (furres-specitags *)
+                               furres-images)
+              (furres-costumes -> #'dl-costume -> costumes)
+              (furres-portraits -> #'dl-portrait -> portraits)
+              (furres-specitags -> #'dl-specitag -> specitags)
+              (furres-images -> #'dl-image-list -> (image-metadata *))
+              (image-metadata -> #'dl-image -> images))))
+    (bag-insert (bag-of petri-net 'update-digo-data-p) t)
+    (bag-insert (bag-of petri-net 'old-digo-data-p) t)
+    petri-net))
 
 (defvar *test-email*)
 (defvar *test-password*)
@@ -65,12 +72,6 @@
         (when-let ((picker (raptor-picker)))
           (signal! picker (login-completed string) email))))))
 
-;; (defun test-login ()
-;;   (let ((output (make-hash-table)))
-;;     (login (plist-hash-table `(credentials ((,*test-email* ,*test-password*))))
-;;            output)
-;;     (hash-table-plist output)))
-
 ;;; DL-ACCOUNT
 
 (defun dl-account (input output)
@@ -90,11 +91,6 @@
           (signal! picker (account-downloaded string int)
                    email (length snames)))))))
 
-;; (defun test-dl-account ()
-;;   (let ((output (make-hash-table)))
-;;     (dl-account (plist-hash-table (test-login)) output)
-;;     (hash-table-plist output)))
-
 ;;; DL-FURRE
 
 (defun dl-furre (input output)
@@ -110,15 +106,24 @@
 keywords were encountered (possible bug?): ~A" unknowns)
               (note t :debug "Successfully fetched furre ~A." sname))
           (setf (cl-furcadia:last-login furre) last-login
-                (cl-furcadia:account furre) account)
+                (cl-furcadia:account furre) account
+                (cl-furcadia:digos furre)
+                (mapcar (rcurry #'gethash-or-die cl-furcadia:*digos*)
+                        (cl-furcadia:digos furre))
+                (cl-furcadia:lifers furre)
+                (mapcar (rcurry #'gethash-or-die cl-furcadia:*digos*)
+                        (cl-furcadia:lifers furre)))
           (push furre (gethash 'furres output))
           (push furre (gethash 'furres-images output))
-          (dolist (costume (cl-furcadia:costumes furre))
-            (push (list furre costume) (gethash 'furres-costumes output)))
-          (dolist (portrait (cl-furcadia:portraits furre))
-            (push (list furre portrait) (gethash 'furres-portraits output)))
-          (dolist (specitag (cl-furcadia:specitags furre))
-            (push (list furre specitag) (gethash 'furres-specitags output)))
+          (dotimes (i (length (cl-furcadia:costumes furre)))
+            (push (list furre (pop (cl-furcadia:costumes furre)))
+                  (gethash 'furres-costumes output)))
+          (dotimes (i (length (cl-furcadia:portraits furre)))
+            (push (list furre (pop (cl-furcadia:portraits furre)))
+                  (gethash 'furres-portraits output)))
+          (dotimes (i (length (cl-furcadia:specitags furre)))
+            (push (list furre (pop (cl-furcadia:specitags furre)))
+                  (gethash 'furres-specitags output)))
           (when-let ((picker (raptor-picker)))
             (let ((nspecitags (length (cl-furcadia:specitags furre)))
                   (nportraits (length (cl-furcadia:portraits furre)))
@@ -127,16 +132,6 @@ keywords were encountered (possible bug?): ~A" unknowns)
                        sname nspecitags nportraits ncostumes)
               (signal! picker (costume-downloaded string int)
                        sname 0))))))))
-
-;; (defun test-dl-furre ()
-;;   (let* ((input (plist-hash-table (test-dl-account)))
-;;          (accounts (gethash 'accounts-furres input)))
-;;     (loop for account in accounts
-;;           for new-input = (make-hash-table)
-;;           for new-output = (make-hash-table)
-;;           do (push account (gethash 'accounts-furres new-input))
-;;              (dl-furre new-input new-output)
-;;           append (gethash 'furres new-output))))
 
 ;;; DL-COSTUME
 
@@ -191,7 +186,8 @@ furre ~A." cid costume-name sname))
 ;;; DL-SPECITAG
 
 (defun dl-specitag (input output)
-  (destructuring-bind (furre sid) (pop (gethash 'furres-specitags input))
+  (destructuring-bind (furre (sid remappedp))
+      (pop (gethash 'furres-specitags input))
     (let ((sname (cl-furcadia:shortname furre)))
       (with-log-on-error (e "Failed to fetch specitag ~A for furre ~A: ~A"
                             sid sname e)
@@ -199,7 +195,8 @@ furre ~A." cid costume-name sname))
         (let ((specitag (cl-furcadia/ws:fetch-specitag sid)))
           (note t :debug "Successfully fetched specitag ~A for furre ~A."
                 sid sname)
-          (setf (cl-furcadia:furre specitag) furre)
+          (setf (cl-furcadia:furre specitag) furre
+                (cl-furcadia:remappedp specitag) remappedp)
           (push specitag (gethash 'specitags output))
           (when-let ((picker (raptor-picker)))
             (signal! picker (specitag-downloaded string int)
@@ -229,18 +226,81 @@ furre ~A." cid costume-name sname))
 ;; TODO implement image caching somewhere based on sname, iid, and timestamp
 (defun dl-image (input output)
   (let* ((image (pop (gethash 'image-metadata input)))
+         (iid (cl-furcadia:iid image))
+         (timestamp-string (princ-to-string (cl-furcadia:timestamp image)))
          (sname (cl-furcadia:shortname (cl-furcadia:furre image))))
-    (with-log-on-error (e "Failed to fetch image for furre ~A: ~A"
-                          sname e)
-      (note t :debug "Fetching image for furre ~A." sname)
-      (let* ((stream (drakma:http-request (cl-furcadia:url image)
-                                          :want-stream t :force-binary t))
-             (png (pngload:load-stream (flex:flexi-stream-stream stream))))
-        (note t :debug
-              "Successfully fetched image ~D for furre ~A."
-              (cl-furcadia:iid image) sname)
-        (setf (cl-furcadia:data image) png)
-        (push image (gethash 'images output))
-        (when-let ((picker (raptor-picker)))
-          (signal! picker (image-downloaded string int)
-                   sname (cl-furcadia:iid image)))))))
+    ;; TODO move images-dir to config.lisp
+    (let* ((images-dir (merge-pathnames "images/" *dl-path*))
+           (image-dir (merge-pathnames (uiop:strcat sname "/") images-dir))
+           (data-path (merge-pathnames (uiop:strcat timestamp-string ".png")
+                                       image-dir)))
+      (ensure-directories-exist image-dir)
+      (if (probe-file data-path)
+          (note t :debug "Image ~D for furre ~A found in cache." iid sname)
+          (with-log-on-error (e "Failed to fetch image ~D for furre ~A: ~A"
+                                iid sname e)
+            (note t :debug "Fetching image ~D for furre ~A." iid sname)
+            (let* ((stream (drakma:http-request (cl-furcadia:url image)
+                                                :want-stream t :force-binary t))
+                   (flexi-stream (flex:flexi-stream-stream stream))
+                   (png (pngload:load-stream flexi-stream :flatten t)))
+              (note t :debug
+                    "Successfully fetched image ~D for furre ~A."
+                    iid sname)
+              (setf (cl-furcadia:image-data image *dl-path*) png)))))
+    (push image (gethash 'images output))
+    (when-let ((picker (raptor-picker)))
+      (signal! picker (image-downloaded string int)
+               sname (cl-furcadia:iid image)))))
+
+;;; Load/save digo data
+
+(defun dl-digo-data (input output)
+  (declare (ignore input))
+  (with-log-on-error (e "Failed to update digo data: ~A" e)
+    (note t :debug "Updating digo data.")
+    (cl-furcadia:update-digo-data)
+    (note t :debug "Successfully updated digo data: ~D digos available."
+          (hash-table-count cl-furcadia:*digos*))
+    (push t (gethash 'new-digo-data-p output))))
+
+(defun save-digo-data (&optional input output)
+  (declare (ignore input output))
+  (with-log-on-error (e "Failed to save digo data to disk: ~A" e)
+    (note t :debug "Saving digo data to disk.")
+    (with-output-to-file (stream *digo-path* :if-exists :supersede)
+      (print-hash-table-readably cl-furcadia:*digos* stream))
+    (note t :debug "Successfully saved digo data to disk.")))
+
+(defun load-digo-data (&optional input output)
+  (declare (ignore input output))
+  (with-log-on-error (e "Failed to load digo data from disk: ~A" e)
+    (note t :debug "Loading digo data from disk.")
+    (with-input-from-file (stream *digo-path*)
+      (setf cl-furcadia:*digos* (read stream)))
+    (note t :debug "Successfully loaded digo data from disk.")))
+
+;;; Postprocessing
+
+(defun postprocess-picker-petri-net (petri-net)
+  (map nil
+       (lambda (furre)
+         (push furre (cl-furcadia:furres (cl-furcadia:account furre))))
+       (bag-contents (bag-of petri-net 'furres)))
+  (map nil
+       (lambda (costume)
+         (push costume (cl-furcadia:costumes (cl-furcadia:furre costume))))
+       (bag-contents (bag-of petri-net 'costumes)))
+  (map nil
+       (lambda (portrait)
+         (push portrait (cl-furcadia:portraits (cl-furcadia:furre portrait))))
+       (bag-contents (bag-of petri-net 'portraits)))
+  (map nil
+       (lambda (specitag)
+         (push specitag (cl-furcadia:specitags (cl-furcadia:furre specitag))))
+       (bag-contents (bag-of petri-net 'specitags)))
+  (map nil
+       (lambda (image)
+         (push image (cl-furcadia:images (cl-furcadia:furre image))))
+       (bag-contents (bag-of petri-net 'images)))
+  petri-net)
