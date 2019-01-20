@@ -48,7 +48,7 @@
     (q+:hide image)
     (q+:show loading-screen)
     (reset loading-screen)
-    (let* ((naccounts (hash-table-count (config :config :accounts))))
+    (let* ((naccounts (hash-table-count (config :config :credentials))))
       (setf (maximum loading-screen 'progress-logins) naccounts
             (maximum loading-screen 'progress-accounts) naccounts)))
   (let* ((petri-net (make-picker-petri-net))

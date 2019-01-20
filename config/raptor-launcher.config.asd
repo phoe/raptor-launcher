@@ -10,6 +10,9 @@
   :serial t
   :depends-on (#:alexandria
                #:ubiquitous-concurrent
+               #:cl-furcadia.protocol
+               #:cl-furcadia.clos
                #:raptor-launcher.protocol)
   :components ((:file "package")
-               (:file "config")))
+               (:file "config")
+               (:file "store-restore")))

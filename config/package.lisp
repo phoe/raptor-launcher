@@ -3,10 +3,12 @@
 ;;;; © Michał "phoe" Herda 2017
 ;;;; package.lisp
 
-(defpackage #:raptor-launcher/config
+(uiop:define-package #:raptor-launcher/config
   (:use #:cl
         #:alexandria
         #:ubiquitous
+        #:cl-furcadia/protocol
+        #:cl-furcadia/clos
         #:raptor-launcher/protocol)
   (:export
    #:*home-path*
@@ -18,4 +20,7 @@
    #:econfig
    #:remconfig
    #:with-config-transaction
-   #:config-alist))
+   #:config-alist
+   #:store-object
+   #:restore-object
+   #:restore-all-objects))

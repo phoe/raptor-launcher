@@ -8,7 +8,7 @@
 
 ;;; TODO add traces everywhere, EVERYWHERE
 
-(default-config (make-hash-table) :config :accounts)
+(default-config (make-hash-table) :config :credentials)
 
 (define-widget config-widget (qwidget)
   ((module :accessor module
@@ -89,14 +89,14 @@
 
 (define-slot (config-widget update-accounts) ()
   (declare (connected config-widget (account-update-needed)))
-  (loop with hash-table = (config :config :accounts)
+  (loop with hash-table = (config :config :credentials)
         for n being the hash-key of hash-table
-        do (remconfig :config :accounts n))
+        do (remconfig :config :credentials n))
   (let ((accounts (get-all-accounts accounts)))
     (loop for n from 1
           for (email password) in accounts
-          do (setf (config :config :accounts n :email) email)
-             (setf (config :config :accounts n :password) password))))
+          do (setf (config :config :credentials n :email) email)
+             (setf (config :config :credentials n :password) password))))
 
 (define-qt-constructor (config-widget)
   (let ((checkedp (q+:is-checked account-number-checkbox)))
@@ -105,10 +105,10 @@
   (let ((checkedp (q+:is-checked last-login-checkbox)))
     (signal! (module config-widget)
              (last-login-checkbox-clicked bool) checkedp))
-  (let ((list (loop with accounts-data = (config :config :accounts)
+  (let ((list (loop with accounts-data = (config :config :credentials)
                     for index being the hash-keys of accounts-data
-                    for email = (config :config :accounts index :email)
-                    for password = (config :config :accounts index :password)
+                    for email = (config :config :credentials index :email)
+                    for password = (config :config :credentials index :password)
                     collect (list index email password))))
     (loop for (index email password) in (sort list #'< :key #'car)
           do (add-account accounts config-widget email password))))

@@ -41,13 +41,15 @@
         (q+:selection-mode advanced-config-table)
         (q+:qabstractitemview.single-selection)
         (q+:selection-behavior advanced-config-table)
-        (q+:qabstractitemview.select-rows))
+        (q+:qabstractitemview.select-rows)
+        (q+:horizontal-header-labels advanced-config-table) '("Key" "Value"))
   (let ((h-header (q+:horizontal-header advanced-config-table))
         (v-header (q+:vertical-header advanced-config-table)))
     (setf (q+:stretch-last-section h-header) t
           (q+:resize-mode v-header) (q+:qheaderview.fixed)
           (q+:default-section-size v-header) 20
           (q+:sort-indicator h-header 0) (q+:qt.ascending-order))
+    (q+:show h-header)
     (q+:hide v-header))
   (redisplay-config advanced-config-table))
 

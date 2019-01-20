@@ -139,10 +139,10 @@ keywords were encountered (possible bug?): ~A" unknowns)
   (destructuring-bind (furre costume) (pop (gethash 'furres-costumes input))
     (let ((sname (cl-furcadia:shortname furre))
           (cookie-jar (cl-furcadia:cookie-jar-of (cl-furcadia:account furre))))
-      (with-log-on-error (e "Failed to fetch costume ~A for furre ~A: ~A"
-                            costume sname e)
-        (typecase costume
-          (cl-furcadia::costume
+      (with-log-on-error
+          (e "Failed to fetch costume ~A for furre ~A: ~A" costume sname e)
+        (etypecase costume
+          (cl-furcadia:costume
            (note t :debug "Successfully fetched default costume for furre ~A."
                  sname)
            (push costume (gethash 'costumes output)))
@@ -174,10 +174,12 @@ furre ~A." cid costume-name sname))
       (with-log-on-error (e "Failed to fetch portrait ~A for furre ~A: ~A"
                             pid sname e)
         (note t :debug "Fetching portrait ~A for furre ~A." pid sname)
-        (let ((portrait (cl-furcadia/ws:fetch-portrait pid cookie-jar)))
+        (multiple-value-bind (portrait data)
+            (cl-furcadia/ws:fetch-portrait pid cookie-jar)
           (note t :debug "Successfully fetched portrait ~A for furre ~A."
                 pid sname)
-          (setf (cl-furcadia:furre portrait) furre)
+          (setf (cl-furcadia:furre portrait) furre
+                (cl-furcadia:image-data portrait *dl-path*) data)
           (push portrait (gethash 'portraits output))
           (when-let ((picker (raptor-picker)))
             (signal! picker (portrait-downloaded string int)
@@ -192,11 +194,12 @@ furre ~A." cid costume-name sname))
       (with-log-on-error (e "Failed to fetch specitag ~A for furre ~A: ~A"
                             sid sname e)
         (note t :debug "Fetching specitag ~A for furre ~A." sid sname)
-        (let ((specitag (cl-furcadia/ws:fetch-specitag sid)))
+        (multiple-value-bind (specitag data) (cl-furcadia/ws:fetch-specitag sid)
           (note t :debug "Successfully fetched specitag ~A for furre ~A."
                 sid sname)
           (setf (cl-furcadia:furre specitag) furre
-                (cl-furcadia:remappedp specitag) remappedp)
+                (cl-furcadia:remappedp specitag) remappedp
+                (cl-furcadia:image-data specitag *dl-path*) data)
           (push specitag (gethash 'specitags output))
           (when-let ((picker (raptor-picker)))
             (signal! picker (specitag-downloaded string int)
@@ -288,10 +291,6 @@ furre ~A." cid costume-name sname))
          (push furre (cl-furcadia:furres (cl-furcadia:account furre))))
        (bag-contents (bag-of petri-net 'furres)))
   (map nil
-       (lambda (costume)
-         (push costume (cl-furcadia:costumes (cl-furcadia:furre costume))))
-       (bag-contents (bag-of petri-net 'costumes)))
-  (map nil
        (lambda (portrait)
          (push portrait (cl-furcadia:portraits (cl-furcadia:furre portrait))))
        (bag-contents (bag-of petri-net 'portraits)))
@@ -303,4 +302,36 @@ furre ~A." cid costume-name sname))
        (lambda (image)
          (push image (cl-furcadia:images (cl-furcadia:furre image))))
        (bag-contents (bag-of petri-net 'images)))
+  (map nil
+       (lambda (costume)
+         (when (cl-furcadia:specitag costume)
+           (setf (cl-furcadia:specitag costume)
+                 (find (cl-furcadia:specitag costume)
+                       (cl-furcadia:specitags (cl-furcadia:furre costume))
+                       :key #'cl-furcadia:sid))
+           (setf (cl-furcadia:afk-portrait costume)
+                 (find (cl-furcadia:afk-portrait costume)
+                       (cl-furcadia:portraits (cl-furcadia:furre costume))
+                       :key #'cl-furcadia:pid))
+           (setf (cl-furcadia:portrait costume)
+                 (find (cl-furcadia:portrait costume)
+                       (cl-furcadia:portraits (cl-furcadia:furre costume))
+                       :key #'cl-furcadia:pid)))
+         (push costume (cl-furcadia:costumes (cl-furcadia:furre costume))))
+       (bag-contents (bag-of petri-net 'costumes)))
+  (note t :trace "Cleaning stored configuration for all accounts.")
+  (remconfig :config :accounts)
+  (map nil
+       (lambda (account)
+         (setf (cl-furcadia:main account)
+               (find (cl-furcadia:main account) (furres account)
+                     :key #'cl-furcadia:shortname :test #'string=))
+         (with-log-on-error (e "Error while storing configuration for account
+~A: ~A" (cl-furcadia:email account) e)
+           (note t :trace "Storing configuration for account ~A."
+                 (cl-furcadia:email account))
+           (store-object account) ;; TODO uncomment
+           ))
+       (bag-contents (bag-of petri-net 'accounts)))
+  (note t :trace "Successfully stored configuration for all accounts.")
   petri-net)

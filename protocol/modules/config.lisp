@@ -21,9 +21,9 @@ second element is the password."
   (:config (:config :show-advanced))
   "The configuration value stating if the configuration widget should display ~
 a window with advanced options."
-  (:config (:config :accounts n :email))
-  "The configuration value stating the email used for account N."
-  (:config (:config :accounts n :password))
-  "The configuration value stating the password used for account N.")
+  (:config (:config :credentials n :email))
+  "The configuration value stating the email used for credential set N."
+  (:config (:config :credentials n :password))
+  "The configuration value stating the password used for credential set N.")
 
 (execute-protocol config)
