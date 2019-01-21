@@ -21,6 +21,12 @@
   (dolist (key (hash-table-keys (apply #'config config-path)))
     (restore-object type (append config-path (list key)))))
 
+(defmacro with-config-accessors ((&rest variables) config-path &body body)
+  (let ((bindings (mapcar (lambda (x) `(,x (config ,@config-path
+                                                   ,(make-keyword x))))
+                          variables)))
+    `(symbol-macrolet ,bindings ,@body)))
+
 ;;; STANDARD-ACCOUNT
 
 (defmethod store-object ((account standard-account) &key)
@@ -33,6 +39,21 @@
             (account-config :session) (session account)))
     (mapc (rcurry #'store-object :email email) (furres account))
     (store-object (cookie-jar-of account) :email email)))
+
+;; TODO remove password from account object
+(defmethod restore-object ((type (eql :account)) config-path)
+  (let ((email (lastcar config-path)))
+    (with-config-accessors (id main gd session) (:config :accounts email)
+      (print gd)
+      (let* ((account (make-instance 'standard-account
+                                     :email email :id id
+                                     :gd gd :session session)))
+        ;; (setf (cookie-jar-of account)
+        ;;       (restore-object :cookie-jar (append config-path (list :cookies))))
+        ;; furres
+        ;; main
+        ;; cookie-jar
+        account))))
 
 ;;; COOKIE-JAR
 
