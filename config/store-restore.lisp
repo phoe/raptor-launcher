@@ -17,15 +17,18 @@
 
 (defgeneric restore-object (type config-path))
 
-(defun restore-all-objects (type config-path)
-  (dolist (key (hash-table-keys (apply #'config config-path)))
-    (restore-object type (append config-path (list key)))))
+;; TODO remove?
+;; (defun restore-all-objects (type config-path)
+;;   (dolist (key (hash-table-keys (apply #'config config-path)))
+;;     (restore-object type (append config-path (list key)))))
+
+(trivial-indent:define-indentation with-config-accessors (4 4 &rest 2))
 
 (defmacro with-config-accessors ((&rest variables) config-path &body body)
-  (let ((bindings (mapcar (lambda (x) `(,x (config ,@config-path
-                                                   ,(make-keyword x))))
-                          variables)))
-    `(symbol-macrolet ,bindings ,@body)))
+  (flet ((generate (x) `(,x (apply #'config (append ,config-path
+                                                    (list ,(make-keyword x)))))))
+    (let ((bindings (mapcar #'generate variables)))
+      `(symbol-macrolet ,bindings ,@body))))
 
 ;;; STANDARD-ACCOUNT
 
@@ -40,19 +43,17 @@
     (mapc (rcurry #'store-object :email email) (furres account))
     (store-object (cookie-jar-of account) :email email)))
 
-;; TODO remove password from account object
+;; TODO remove password slot from account object
 (defmethod restore-object ((type (eql :account)) config-path)
   (let ((email (lastcar config-path)))
-    (with-config-accessors (id main gd session) (:config :accounts email)
-      (print gd)
+    (with-config-accessors (id main gd session) config-path
       (let* ((account (make-instance 'standard-account
                                      :email email :id id
                                      :gd gd :session session)))
-        ;; (setf (cookie-jar-of account)
-        ;;       (restore-object :cookie-jar (append config-path (list :cookies))))
+        (setf (cookie-jar-of account)
+              (restore-object :cookie-jar (append config-path (list :cookies))))
         ;; furres
         ;; main
-        ;; cookie-jar
         account))))
 
 ;;; COOKIE-JAR
@@ -69,6 +70,22 @@
             (cookie-config :expires) (drakma:cookie-expires cookie)
             (cookie-config :securep) (drakma:cookie-securep cookie)
             (cookie-config :http-only-p) (drakma:cookie-http-only-p cookie)))))
+
+(defmethod restore-object ((type (eql :cookie-jar)) config-path)
+  (let ((cookies '()))
+    (dolist (domain (hash-table-keys (apply #'config config-path)))
+      (format t "Working with domain ~A~%" domain)
+      (let ((config-path (append config-path (list domain))))
+        (dolist (name (hash-table-keys (apply #'config config-path)))
+          (format t "Working with name ~A~%" name)
+          (with-config-accessors (password path expires securep http-only-p)
+              (append config-path (list name))
+            (push (make-instance 'drakma:cookie
+                                 :domain domain :name name :value password
+                                 :path path :expires expires :securep securep
+                                 :http-only-p http-only-p)
+                  cookies)))))
+    (make-instance 'drakma:cookie-jar :cookies cookies)))
 
 ;;; STANDARD-FURRE
 
@@ -87,6 +104,22 @@
     (mapc (rcurry #'store-object :email email :sname sname) (specitags furre))
     (mapc (rcurry #'store-object :email email :sname sname) (portraits furre))
     (mapc (rcurry #'store-object :email email :sname sname) (images furre))))
+
+;; TODO config -> econfig
+(defmethod restore-object ((type (eql :furre)) config-path)
+  (with-config-accessors (uid name last-login digos lifers active-costume)
+      config-path
+    (flet ((find-digo (x) (gethash x cl-furcadia:*digos*)))
+      (let* ((furre (make-instance 'standard-furre
+                                   :uid uid :name name :last-login last-login
+                                   :digos (mapcar #'find-digo digos)
+                                   :lifers (mapcar #'find-digo lifers))))
+        ;; costumes
+        ;; active-costume
+        ;; specitags
+        ;; portraits
+        ;; images
+        furre))))
 
 ;;; STANDARD-COSTUME
 
