@@ -21,7 +21,7 @@
   (dolist (key (hash-table-keys (apply #'config config-path)))
     (restore-object type (append config-path (list key)))))
 
-;; base path: :config
+;;; STANDARD-ACCOUNT
 
 (defmethod store-object ((account standard-account) &key)
   (let ((email (email account)))
@@ -33,6 +33,8 @@
             (account-config :session) (session account)))
     (mapc (rcurry #'store-object :email email) (furres account))
     (store-object (cookie-jar-of account) :email email)))
+
+;;; COOKIE-JAR
 
 (defmethod store-object ((cookie-jar drakma:cookie-jar) &key email)
   (dolist (cookie (drakma:cookie-jar-cookies cookie-jar))
@@ -46,6 +48,8 @@
             (cookie-config :expires) (drakma:cookie-expires cookie)
             (cookie-config :securep) (drakma:cookie-securep cookie)
             (cookie-config :http-only-p) (drakma:cookie-http-only-p cookie)))))
+
+;;; STANDARD-FURRE
 
 (defmethod store-object ((furre standard-furre) &key email)
   (let ((sname (shortname furre)))
@@ -62,6 +66,8 @@
     (mapc (rcurry #'store-object :email email :sname sname) (specitags furre))
     (mapc (rcurry #'store-object :email email :sname sname) (portraits furre))
     (mapc (rcurry #'store-object :email email :sname sname) (images furre))))
+
+;;; STANDARD-COSTUME
 
 (defmethod store-object ((costume standard-costume) &key email sname)
   (let ((cid (cid costume)))
@@ -94,12 +100,16 @@
             (costume-config :afk-time) (afk-time costume)
             (costume-config :afk-max-time) (afk-max-time costume)))))
 
+;;; STANDARD-SPECITAG
+
 (defmethod store-object ((specitag standard-specitag) &key email sname)
   (let ((sid (sid specitag)))
     (flet (((setf specitag-config) (new-value &rest path)
              (apply #'(setf config) new-value :config :accounts
                     email :furres sname :specitags sid path)))
       (setf (specitag-config :remappedp) (remappedp specitag)))))
+
+;;; STANDARD-PORTRAIT
 
 (defmethod store-object ((portrait standard-portrait) &key email sname)
   (let ((pid (pid portrait)))
@@ -108,6 +118,8 @@
                     email :furres sname :portraits pid path)))
       (setf (portrait-config :portrait-type) (portrait-type portrait)
             (portrait-config :remappedp) (remappedp portrait)))))
+
+;;; STANDARD-IMAGE
 
 (defmethod store-object ((image standard-image) &key email sname)
   (let ((iid (iid image)))
