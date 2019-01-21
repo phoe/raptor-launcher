@@ -9,6 +9,7 @@
   :license "GPLv3"
   :serial t
   :depends-on (#:alexandria
+               #:drakma
                #:ubiquitous-concurrent
                #:cl-furcadia.protocol
                #:cl-furcadia.clos
