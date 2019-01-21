@@ -15,7 +15,7 @@
       (let ((*in-transaction* t))
         (with-config-transaction () (call-next-method)))))
 
-(defgeneric restore-object (type config-path))
+(defgeneric restore-object (type config-path &key)) ;; TODO &key
 
 ;; TODO remove?
 ;; (defun restore-all-objects (type config-path)
@@ -44,7 +44,7 @@
     (store-object (cookie-jar-of account) :email email)))
 
 ;; TODO remove password slot from account object
-(defmethod restore-object ((type (eql :account)) config-path)
+(defmethod restore-object ((type (eql :account)) config-path &key)
   (let ((email (lastcar config-path)))
     (with-config-accessors (id main gd session) config-path
       (let* ((account (make-instance 'standard-account
@@ -71,7 +71,7 @@
             (cookie-config :securep) (drakma:cookie-securep cookie)
             (cookie-config :http-only-p) (drakma:cookie-http-only-p cookie)))))
 
-(defmethod restore-object ((type (eql :cookie-jar)) config-path)
+(defmethod restore-object ((type (eql :cookie-jar)) config-path &key)
   (let ((cookies '()))
     (dolist (domain (hash-table-keys (apply #'config config-path)))
       (format t "Working with domain ~A~%" domain)
@@ -106,12 +106,13 @@
     (mapc (rcurry #'store-object :email email :sname sname) (images furre))))
 
 ;; TODO config -> econfig
-(defmethod restore-object ((type (eql :furre)) config-path)
+(defmethod restore-object ((type (eql :furre)) config-path &key account)
   (with-config-accessors (uid name last-login digos lifers active-costume)
       config-path
     (flet ((find-digo (x) (gethash x cl-furcadia:*digos*)))
       (let* ((furre (make-instance 'standard-furre
-                                   :uid uid :name name :last-login last-login
+                                   :account account :uid uid :name name
+                                   :last-login last-login
                                    :digos (mapcar #'find-digo digos)
                                    :lifers (mapcar #'find-digo lifers))))
         ;; costumes
