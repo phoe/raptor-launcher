@@ -41,13 +41,13 @@ is not found, DEFAULT is set as the value and returned."
   (let ((*storage-pathname* *config-path*))
     (apply #'defaulted-value default path)))
 
-(defmacro econfig (&rest path)
+(defun econfig (&rest path)
   "Returns the configuration value for the given path. Signals an error if the
 value was not found."
-  `(multiple-value-bind (value foundp) (config ,@path)
-     (if foundp
-         value
-         (error "Failed to find a configuration value for path ~S." ',path))))
+  (multiple-value-bind (value foundp) (apply #'config path)
+    (if foundp
+        value
+        (error "Failed to find a configuration value for path ~S." path))))
 
 (defun (setf config) (new-value &rest path)
   "Set the configuration value of the given path."

@@ -17,10 +17,14 @@
 
 (defgeneric restore-object (type config-path &key)) ;; TODO &key
 
-;; TODO remove?
-;; (defun restore-all-objects (type config-path)
-;;   (dolist (key (hash-table-keys (apply #'config config-path)))
-;;     (restore-object type (append config-path (list key)))))
+(defmethod restore-object :around (type config-path &key)
+  (and (apply #'econfig config-path) (call-next-method)))
+
+(defun restore-all-objects (type config-path)
+  (when-let ((hash-table (apply #'config config-path)))
+    (uiop:while-collecting (collect)
+      (dolist (key (hash-table-keys hash-table))
+        (collect (restore-object type (append config-path (list key))))))))
 
 (trivial-indent:define-indentation with-config-accessors (4 4 &rest 2))
 
@@ -51,8 +55,9 @@
                                      :email email :id id
                                      :gd gd :session session)))
         (setf (cookie-jar-of account)
-              (restore-object :cookie-jar (append config-path (list :cookies))))
-        ;; furres
+              (restore-object :cookie-jar (append config-path (list :cookies)))
+              (furres account)
+              (restore-all-objects :furre (append config-path (list :furres))))
         ;; main
         account))))
 
@@ -74,10 +79,8 @@
 (defmethod restore-object ((type (eql :cookie-jar)) config-path &key)
   (let ((cookies '()))
     (dolist (domain (hash-table-keys (apply #'config config-path)))
-      (format t "Working with domain ~A~%" domain)
       (let ((config-path (append config-path (list domain))))
         (dolist (name (hash-table-keys (apply #'config config-path)))
-          (format t "Working with name ~A~%" name)
           (with-config-accessors (password path expires securep http-only-p)
               (append config-path (list name))
             (push (make-instance 'drakma:cookie
@@ -105,7 +108,6 @@
     (mapc (rcurry #'store-object :email email :sname sname) (portraits furre))
     (mapc (rcurry #'store-object :email email :sname sname) (images furre))))
 
-;; TODO config -> econfig
 (defmethod restore-object ((type (eql :furre)) config-path &key account)
   (with-config-accessors (uid name last-login digos lifers active-costume)
       config-path
@@ -115,12 +117,69 @@
                                    :last-login last-login
                                    :digos (mapcar #'find-digo digos)
                                    :lifers (mapcar #'find-digo lifers))))
+        (setf (specitags furre)
+              (restore-all-objects :specitag
+                                   (append config-path (list :specitags)))
+              (images furre)
+              (restore-all-objects :image
+                                   (append config-path (list :images)))
+              (portraits furre)
+              (restore-all-objects :portrait
+                                   (append config-path (list :portraits))))
         ;; costumes
         ;; active-costume
-        ;; specitags
-        ;; portraits
-        ;; images
         furre))))
+
+;;; STANDARD-SPECITAG
+
+(defmethod store-object ((specitag standard-specitag) &key email sname)
+  (let ((sid (sid specitag)))
+    (flet (((setf specitag-config) (new-value &rest path)
+             (apply #'(setf config) new-value :config :accounts
+                    email :furres sname :specitags sid path)))
+      (setf (specitag-config :remappedp) (remappedp specitag)))))
+
+(defmethod restore-object ((type (eql :specitag)) config-path &key furre)
+  (with-config-accessors (remappedp) config-path
+    (let* ((sid (lastcar config-path)))
+      (make-instance 'standard-specitag :sid sid :furre furre
+                                        :remappedp remappedp))))
+
+;;; STANDARD-PORTRAIT
+
+(defmethod store-object ((portrait standard-portrait) &key email sname)
+  (let ((pid (pid portrait)))
+    (flet (((setf portrait-config) (new-value &rest path)
+             (apply #'(setf config) new-value :config :accounts
+                    email :furres sname :portraits pid path)))
+      (setf (portrait-config :portrait-type) (portrait-type portrait)
+            (portrait-config :remappedp) (remappedp portrait)))))
+
+(defmethod restore-object ((type (eql :portrait)) config-path &key furre)
+  (with-config-accessors (portrait-type remappedp) config-path
+    (let* ((pid (lastcar config-path)))
+      (make-instance 'standard-portrait
+                     :pid pid :portrait-type portrait-type
+                     :furre furre :remappedp remappedp))))
+
+;;; STANDARD-IMAGE
+
+(defmethod store-object ((image standard-image) &key email sname)
+  (let ((iid (iid image)))
+    (flet (((setf image-config) (new-value &rest path)
+             (apply #'(setf config) new-value :config :accounts
+                    email :furres sname :images iid path)))
+      (setf (image-config :timestamp) (timestamp image)
+            (image-config :url) (url image)
+            (image-config :eye-level) (eye-level image)
+            (image-config :sfwp) (sfwp image)))))
+
+(defmethod restore-object ((type (eql :image)) config-path &key furre)
+  (with-config-accessors (timestamp url eye-level sfwp) config-path
+    (let* ((iid (lastcar config-path)))
+      (make-instance 'standard-image
+                     :iid iid :timestamp timestamp :url url
+                     :eye-level eye-level :furre furre :sfwp sfwp))))
 
 ;;; STANDARD-COSTUME
 
@@ -154,34 +213,3 @@
                                              (pid (afk-portrait costume)))
             (costume-config :afk-time) (afk-time costume)
             (costume-config :afk-max-time) (afk-max-time costume)))))
-
-;;; STANDARD-SPECITAG
-
-(defmethod store-object ((specitag standard-specitag) &key email sname)
-  (let ((sid (sid specitag)))
-    (flet (((setf specitag-config) (new-value &rest path)
-             (apply #'(setf config) new-value :config :accounts
-                    email :furres sname :specitags sid path)))
-      (setf (specitag-config :remappedp) (remappedp specitag)))))
-
-;;; STANDARD-PORTRAIT
-
-(defmethod store-object ((portrait standard-portrait) &key email sname)
-  (let ((pid (pid portrait)))
-    (flet (((setf portrait-config) (new-value &rest path)
-             (apply #'(setf config) new-value :config :accounts
-                    email :furres sname :portraits pid path)))
-      (setf (portrait-config :portrait-type) (portrait-type portrait)
-            (portrait-config :remappedp) (remappedp portrait)))))
-
-;;; STANDARD-IMAGE
-
-(defmethod store-object ((image standard-image) &key email sname)
-  (let ((iid (iid image)))
-    (flet (((setf image-config) (new-value &rest path)
-             (apply #'(setf config) new-value :config :accounts
-                    email :furres sname :images iid path)))
-      (setf (image-config :timestamp) (timestamp image)
-            (image-config :url) (url image)
-            (image-config :eye-level) (eye-level image)
-            (image-config :sfwp) (sfwp image)))))
