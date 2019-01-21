@@ -5,6 +5,8 @@
 
 (in-package :raptor-launcher/config)
 
+;;; TODO test storing/restoring a sample account with everything
+
 (defgeneric store-object (object &key))
 
 (defvar *in-transaction* nil)
@@ -15,7 +17,7 @@
       (let ((*in-transaction* t))
         (with-config-transaction () (call-next-method)))))
 
-(defgeneric restore-object (type config-path &key)) ;; TODO &key
+(defgeneric restore-object (type config-path &key))
 
 (defmethod restore-object :around (type config-path &key)
   (and (apply #'econfig config-path) (call-next-method)))
