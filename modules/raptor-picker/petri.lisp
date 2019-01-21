@@ -285,53 +285,24 @@ furre ~A." cid costume-name sname))
 
 ;;; Postprocessing
 
-(defun postprocess-picker-petri-net (petri-net)
-  (map nil
-       (lambda (furre)
-         (push furre (cl-furcadia:furres (cl-furcadia:account furre))))
-       (bag-contents (bag-of petri-net 'furres)))
-  (map nil
-       (lambda (portrait)
-         (push portrait (cl-furcadia:portraits (cl-furcadia:furre portrait))))
-       (bag-contents (bag-of petri-net 'portraits)))
-  (map nil
-       (lambda (specitag)
-         (push specitag (cl-furcadia:specitags (cl-furcadia:furre specitag))))
-       (bag-contents (bag-of petri-net 'specitags)))
-  (map nil
-       (lambda (image)
-         (push image (cl-furcadia:images (cl-furcadia:furre image))))
-       (bag-contents (bag-of petri-net 'images)))
-  (map nil
-       (lambda (costume)
-         (when (cl-furcadia:specitag costume)
-           (setf (cl-furcadia:specitag costume)
-                 (find (cl-furcadia:specitag costume)
-                       (cl-furcadia:specitags (cl-furcadia:furre costume))
-                       :key #'cl-furcadia:sid))
-           (setf (cl-furcadia:afk-portrait costume)
-                 (find (cl-furcadia:afk-portrait costume)
-                       (cl-furcadia:portraits (cl-furcadia:furre costume))
-                       :key #'cl-furcadia:pid))
-           (setf (cl-furcadia:portrait costume)
-                 (find (cl-furcadia:portrait costume)
-                       (cl-furcadia:portraits (cl-furcadia:furre costume))
-                       :key #'cl-furcadia:pid)))
-         (push costume (cl-furcadia:costumes (cl-furcadia:furre costume))))
-       (bag-contents (bag-of petri-net 'costumes)))
+(defun store-accounts (petri-net)
   (note t :trace "Cleaning stored configuration for all accounts.")
   (remconfig :config :accounts)
   (map nil
        (lambda (account)
-         (setf (cl-furcadia:main account)
-               (find (cl-furcadia:main account) (furres account)
-                     :key #'cl-furcadia:shortname :test #'string=))
          (with-log-on-error (e "Error while storing configuration for account
 ~A: ~A" (cl-furcadia:email account) e)
            (note t :trace "Storing configuration for account ~A."
                  (cl-furcadia:email account))
-           (store-object account) ;; TODO uncomment
-           ))
+           (store-object account)))
        (bag-contents (bag-of petri-net 'accounts)))
-  (note t :trace "Successfully stored configuration for all accounts.")
+  (note t :trace "Successfully stored configuration for all accounts."))
+
+(defun postprocess-picker-petri-net (petri-net &key (store-config-p t))
+  (flet ((process (symbol)
+           (map nil #'postprocess
+                (bag-contents (bag-of petri-net symbol)))))
+    (mapc #'process '(furres portraits specitags images costumes accounts)))
+  (when store-config-p
+    (store-accounts petri-net))
   petri-net)

@@ -20,19 +20,53 @@
 (defmethod restore-object :around (type config-path &key)
   (and (apply #'econfig config-path) (call-next-method)))
 
-(defun restore-all-objects (type config-path)
+(defun restore-all-objects (type config-path &rest keyword-args)
   (when-let ((hash-table (apply #'config config-path)))
     (uiop:while-collecting (collect)
       (dolist (key (hash-table-keys hash-table))
-        (collect (restore-object type (append config-path (list key))))))))
+        (collect (apply #'restore-object type (append config-path (list key))
+                        keyword-args))))))
 
-(trivial-indent:define-indentation with-config-accessors (4 4 &rest 2))
+(trivial-indent:define-indentation with-config-accessors
+    ((&whole 4 &rest 1) 4 &rest 2))
 
 (defmacro with-config-accessors ((&rest variables) config-path &body body)
   (flet ((generate (x) `(,x (apply #'config (append ,config-path
                                                     (list ,(make-keyword x)))))))
     (let ((bindings (mapcar #'generate variables)))
       `(symbol-macrolet ,bindings ,@body))))
+
+(defgeneric postprocess (object)
+  (:method :around (object) (call-next-method) object)
+  (:method ((furre furre))
+    (push furre (furres (account furre))))
+  (:method ((portrait portrait))
+    (push portrait (portraits (furre portrait))))
+  (:method ((specitag specitag))
+    (push specitag (specitags (furre specitag))))
+  (:method ((image image))
+    (push image (images (furre image))))
+  (:method ((costume costume))
+    (when (specitag costume)
+      (setf (specitag costume)
+            (find (specitag costume)
+                  (specitags (furre costume))
+                  :key #'sid)))
+    (when (afk-portrait costume)
+      (setf (afk-portrait costume)
+            (find (afk-portrait costume)
+                  (portraits (furre costume))
+                  :key #'pid)))
+    (when (portrait costume)
+      (setf (portrait costume)
+            (find (portrait costume)
+                  (portraits (furre costume))
+                  :key #'pid)))
+    (push costume (costumes (furre costume))))
+  (:method ((account account))
+    (setf (main account)
+          (find (main account) (furres account)
+                :key #'shortname :test #'string=))))
 
 ;;; STANDARD-ACCOUNT
 
@@ -52,14 +86,15 @@
   (let ((email (lastcar config-path)))
     (with-config-accessors (id main gd session) config-path
       (let* ((account (make-instance 'standard-account
-                                     :email email :id id
+                                     :email email :id id :main main
                                      :gd gd :session session)))
         (setf (cookie-jar-of account)
-              (restore-object :cookie-jar (append config-path (list :cookies)))
+              (restore-object :cookie-jar (append config-path (list :cookies))
+                              :account account)
               (furres account)
-              (restore-all-objects :furre (append config-path (list :furres))))
-        ;; main
-        account))))
+              (restore-all-objects :furre (append config-path (list :furres))
+                                   :account account))
+        (postprocess account)))))
 
 ;;; COOKIE-JAR
 
@@ -111,24 +146,23 @@
 (defmethod restore-object ((type (eql :furre)) config-path &key account)
   (with-config-accessors (uid name last-login digos lifers active-costume)
       config-path
-    (flet ((find-digo (x) (gethash x cl-furcadia:*digos*)))
+    (flet ((find-digo (x) (gethash x cl-furcadia:*digos*))
+           (restore-type (type config-tail furre)
+             (restore-all-objects type
+                                  (append config-path (list config-tail))
+                                  :furre furre)))
       (let* ((furre (make-instance 'standard-furre
                                    :account account :uid uid :name name
                                    :last-login last-login
                                    :digos (mapcar #'find-digo digos)
                                    :lifers (mapcar #'find-digo lifers))))
-        (setf (specitags furre)
-              (restore-all-objects :specitag
-                                   (append config-path (list :specitags)))
-              (images furre)
-              (restore-all-objects :image
-                                   (append config-path (list :images)))
-              (portraits furre)
-              (restore-all-objects :portrait
-                                   (append config-path (list :portraits))))
-        ;; costumes
-        ;; active-costume
-        furre))))
+        (setf (specitags furre) (restore-type :specitag :specitags furre)
+              (images furre) (restore-type :image :images furre)
+              (portraits furre) (restore-type :portrait :portraits furre)
+              (costumes furre) (restore-type :costume :costumes furre)
+              (active-costume furre)
+              (find active-costume (costumes furre) :key #'cid))
+        (postprocess furre)))))
 
 ;;; STANDARD-SPECITAG
 
@@ -141,9 +175,10 @@
 
 (defmethod restore-object ((type (eql :specitag)) config-path &key furre)
   (with-config-accessors (remappedp) config-path
-    (let* ((sid (lastcar config-path)))
-      (make-instance 'standard-specitag :sid sid :furre furre
-                                        :remappedp remappedp))))
+    (let* ((sid (lastcar config-path))
+           (specitag (make-instance 'standard-specitag :sid sid :furre furre
+                                                       :remappedp remappedp)))
+      (postprocess specitag))))
 
 ;;; STANDARD-PORTRAIT
 
@@ -157,10 +192,11 @@
 
 (defmethod restore-object ((type (eql :portrait)) config-path &key furre)
   (with-config-accessors (portrait-type remappedp) config-path
-    (let* ((pid (lastcar config-path)))
-      (make-instance 'standard-portrait
-                     :pid pid :portrait-type portrait-type
-                     :furre furre :remappedp remappedp))))
+    (let* ((pid (lastcar config-path))
+           (portrait (make-instance 'standard-portrait
+                                    :pid pid :portrait-type portrait-type
+                                    :furre furre :remappedp remappedp)))
+      (postprocess portrait))))
 
 ;;; STANDARD-IMAGE
 
@@ -176,10 +212,11 @@
 
 (defmethod restore-object ((type (eql :image)) config-path &key furre)
   (with-config-accessors (timestamp url eye-level sfwp) config-path
-    (let* ((iid (lastcar config-path)))
-      (make-instance 'standard-image
-                     :iid iid :timestamp timestamp :url url
-                     :eye-level eye-level :furre furre :sfwp sfwp))))
+    (let* ((iid (lastcar config-path))
+           (image (make-instance 'standard-image
+                                 :iid iid :timestamp timestamp :url url
+                                 :eye-level eye-level :furre furre :sfwp sfwp)))
+      (postprocess image))))
 
 ;;; STANDARD-COSTUME
 
@@ -198,7 +235,7 @@
                                      (index (digo costume)))
             (costume-config :specitag) (when (specitag costume)
                                          (sid (specitag costume)))
-            (costume-config :wings) (wings costume) ;; TODO proper wing type
+            (costume-config :wings) (wings costume)
             (costume-config :portrait) (when (portrait costume)
                                          (pid (portrait costume)))
             (costume-config :auto-response) (auto-response costume)
@@ -213,3 +250,27 @@
                                              (pid (afk-portrait costume)))
             (costume-config :afk-time) (afk-time costume)
             (costume-config :afk-max-time) (afk-max-time costume)))))
+
+(defmethod restore-object ((type (eql :costume)) config-path &key furre)
+  (with-config-accessors
+      (name rating scale ordinal description color-code digo specitag wings
+       portrait auto-response auto-response-p afk-description afk-whisper
+       afk-color-code afk-digo afk-wings afk-portrait afk-time afk-max-time)
+      config-path
+    (flet ((maybe-find-digo (x)
+             (when x (gethash-or-die x cl-furcadia:*digos*))))
+      (let* ((cid (lastcar config-path))
+             (costume (make-instance
+                       'standard-costume
+                       :cid cid :furre furre :name name :rating rating
+                       :scale scale :ordinal ordinal :description description
+                       :color-code color-code :specitag specitag :wings wings
+                       :portrait portrait :auto-response auto-response
+                       :auto-response-p auto-response-p
+                       :afk-description afk-description :afk-whisper afk-whisper
+                       :afk-color-code afk-color-code :afk-wings afk-wings
+                       :afk-time afk-time :afk-max-time afk-max-time
+                       :afk-portrait afk-portrait
+                       :digo (maybe-find-digo digo)
+                       :afk-digo (maybe-find-digo afk-digo))))
+        (postprocess costume)))))

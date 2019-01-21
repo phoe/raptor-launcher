@@ -6,6 +6,7 @@
 (uiop:define-package #:raptor-launcher/config
   (:use #:cl
         #:alexandria
+        #:phoe-toolbox
         #:ubiquitous
         #:cl-furcadia/protocol
         #:cl-furcadia/clos
@@ -23,4 +24,5 @@
    #:config-alist
    #:store-object
    #:restore-object
-   #:restore-all-objects))
+   #:restore-all-objects
+   #:postprocess))
