@@ -12,6 +12,7 @@
                #:phoe-toolbox
                #:drakma
                #:ubiquitous-concurrent
+               #:cl-furcadia.constants
                #:cl-furcadia.protocol
                #:cl-furcadia.clos
                #:raptor-launcher.protocol)

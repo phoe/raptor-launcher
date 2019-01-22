@@ -8,6 +8,7 @@
         #:alexandria
         #:phoe-toolbox
         #:ubiquitous
+        #:cl-furcadia/constants
         #:cl-furcadia/protocol
         #:cl-furcadia/clos
         #:raptor-launcher/protocol)

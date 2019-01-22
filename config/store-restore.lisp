@@ -148,7 +148,7 @@
 (defmethod restore-object ((type (eql :furre)) config-path &key account)
   (with-config-accessors (uid name last-login digos lifers active-costume)
       config-path
-    (flet ((find-digo (x) (gethash x cl-furcadia:*digos*))
+    (flet ((find-digo (x) (gethash x *digos*))
            (restore-type (type config-tail furre)
              (restore-all-objects type
                                   (append config-path (list config-tail))
@@ -260,7 +260,7 @@
        afk-color-code afk-digo afk-wings afk-portrait afk-time afk-max-time)
       config-path
     (flet ((maybe-find-digo (x)
-             (when x (gethash-or-die x cl-furcadia:*digos*))))
+             (when x (gethash-or-die x *digos*))))
       (let* ((cid (lastcar config-path))
              (costume (make-instance
                        'standard-costume
