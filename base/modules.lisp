@@ -71,7 +71,7 @@
 
 (defmacro define-raptor-module (name (&rest protocol-classes) &body clauses)
   (let* ((main-window-clause (assoc-value-or-die clauses :main-window))
-         (main-window-slots (cdr main-window-clause))
+         (main-window-slots (cddr main-window-clause))
          (selector-clause (assoc-value-or-die clauses :selector))
          (constructor-clause (assoc-value clauses :constructor))
          (priority (or (car (assoc-value clauses :priority)) 1000))
