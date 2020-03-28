@@ -23,7 +23,7 @@
 
 (define-subwidget (image-widget background) (q+:make-qimage background-path)
   (when (and background-hue (/= 0.0 background-hue))
-    (qcom:hue-shift background background-hue)))
+    (qui:hue-shift background background-hue)))
 
 (define-qt-constructor (image-widget)
   (when width (setf (q+:minimum-width image-widget) width)))

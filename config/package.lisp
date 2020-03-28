@@ -4,13 +4,13 @@
 ;;;; package.lisp
 
 (uiop:define-package #:raptor-launcher/config
-  (:use #:cl
+  (:mix #:cl
         #:alexandria
         #:phoe-toolbox
-        #:ubiquitous
         #:cl-furcadia/constants
         #:cl-furcadia/protocol
         #:cl-furcadia/clos
+        #:ubiquitous
         #:raptor-launcher/protocol)
   (:export
    #:*home-path*

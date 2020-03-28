@@ -15,10 +15,10 @@
    #:raptor-launcher.base
    #:raptor-launcher.raptor-logger
    #:raptor-launcher.raptor-config
-   #:raptor-launcher.raptor-editor
+   ;; #:raptor-launcher.raptor-editor
    #:raptor-launcher.raptor-picker
-   #:raptor-launcher.raptor-fusion
-   #:raptor-launcher.raptor-chat
+   ;; #:raptor-launcher.raptor-fusion
+   ;; #:raptor-launcher.raptor-chat
    )
   :components
   ((:file "package")))

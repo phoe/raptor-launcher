@@ -10,9 +10,9 @@
   :serial t
   :depends-on
   (#:spell/simple
+   #:qtools-ui-imagetools
    #:wordnet
    #:trivial-indent
-   #:qtools-commons
    #:cl-furcadia.protocol
    #:cl-furcadia.clos
    #:raptor-launcher.config

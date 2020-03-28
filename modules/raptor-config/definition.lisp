@@ -23,9 +23,10 @@
 (define-subwidget (raptor-config config-tabs) (q+:make-qtabwidget)
   (q+:add-widget layout config-tabs))
 
+;; TODO accounts -> credentials
 (defmethod accounts ((config raptor-config))
   (declare (ignore config))
-  (loop with hash-table = (config :config :accounts)
+  (loop with hash-table = (config :config :credentials)
         for n being the hash-keys of hash-table
-        collect (list (config :config :accounts n :email)
-                      (config :config :accounts n :password))))
+        collect (list (config :config :credentials n :email)
+                      (config :config :credentials n :password))))
